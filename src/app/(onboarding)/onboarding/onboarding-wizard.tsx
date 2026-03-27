@@ -48,7 +48,7 @@ export function OnboardingWizard() {
       }
       if (result.code === "FORM_LIMIT") {
         toast.error(result.error, {
-          description: "Upgrade or start a trial when you’re ready — we’ll keep your spot here.",
+          description: "Upgrade your plan when you’re ready — we’ll keep your spot here.",
           action: {
             label: "View plans",
             onClick: () => router.push("/dashboard/billing"),

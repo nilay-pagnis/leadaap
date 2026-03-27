@@ -30,7 +30,7 @@ const logos = ["Acme", "Northwind", "Lumen", "Orbital", "Studio 42"];
 const trialFormId = process.env.NEXT_PUBLIC_TRIAL_FORM_ID;
 const pilotHref =
   trialFormId && trialFormId.length > 8
-    ? `/f/${trialFormId}?source=home&plan=trial`
+    ? `/f/${trialFormId}?source=home&plan=free`
     : "/signup";
 
 const fadeUp = {
@@ -93,7 +93,7 @@ export function LandingPage() {
               "rounded-full px-4 shadow-md shadow-indigo-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:px-6"
             )}
           >
-            Start pilot
+            Start free
           </Link>
         </div>
       </header>
@@ -131,7 +131,7 @@ export function LandingPage() {
                 "group h-12 min-w-[200px] rounded-2xl px-8 text-base shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/35"
               )}
             >
-              Start free pilot
+              Start free
               <ArrowRight className="ml-2 size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
             <Link
@@ -156,7 +156,7 @@ export function LandingPage() {
             </span>
             <span className="inline-flex items-center gap-2">
               <Zap className="size-4 text-violet-600" />
-              5-day pilot
+              Free plan to get started
             </span>
           </div>
         </motion.div>
@@ -505,7 +505,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* 7. Free pilot */}
+      {/* 7. Free plan */}
       <section className="relative z-10 border-y border-emerald-200/40 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 py-20 lg:py-24">
         <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white px-4 py-1.5 text-xs font-semibold text-emerald-900 shadow-sm">
@@ -513,12 +513,11 @@ export function LandingPage() {
             Zero-risk way to try everything
           </div>
           <h2 className="mt-6 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Start with a free pilot — not a leap of faith
+            Start free — no leap of faith
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            Get full product access for five days. No credit card. If LeadAap
-            doesn’t earn a place in your stack, walk away — no guilt, no
-            lock-in conversation.
+            Get started on the Free plan with no credit card. Upgrade only when
+            your lead volume grows.
           </p>
           <Link
             href={pilotHref}
@@ -527,7 +526,7 @@ export function LandingPage() {
               "group mt-10 inline-flex h-12 min-w-[220px] items-center justify-center rounded-2xl px-8 text-base shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
             )}
           >
-            Start free pilot
+            Start free
             <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <p className="mt-4 text-sm text-slate-500">
@@ -543,7 +542,7 @@ export function LandingPage() {
             Ready to turn traffic into pipeline?
           </h2>
           <p className="mt-4 text-lg text-slate-300">
-            See pricing in detail, or start the pilot — most teams are live the
+            See pricing in detail, or start free — most teams are live the
             same day.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
@@ -554,7 +553,7 @@ export function LandingPage() {
                 "h-12 min-w-[200px] rounded-2xl border-0 bg-white px-8 text-base font-semibold text-slate-900 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-100"
               )}
             >
-              Start free pilot
+              Start free
               <ArrowRight className="ml-2 size-4" />
             </Link>
             <Link

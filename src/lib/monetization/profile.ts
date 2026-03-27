@@ -1,4 +1,3 @@
-import { createAdminClient } from "@/lib/supabase/admin";
 import type { PlanId } from "@/types/billing";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizePlanId, PLAN_LIMITS } from "./plans";
@@ -7,57 +6,25 @@ export type EffectiveProfile = {
   id: string;
   plan: PlanId;
   credits: number;
-  trial_ends_at: string | null;
-  trialExpired: boolean;
 };
 
-/**
- * Migrates legacy `trial` rows to Free and returns effective plan/limits.
- */
 export async function resolveAndSyncProfile(
-  userId: string,
+  _userId: string,
   row: {
     plan: unknown;
     credits: unknown;
-    trial_ends_at: string | null;
   }
 ): Promise<EffectiveProfile> {
-  let plan = normalizePlanId(row.plan);
-  let credits =
+  const plan = normalizePlanId(row.plan);
+  const credits =
     typeof row.credits === "number" && Number.isFinite(row.credits) && row.credits >= 0
       ? Math.floor(row.credits)
       : PLAN_LIMITS[plan].creditAllocation;
-  let trial_ends_at = row.trial_ends_at;
-  let trialExpired = false;
-
-  /** Legacy `trial` plan removed — migrate to Free (same limits). */
-  if (plan === "trial") {
-    trialExpired = true;
-    plan = "free";
-    credits = Math.min(credits, PLAN_LIMITS.free.creditAllocation);
-    trial_ends_at = null;
-    try {
-      const admin = createAdminClient();
-      await admin
-        .from("profiles")
-        .update({
-          plan: "free",
-          credits,
-          trial_ends_at: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId);
-    } catch {
-      // still return effective values for this request
-    }
-  }
 
   return {
-    id: userId,
+    id: _userId,
     plan,
     credits,
-    trial_ends_at,
-    trialExpired,
   };
 }
 
@@ -79,10 +46,10 @@ export async function fetchProfileRow(
 export async function ensureProfile(
   supabase: SupabaseClient,
   userId: string
-): Promise<{ plan: PlanId; credits: number; trial_ends_at: string | null } | null> {
+): Promise<{ plan: PlanId; credits: number } | null> {
   let { data } = await supabase
     .from("profiles")
-    .select("plan, credits, trial_ends_at")
+    .select("plan, credits")
     .eq("id", userId)
     .maybeSingle();
 
@@ -93,9 +60,8 @@ export async function ensureProfile(
         id: userId,
         plan: "free",
         credits: PLAN_LIMITS.free.creditAllocation,
-        trial_ends_at: null,
       })
-      .select("plan, credits, trial_ends_at")
+      .select("plan, credits")
       .single();
     if (error) return null;
     data = inserted;
@@ -104,6 +70,5 @@ export async function ensureProfile(
   return data as {
     plan: PlanId;
     credits: number;
-    trial_ends_at: string | null;
   };
 }

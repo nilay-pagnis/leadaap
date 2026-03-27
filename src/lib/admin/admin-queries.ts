@@ -125,7 +125,7 @@ export async function fetchAdminDashboardStats(): Promise<AdminDashboardStats> {
     };
   }
 
-  const paidPlans: PlanId[] = ["starter", "growth", "premium", "enterprise"];
+  const paidPlans: PlanId[] = ["starter", "growth", "premium"];
 
   const [usersRes, subsRes, revenueRows, leadsRes] = await Promise.all([
     admin.from("profiles").select("*", { count: "exact", head: true }),

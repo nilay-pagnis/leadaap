@@ -1,8 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,7 +11,6 @@ import {
   formatFormsUsageLine,
   formatLeadsUsageLine,
   isFreeTier,
-  isPaidPlan,
   isUnlimitedForms,
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -22,14 +19,10 @@ import {
   progressBarClassForBand,
 } from "@/lib/monetization/plans";
 import type { UsageSnapshot } from "@/lib/monetization/get-usage";
-import {
-  downgradePaidPlanAction,
-  downgradeToFreeAction,
-} from "@/app/actions/billing";
 import { getPublicPaymentLink } from "@/lib/payments/payment-links";
 import type { PaidPlan } from "@/lib/payments/plan-paid";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 
 type Props = {
   usage: UsageSnapshot;
@@ -80,23 +73,7 @@ export function BillingClient({
   usage,
   hasPendingPayment,
 }: Props) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
-
-  function run(
-    label: string,
-    fn: () => Promise<{ ok: boolean; error?: string }>
-  ) {
-    start(async () => {
-      const r = await fn();
-      if (r.ok) {
-        toast.success(`${label} — you’re all set.`);
-        router.refresh();
-      } else {
-        toast.error(r.error ?? "Something went wrong");
-      }
-    });
-  }
+  const pending = false;
 
   function upgradeViaPaymentLink(plan: PaidPlan) {
     const url = getPublicPaymentLink(plan);
@@ -113,7 +90,6 @@ export function BillingClient({
   }
 
   const onFreeTier = isFreeTier(usage.plan);
-  const paidUser = isPaidPlan(usage.plan);
   const userRank = planTierRank(usage.plan);
 
   const leadPct = usage.leadUsagePct;
@@ -180,9 +156,7 @@ export function BillingClient({
                   onFreeTier && "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
                   usage.plan === "starter" && "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200",
                   usage.plan === "growth" && "bg-violet-100 text-violet-900 dark:bg-violet-950/40 dark:text-violet-200",
-                  usage.plan === "premium" && "bg-indigo-100 text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200",
-                  usage.plan === "enterprise" &&
-                    "bg-amber-100 text-amber-950 dark:bg-amber-950/40 dark:text-amber-200"
+                  usage.plan === "premium" && "bg-indigo-100 text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200"
                 )}
               >
                 {planLabel(usage.plan)}
@@ -280,15 +254,6 @@ export function BillingClient({
             >
               Submit Payment ID only (already paid)
             </Link>
-            {paidUser && (
-              <Button
-                variant="ghost"
-                disabled={pending}
-                onClick={() => run("Switched to Free", () => downgradeToFreeAction())}
-              >
-                Downgrade to Free
-              </Button>
-            )}
           </CardContent>
         </Card>
       </div>
@@ -306,7 +271,6 @@ export function BillingClient({
             const cardRank = planTierRank(p.id);
             const isCurrent = usage.plan === p.id;
             const showUpgrade = userRank < cardRank;
-            const showDowngrade = paidUser && userRank > cardRank;
 
             return (
               <PlanCard
@@ -330,23 +294,6 @@ export function BillingClient({
                     >
                       <ExternalLink className="mr-2 size-4 shrink-0" />
                       Upgrade — ₹{p.priceInr}/mo
-                    </Button>
-                  ) : showDowngrade ? (
-                    <Button
-                      className="w-full"
-                      variant="secondary"
-                      disabled={pending}
-                      onClick={() =>
-                        run(`Plan → ${p.title}`, () =>
-                          downgradePaidPlanAction(p.id)
-                        )
-                      }
-                    >
-                      {pending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        `Switch to ${p.title}`
-                      )}
                     </Button>
                   ) : (
                     <span className="text-sm text-slate-500">

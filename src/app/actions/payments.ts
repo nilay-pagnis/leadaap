@@ -62,7 +62,6 @@ export async function approvePaymentAction(
     .update({
       plan,
       credits,
-      trial_ends_at: null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", row.user_id);

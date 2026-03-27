@@ -24,7 +24,7 @@ export default async function PublicFormPage({
   const source = firstParam(sp.source);
   const plan = firstParam(sp.plan);
   const pilotMode =
-    source === "website" && plan === "trial"
+    source === "website" && plan === "free"
       ? { source, plan }
       : null;
 

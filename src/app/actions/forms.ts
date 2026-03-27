@@ -18,7 +18,7 @@ async function getEffectivePlanForUser(userId: string): Promise<EffectiveProfile
   await ensureProfile(supabase, userId);
   const { data: row } = await supabase
     .from("profiles")
-    .select("plan, credits, trial_ends_at")
+    .select("plan, credits")
     .eq("id", userId)
     .maybeSingle();
 
@@ -27,8 +27,6 @@ async function getEffectivePlanForUser(userId: string): Promise<EffectiveProfile
       id: userId,
       plan: "free",
       credits: PLAN_LIMITS.free.creditAllocation,
-      trial_ends_at: null,
-      trialExpired: false,
     };
   }
 

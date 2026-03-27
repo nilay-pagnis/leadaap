@@ -57,20 +57,12 @@ export async function adminSetPlanAction(
   const patch: {
     plan: PlanId;
     credits: number;
-    trial_ends_at: string | null;
     updated_at: string;
   } = {
     plan,
     credits: PLAN_LIMITS[plan].creditAllocation,
-    trial_ends_at: null,
     updated_at: new Date().toISOString(),
   };
-
-  if (plan === "trial") {
-    /** Legacy label — store as Free (trial tier removed from product). */
-    patch.plan = "free";
-    patch.credits = PLAN_LIMITS.free.creditAllocation;
-  }
 
   const { error } = await admin.from("profiles").update(patch).eq("id", userId);
 

@@ -40,7 +40,6 @@ const PLANS: PlanId[] = [
   "starter",
   "growth",
   "premium",
-  "enterprise",
 ];
 
 const PLAN_LADDER: PlanId[] = [
@@ -48,7 +47,6 @@ const PLAN_LADDER: PlanId[] = [
   "starter",
   "growth",
   "premium",
-  "enterprise",
 ];
 
 function ladderIndex(plan: PlanId): number {

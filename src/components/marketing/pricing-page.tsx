@@ -22,7 +22,7 @@ import {
 const trialFormId = process.env.NEXT_PUBLIC_TRIAL_FORM_ID;
 const pilotHref =
   trialFormId && trialFormId.length > 8
-    ? `/f/${trialFormId}?source=pricing&plan=trial`
+    ? `/f/${trialFormId}?source=pricing&plan=free`
     : "/signup";
 
 const bookDemoHref =
@@ -32,7 +32,7 @@ const bookDemoHref =
     : "mailto:hello@leadaap.com?subject=Book%20a%20demo%20%E2%80%94%20LeadAap";
 
 type PlanCard = {
-  id: "starter" | "growth" | "premium" | "enterprise";
+  id: "starter" | "growth" | "premium";
   name: string;
   description: string;
   priceLabel: string;
@@ -92,25 +92,9 @@ const planCards: PlanCard[] = [
     ],
     cta: { label: "Start free pilot", href: pilotHref, variant: "outline" },
   },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    description:
-      "Custom contracts, security review, and a plan shaped around your funnel.",
-    priceLabel: "Custom",
-    priceSub: "Let’s design coverage together",
-    features: [
-      `${PLAN_LIMITS.enterprise.creditAllocation.toLocaleString("en-IN")}+ lead credits (tailored)`,
-      `${formatFormsLabel(PLAN_LIMITS.enterprise.maxForms)} forms`,
-      "Dedicated onboarding",
-      "Security & compliance alignment",
-      "Named success contact",
-    ],
-    cta: { label: "Book a demo", href: bookDemoHref, variant: "outline" },
-  },
 ];
 
-type CompareRow = { feature: string; values: [string, string, string, string] };
+type CompareRow = { feature: string; values: [string, string, string] };
 
 const comparisonRows: CompareRow[] = [
   {
@@ -119,7 +103,6 @@ const comparisonRows: CompareRow[] = [
       String(PLAN_LIMITS.starter.creditAllocation),
       String(PLAN_LIMITS.growth.creditAllocation),
       String(PLAN_LIMITS.premium.creditAllocation),
-      "Custom",
     ],
   },
   {
@@ -128,28 +111,23 @@ const comparisonRows: CompareRow[] = [
       formatFormsLabel(PLAN_LIMITS.starter.maxForms),
       formatFormsLabel(PLAN_LIMITS.growth.maxForms),
       formatFormsLabel(PLAN_LIMITS.premium.maxForms),
-      formatFormsLabel(PLAN_LIMITS.enterprise.maxForms),
     ],
   },
   {
     feature: "Lead inbox & pipeline",
-    values: ["✓", "✓", "✓", "✓"],
+    values: ["✓", "✓", "✓"],
   },
   {
     feature: "Embeds & public links",
-    values: ["✓", "✓", "✓", "✓"],
+    values: ["✓", "✓", "✓"],
   },
   {
     feature: "Team-ready workflow",
-    values: ["—", "✓", "✓", "✓"],
+    values: ["—", "✓", "✓"],
   },
   {
     feature: "Priority support",
-    values: ["—", "✓", "✓", "✓"],
-  },
-  {
-    feature: "Dedicated success & SLAs",
-    values: ["—", "—", "—", "✓"],
+    values: ["—", "✓", "✓"],
   },
 ];
 
@@ -199,7 +177,7 @@ export function PricingPage() {
               "rounded-full px-6 shadow-md shadow-indigo-500/20"
             )}
           >
-            Start free pilot
+            Start free
           </Link>
         </div>
       </header>
@@ -216,7 +194,7 @@ export function PricingPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            5-day free trial · No credit card
+            Free plan · No credit card
           </span>
           <h1 className="mt-8 text-balance text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-[3.15rem] lg:leading-[1.12]">
             Simple pricing that scales with your pipeline
@@ -234,7 +212,7 @@ export function PricingPage() {
                 "group h-12 min-w-[200px] rounded-2xl px-8 text-base shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30"
               )}
             >
-              Start free pilot
+              Start free
               <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a
@@ -257,7 +235,7 @@ export function PricingPage() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-40px" }}
-          className="grid gap-6 lg:grid-cols-4"
+            className="grid gap-6 lg:grid-cols-3"
         >
           {planCards.map((plan) => (
             <motion.div
@@ -356,7 +334,6 @@ export function PricingPage() {
                   <th className="px-5 py-4 font-semibold text-slate-900">Starter</th>
                   <th className="px-5 py-4 font-semibold text-primary">Growth</th>
                   <th className="px-5 py-4 font-semibold text-slate-900">Premium</th>
-                  <th className="px-5 py-4 font-semibold text-slate-900">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
@@ -502,7 +479,7 @@ export function PricingPage() {
             Ready when you are
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            Start the pilot on your own timeline — or talk to us for Enterprise.
+            Start free on your own timeline, then upgrade as your pipeline grows.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <Link
@@ -512,7 +489,7 @@ export function PricingPage() {
                 "h-12 min-w-[200px] rounded-2xl px-8 text-base shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:-translate-y-0.5"
               )}
             >
-              Start free pilot
+              Start free
               <ArrowRight className="ml-2 size-4" />
             </Link>
             <a

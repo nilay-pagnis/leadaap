@@ -1,21 +1,36 @@
 -- LeadAap monetization — run after schema.sql
--- Profiles: plan, credits, trial window
+-- Profiles: plan and credits
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
+  email text,
+  full_name text,
+  company_name text,
+  job_title text,
+  role text not null default 'user' check (role in ('user', 'admin')),
   plan text not null default 'free'
-    check (plan in ('free', 'trial', 'starter', 'growth')),
+    check (plan in ('free', 'starter', 'growth', 'premium')),
   credits integer not null default 10,
-  trial_ends_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create index if not exists profiles_plan_idx on public.profiles (plan);
 
+alter table public.profiles add column if not exists email text;
 alter table public.profiles add column if not exists full_name text;
 alter table public.profiles add column if not exists company_name text;
 alter table public.profiles add column if not exists job_title text;
+alter table public.profiles add column if not exists role text not null default 'user';
+alter table public.profiles drop constraint if exists profiles_plan_check;
+alter table public.profiles
+  add constraint profiles_plan_check
+  check (plan in ('free', 'starter', 'growth', 'premium'));
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles
+  add constraint profiles_role_check
+  check (role in ('user', 'admin'));
+alter table public.profiles drop column if exists trial_ends_at;
 
 alter table public.profiles enable row level security;
 
@@ -60,9 +75,10 @@ begin
   cn := nullif(trim(coalesce(new.raw_user_meta_data->>'company_name', '')), '');
   jt := nullif(trim(coalesce(new.raw_user_meta_data->>'job_title', '')), '');
 
-  insert into public.profiles (id, plan, credits, trial_ends_at, full_name, company_name, job_title)
-  values (new.id, 'free', 10, null, fn, cn, jt)
+  insert into public.profiles (id, email, plan, credits, full_name, company_name, job_title)
+  values (new.id, new.email, 'free', 10, fn, cn, jt)
   on conflict (id) do update set
+    email = coalesce(excluded.email, profiles.email),
     full_name = coalesce(excluded.full_name, profiles.full_name),
     company_name = coalesce(excluded.company_name, profiles.company_name),
     job_title = coalesce(excluded.job_title, profiles.job_title),

@@ -36,7 +36,6 @@ export type UsageSnapshot = {
   atLeadLimit: boolean;
   /** At or over form slots */
   atFormLimit: boolean;
-  trialEndsAt: string | null;
   /** Profile row missing or fetch failed — UI still works with defaults */
   usedFallback: boolean;
 };
@@ -106,7 +105,6 @@ export async function getUsageForUser(userId: string): Promise<UsageSnapshot> {
   let usedFallback = false;
   let plan: PlanId = "free";
   let credits = PLAN_LIMITS.free.creditAllocation;
-  let trialEndsAt: string | null = null;
 
   if (error || !raw) {
     usedFallback = true;
@@ -117,14 +115,11 @@ export async function getUsageForUser(userId: string): Promise<UsageSnapshot> {
       typeof c === "number" && Number.isFinite(c) && c >= 0
         ? Math.floor(c)
         : PLAN_LIMITS[plan].creditAllocation;
-    trialEndsAt =
-      typeof raw.trial_ends_at === "string" ? raw.trial_ends_at : null;
   }
 
   const effective = await resolveAndSyncProfile(userId, {
     plan,
     credits,
-    trial_ends_at: trialEndsAt,
   });
 
   const leadCap = leadCapForPlan(effective.plan);
@@ -172,7 +167,6 @@ export async function getUsageForUser(userId: string): Promise<UsageSnapshot> {
     nearFormLimit,
     atLeadLimit,
     atFormLimit,
-    trialEndsAt: effective.trial_ends_at,
     usedFallback,
   };
 }

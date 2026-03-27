@@ -12,30 +12,26 @@ export const PLAN_PRICING = {
 
 export type PaidPlanKey = keyof typeof PLAN_PRICING;
 
+export const PLAN_CREDITS = {
+  free: 10,
+  starter: 300,
+  growth: 1500,
+  premium: 5000,
+} as const;
+
 export const PLAN_LIMITS: Record<
   PlanId,
-  { maxForms: number; creditAllocation: number; trialDays?: number }
+  { maxForms: number; creditAllocation: number }
 > = {
-  free: { maxForms: 1, creditAllocation: 10 },
-  /** Legacy DB value — same limits as Free (trial tier removed from product). */
-  trial: { maxForms: 1, creditAllocation: 10 },
-  starter: { maxForms: 5, creditAllocation: 300 },
-  growth: { maxForms: 15, creditAllocation: 1500 },
-  premium: { maxForms: UNLIMITED_FORMS_SENTINEL, creditAllocation: 5000 },
-  /** Custom pricing — default allocation; admin can adjust credits per user */
-  enterprise: { maxForms: UNLIMITED_FORMS_SENTINEL, creditAllocation: 25000 },
+  free: { maxForms: 1, creditAllocation: PLAN_CREDITS.free },
+  starter: { maxForms: 5, creditAllocation: PLAN_CREDITS.starter },
+  growth: { maxForms: 15, creditAllocation: PLAN_CREDITS.growth },
+  premium: { maxForms: UNLIMITED_FORMS_SENTINEL, creditAllocation: PLAN_CREDITS.premium },
 };
 
 export function normalizePlanId(raw: unknown): PlanId {
   const p = typeof raw === "string" ? raw.trim().toLowerCase() : "";
-  if (
-    p === "free" ||
-    p === "trial" ||
-    p === "starter" ||
-    p === "growth" ||
-    p === "premium" ||
-    p === "enterprise"
-  ) {
+  if (p === "free" || p === "starter" || p === "growth" || p === "premium") {
     return p;
   }
   return "free";
@@ -67,16 +63,14 @@ export function formatLeadsUsageLine(leadsUsed: number, leadCap: number): string
   return `${leadsUsed} / ${leadCap} leads used`;
 }
 
-/** Free + legacy trial rows — same product tier (“Free is your trial”). */
 export function isFreeTier(plan: PlanId): boolean {
-  return plan === "free" || plan === "trial";
+  return plan === "free";
 }
 
 /** Relative order for upgrade/downgrade (higher = more capable). */
 export function planTierRank(plan: PlanId): number {
   switch (normalizePlanId(plan)) {
     case "free":
-    case "trial":
       return 0;
     case "starter":
       return 1;
@@ -84,8 +78,6 @@ export function planTierRank(plan: PlanId): number {
       return 2;
     case "premium":
       return 3;
-    case "enterprise":
-      return 4;
     default:
       return 0;
   }
@@ -95,16 +87,12 @@ export function planLabel(plan: PlanId): string {
   switch (plan) {
     case "free":
       return "Free";
-    case "trial":
-      return "Free";
     case "starter":
       return "Starter";
     case "growth":
       return "Growth";
     case "premium":
       return "Premium";
-    case "enterprise":
-      return "Enterprise";
     default:
       return plan;
   }
@@ -205,7 +193,6 @@ export const PAID_PLAN_IDS: PlanId[] = [
   "starter",
   "growth",
   "premium",
-  "enterprise",
 ];
 
 export function isPaidPlan(plan: PlanId): boolean {

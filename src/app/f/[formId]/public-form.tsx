@@ -15,7 +15,7 @@ export function PublicForm({
   pilotMode,
 }: {
   formId: string;
-  /** Website pilot funnel: /f/[id]?source=website&plan=trial */
+  /** Website pilot funnel: /f/[id]?source=website&plan=free */
   pilotMode?: { source: string; plan: string } | null;
 }) {
   if (pilotMode) {

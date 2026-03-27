@@ -17,7 +17,6 @@ const ORDER: PlanId[] = [
   "starter",
   "growth",
   "premium",
-  "enterprise",
 ];
 
 export default function AdminPlansPage() {
@@ -78,14 +77,9 @@ export default function AdminPlansPage() {
                     </span>
                   </p>
                 )}
-                {id === "enterprise" && (
-                  <p className="text-2xl font-semibold text-foreground">
-                    Custom
-                  </p>
-                )}
                 {id === "free" && (
                   <p className="text-sm text-muted-foreground">
-                    Default entry — same limits as legacy &quot;trial&quot; rows (migrated to Free).
+                    Default entry tier for all new workspaces.
                   </p>
                 )}
               </CardHeader>

@@ -26,9 +26,10 @@ begin
   cn := nullif(trim(coalesce(new.raw_user_meta_data->>'company_name', '')), '');
   jt := nullif(trim(coalesce(new.raw_user_meta_data->>'job_title', '')), '');
 
-  insert into public.profiles (id, plan, credits, trial_ends_at, full_name, company_name, job_title)
-  values (new.id, 'free', 10, null, fn, cn, jt)
+  insert into public.profiles (id, email, plan, credits, full_name, company_name, job_title)
+  values (new.id, new.email, 'free', 10, fn, cn, jt)
   on conflict (id) do update set
+    email = coalesce(excluded.email, profiles.email),
     full_name = coalesce(excluded.full_name, profiles.full_name),
     company_name = coalesce(excluded.company_name, profiles.company_name),
     job_title = coalesce(excluded.job_title, profiles.job_title),
