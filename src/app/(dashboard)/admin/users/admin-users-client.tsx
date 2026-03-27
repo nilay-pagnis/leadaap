@@ -195,6 +195,7 @@ export function AdminUsersClient({ initialUsers }: Props) {
               <TableHead>Plan</TableHead>
               <TableHead className="tabular-nums">Credits</TableHead>
               <TableHead className="tabular-nums">Leads used</TableHead>
+              <TableHead className="tabular-nums">This month</TableHead>
               <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -203,7 +204,7 @@ export function AdminUsersClient({ initialUsers }: Props) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-10 text-center text-sm text-gray-500"
                 >
                   No users match your filters.
@@ -227,6 +228,12 @@ export function AdminUsersClient({ initialUsers }: Props) {
                     <TableCell className="tabular-nums text-sm">{u.credits}</TableCell>
                     <TableCell className="tabular-nums text-sm">
                       {u.leads_used.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-sm">
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {u.monthly_leads_used.toLocaleString()} /{" "}
+                        {u.monthly_lead_limit.toLocaleString()}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <span

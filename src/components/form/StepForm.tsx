@@ -7,9 +7,10 @@ import {
   Check,
   CheckCircle2,
   Loader2,
-  Plus,
   RotateCcw,
   Sparkles,
+  Target,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,9 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { FieldRow } from "@/types";
 import { FormHeader } from "./FormHeader";
-import { ProgressBar } from "./ProgressBar";
-
-const CHUNK = 3;
 
 type PublicPayload = {
   form: {
@@ -34,24 +32,23 @@ type PublicPayload = {
   fields: FieldRow[];
 };
 
+type StepGroup = {
+  key: string;
+  fields: FieldRow[];
+};
+
 function sortFields(fields: FieldRow[]) {
   return [...fields].sort((a, b) => a.sort_order - b.sort_order);
 }
 
-function chunkFields(fields: FieldRow[]): FieldRow[][] {
-  const sorted = sortFields(fields);
-  if (sorted.length === 0) return [];
-  const out: FieldRow[][] = [];
-  for (let i = 0; i < sorted.length; i += CHUNK) {
-    out.push(sorted.slice(i, i + CHUNK));
+function generateSteps(fields: FieldRow[]): FieldRow[][] {
+  if (fields.length <= 5) return [fields];
+  const chunkSize = 2;
+  const steps: FieldRow[][] = [];
+  for (let i = 0; i < fields.length; i += chunkSize) {
+    steps.push(fields.slice(i, i + chunkSize));
   }
-  return out;
-}
-
-function stepTitle(group: FieldRow[], index: number): string {
-  const first = group[0]?.label?.trim();
-  if (!first) return `Step ${index + 1}`;
-  return first.length > 34 ? `${first.slice(0, 32)}…` : first;
+  return steps;
 }
 
 function validateFields(
@@ -76,16 +73,42 @@ function validateFields(
   return true;
 }
 
+function validateStep(
+  fields: FieldRow[],
+  vals: Record<string, string | boolean>
+): string | null {
+  for (const field of fields) {
+    if (!field.required) continue;
+    const value = vals[field.id];
+    if (field.type === "checkbox") {
+      if (!value) return `Please confirm: ${field.label}`;
+      continue;
+    }
+    if (value === undefined || value === null || String(value).trim() === "") {
+      return `Please fill: ${field.label}`;
+    }
+  }
+  return null;
+}
+
 export function StepFormLoading() {
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16 pt-10 sm:pt-14">
-      <Skeleton className="mx-auto mb-10 h-10 max-w-md rounded-xl" />
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl sm:p-10">
-        <Skeleton className="mx-auto h-8 w-48 rounded-lg" />
-        <Skeleton className="mx-auto mt-3 h-4 w-full max-w-lg" />
-        <div className="mt-10 space-y-6">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+    <div className="mx-auto grid min-h-screen w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-10 lg:px-8">
+      <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-sm backdrop-blur">
+        <Skeleton className="h-10 w-72 rounded-xl" />
+        <Skeleton className="mt-4 h-5 w-full max-w-md" />
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="h-24 rounded-2xl" />
+        </div>
+      </div>
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl lg:min-h-[760px]">
+        <Skeleton className="h-2 w-full rounded-full" />
+        <Skeleton className="mx-auto mt-8 h-10 w-80 rounded-xl" />
+        <Skeleton className="mx-auto mt-2 h-4 w-56 rounded-lg" />
+        <div className="mt-8 space-y-5">
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
         </div>
       </div>
     </div>
@@ -106,9 +129,7 @@ export function StepForm({ formId }: { formId: string }) {
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch(`/api/public/forms/${formId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/public/forms/${formId}`, { cache: "no-store" });
         const json = (await res.json()) as PublicPayload & { error?: string };
         if (cancelled) return;
         if (!res.ok) {
@@ -118,10 +139,7 @@ export function StepForm({ formId }: { formId: string }) {
         }
         setPayload(json);
         const initial: Record<string, string | boolean> = {};
-        for (const f of json.fields) {
-          if (f.type === "checkbox") initial[f.id] = false;
-          else initial[f.id] = "";
-        }
+        for (const f of json.fields) initial[f.id] = f.type === "checkbox" ? false : "";
         setValues(initial);
         setLoading(false);
       } catch {
@@ -136,33 +154,33 @@ export function StepForm({ formId }: { formId: string }) {
     };
   }, [formId]);
 
-  const groups = useMemo(
-    () => (payload ? chunkFields(payload.fields) : []),
+  const orderedFields = useMemo(
+    () => (payload ? sortFields(payload.fields) : []),
     [payload]
   );
-  const totalSteps = Math.max(groups.length, 1);
-  const progress = groups.length === 0 ? 0 : (stepIndex + 1) / totalSteps;
-  const isLast = stepIndex >= groups.length - 1;
-  const currentFields = useMemo(
-    () => groups[stepIndex] ?? [],
-    [groups, stepIndex]
+  const steps = useMemo<StepGroup[]>(
+    () => generateSteps(orderedFields).map((group, i) => ({ key: `step-${i + 1}`, fields: group })),
+    [orderedFields]
   );
+  const showStepUi = steps.length > 1;
+  const totalSteps = Math.max(steps.length, 1);
+  const isLast = stepIndex >= steps.length - 1;
+  const currentStep = steps[stepIndex];
+  const currentFields = currentStep?.fields ?? [];
+  const progressPct = Math.round(((stepIndex + 1) / totalSteps) * 100);
 
   const goNext = useCallback(() => {
-    if (!validateFields(currentFields, values)) return;
-    setStepIndex((i) => Math.min(i + 1, Math.max(groups.length - 1, 0)));
-  }, [currentFields, values, groups.length]);
+    const error = validateStep(currentFields, values);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setStepIndex((i) => Math.min(i + 1, Math.max(steps.length - 1, 0)));
+  }, [currentFields, steps.length, values]);
 
   const goBack = useCallback(() => {
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
-
-  const jumpTo = useCallback(
-    (i: number) => {
-      if (i < stepIndex) setStepIndex(i);
-    },
-    [stepIndex]
-  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -176,14 +194,15 @@ export function StepForm({ formId }: { formId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({
-          form_id: payload.form.id,
-          data: values,
-        }),
+        body: JSON.stringify({ form_id: payload.form.id, data: values }),
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(json.error ?? "Submission failed");
+        if (json?.code === "LEAD_LIMIT") {
+          toast.error("You've reached your limit. Upgrade to continue.");
+        } else {
+          toast.error(json.error ?? "Submission failed");
+        }
         return;
       }
       setDone(true);
@@ -198,19 +217,14 @@ export function StepForm({ formId }: { formId: string }) {
   function resetForAnother() {
     if (!payload) return;
     const initial: Record<string, string | boolean> = {};
-    for (const f of payload.fields) {
-      if (f.type === "checkbox") initial[f.id] = false;
-      else initial[f.id] = "";
-    }
+    for (const f of payload.fields) initial[f.id] = f.type === "checkbox" ? false : "";
     setValues(initial);
     setDone(false);
     setStepIndex(0);
     submitLock.current = false;
   }
 
-  if (loading) {
-    return <StepFormLoading />;
-  }
+  if (loading) return <StepFormLoading />;
 
   if (loadError || !payload) {
     return (
@@ -234,233 +248,257 @@ export function StepForm({ formId }: { formId: string }) {
 
   if (done) {
     return (
-      <>
-        <ProgressBar progress={1} />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 280, damping: 26 }}
-          className="mx-auto w-full max-w-2xl px-4 pb-16 pt-10 sm:pt-14"
-        >
-          <div className="rounded-3xl border border-emerald-200/80 bg-white p-10 text-center shadow-[0_24px_64px_-24px_rgba(16,185,129,0.25)] sm:p-12">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-              <CheckCircle2 className="size-9" />
-            </div>
-            <h2 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
-              Your request has been submitted
-            </h2>
-            <p className="mt-3 text-slate-600">
-              Thanks — we&apos;ll be in touch shortly.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-8 rounded-2xl"
-              onClick={resetForAnother}
-            >
-              <RotateCcw className="mr-2 size-4" />
-              Submit another response
-            </Button>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mx-auto max-w-2xl px-4 py-14"
+      >
+        <div className="rounded-3xl border border-emerald-200/80 bg-white p-10 text-center shadow-[0_24px_64px_-24px_rgba(16,185,129,0.25)] sm:p-12">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <CheckCircle2 className="size-9" />
           </div>
-        </motion.div>
-      </>
+          <h2 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
+            Your request has been submitted
+          </h2>
+          <p className="mt-3 text-slate-600">Thanks — we&apos;ll be in touch shortly.</p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-8 rounded-2xl"
+            onClick={resetForAnother}
+          >
+            <RotateCcw className="mr-2 size-4" />
+            Submit another response
+          </Button>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <>
-      <ProgressBar progress={progress} />
+    <div className="mx-auto grid min-h-screen w-full max-w-[1400px] grid-cols-1 gap-8 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-10 lg:px-8">
+      <motion.section
+        initial={{ opacity: 0, x: -16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35 }}
+        className="order-2 rounded-3xl border border-white/70 bg-white/70 p-6 shadow-[0_24px_64px_-28px_rgba(79,70,229,0.25)] backdrop-blur-sm lg:order-1 lg:p-8"
+      >
+        <h2 className="text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          Build something great together
+        </h2>
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+          We help businesses capture and convert high-quality leads.
+        </p>
 
-      {/* Top nav — Stitch-style */}
-      <header className="sticky top-1 z-50 border-b border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-md sm:px-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F46E5] to-violet-600 text-white shadow-md shadow-indigo-500/20">
-              <Sparkles className="size-4" />
-            </div>
-            <span className="truncate text-lg font-bold tracking-tight text-slate-900">
-              LeadAap
-            </span>
-          </div>
-
-          <nav
-            className="hidden min-w-0 flex-1 justify-center gap-1 md:flex"
-            aria-label="Form steps"
-          >
-            {groups.map((g, i) => {
-              const active = i === stepIndex;
-              const past = i < stepIndex;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => past && jumpTo(i)}
-                  disabled={!past && !active}
-                  className={cn(
-                    "max-w-[140px] truncate rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-                    active &&
-                      "bg-[#4F46E5]/10 text-[#4F46E5] ring-1 ring-[#4F46E5]/25",
-                    past &&
-                      "cursor-pointer text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-                    !past &&
-                      !active &&
-                      "cursor-default text-slate-400 opacity-60"
-                  )}
-                >
-                  {stepTitle(g, i)}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="w-[72px] shrink-0" aria-hidden />
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-2xl px-4 pb-16 pt-8 sm:pt-10">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-[0_24px_64px_-28px_rgba(15,23,42,0.18)] sm:p-10"
-        >
-          <FormHeader
-            companyName={payload.form.company_name}
-            formName={payload.form.form_name}
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <FeatureCard
+            title="Smart Lead Capture"
+            text="Structured forms that qualify intent from the first interaction."
+            icon={<Sparkles className="size-4" />}
           />
+          <FeatureCard
+            title="Faster Response"
+            text="Prioritized submissions make follow-ups faster and more relevant."
+            icon={<Zap className="size-4" />}
+          />
+          <FeatureCard
+            title="Better Conversion"
+            text="Cleaner pipeline handoff improves close-rate consistency."
+            icon={<Target className="size-4" />}
+            wide
+          />
+        </div>
 
-          <p className="mt-4 text-center text-sm font-medium text-slate-500 md:hidden">
-            Step {stepIndex + 1} of {totalSteps}
-          </p>
+        <div className="mt-8 h-28 rounded-2xl bg-gradient-to-r from-indigo-500/15 via-violet-500/15 to-sky-500/15 ring-1 ring-white/60" />
+      </motion.section>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-10">
-            <AnimatePresence mode="wait">
+      <motion.section
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35 }}
+        className="order-1 flex h-full min-h-[640px] flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-[0_24px_64px_-28px_rgba(15,23,42,0.18)] lg:order-2 lg:min-h-[760px] lg:p-10 sm:p-8"
+      >
+        {showStepUi ? (
+          <>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
               <motion.div
-                key={stepIndex}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -12 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="space-y-10"
-              >
-                {currentFields.map((field, fi) => {
-                  const n = stepIndex * CHUNK + fi + 1;
-                  if (field.type === "checkbox") {
-                    return (
-                      <div key={field.id} className="flex gap-3">
-                        <span
-                          className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#4F46E5]/10 text-xs font-bold text-[#4F46E5]"
-                          aria-hidden
-                        >
-                          {n}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <StitchFieldInput
-                            field={field}
-                            value={values[field.id]}
-                            onChange={(v) =>
-                              setValues((prev) => ({ ...prev, [field.id]: v }))
-                            }
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
-                  return (
-                    <section key={field.id}>
-                      <div className="mb-4 flex items-start gap-3">
-                        <span
-                          className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#4F46E5]/10 text-xs font-bold text-[#4F46E5]"
-                          aria-hidden
-                        >
-                          {n}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <h2 className="text-lg font-semibold text-[#111827] sm:text-xl">
-                            {field.label}
-                            {field.required ? (
-                              <span className="text-red-500"> *</span>
-                            ) : null}
-                          </h2>
-                        </div>
-                      </div>
-                      <StitchFieldInput
-                        field={field}
-                        value={values[field.id]}
-                        onChange={(v) =>
-                          setValues((prev) => ({ ...prev, [field.id]: v }))
-                        }
-                      />
-                    </section>
-                  );
-                })}
-              </motion.div>
-            </AnimatePresence>
+                className="h-full bg-gradient-to-r from-[#4F46E5] via-[#6366F1] to-violet-500"
+                animate={{ width: `${progressPct}%` }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 140, damping: 24 }}
+              />
+            </div>
+            <p className="mt-2 text-right text-xs font-semibold text-slate-500">{progressPct}%</p>
+          </>
+        ) : null}
 
-            <div className="flex flex-col gap-3 border-t border-slate-100 pt-8 sm:flex-row sm:items-center sm:justify-between">
-              {stepIndex > 0 ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-12 rounded-2xl text-slate-600 hover:text-slate-900"
-                  onClick={goBack}
-                >
-                  Back
-                </Button>
-              ) : (
-                <span />
-              )}
+        <div className="mt-6">
+          <FormHeader companyName={payload.form.company_name} />
+        </div>
+
+        {showStepUi ? (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {steps.map((step, i) => (
+              <span
+                key={`${step.key}-${i}`}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium",
+                  i === stepIndex
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                    : "bg-slate-100 text-slate-500"
+                )}
+              >
+                {i + 1}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        <form onSubmit={onSubmit} className="mt-6 flex flex-1 flex-col">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stepIndex}
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.22 }}
+              className="space-y-5"
+            >
+              {currentFields.map((field, fieldInStepIndex) => (
+                <div key={field.id} className="space-y-2">
+                  {showStepUi ? (
+                    <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      Question {stepIndex * 2 + fieldInStepIndex + 1} of {orderedFields.length}
+                    </p>
+                  ) : null}
+                  {field.type !== "checkbox" && (
+                    <Label className="text-sm font-semibold text-slate-700">
+                      {field.label}
+                      {field.required ? <span className="text-red-500"> *</span> : null}
+                    </Label>
+                  )}
+                  <PremiumFieldInput
+                    field={field}
+                    value={values[field.id]}
+                    onChange={(v) => setValues((prev) => ({ ...prev, [field.id]: v }))}
+                  />
+                </div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+
+          {showStepUi ? (
+            <div className="mt-8 flex items-center justify-between gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={stepIndex === 0}
+                className="rounded-xl text-slate-600"
+                onClick={goBack}
+              >
+                Back
+              </Button>
+
               {!isLast ? (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  className="group h-14 min-w-[200px] flex-1 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-base font-semibold text-white shadow-lg shadow-indigo-500/25 sm:ml-auto sm:max-w-xs"
-                >
-                  Continue
-                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-0.5" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="button"
+                    className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
+                    onClick={goNext}
+                  >
+                    Continue
+                    <ArrowRight className="ml-2 size-4" />
+                  </Button>
+                </motion.div>
               ) : (
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        Submit request
+                        <ArrowRight className="ml-2 size-4" />
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-8 flex justify-end pt-2">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="group h-14 min-w-[200px] flex-1 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-base font-semibold text-white shadow-lg shadow-indigo-500/30 sm:ml-auto sm:max-w-xs"
+                  className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="mr-2 size-5 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       Sending…
                     </>
                   ) : (
                     <>
                       Submit request
-                      <span className="ml-2" aria-hidden>
-                        🚀
-                      </span>
-                      <ArrowRight className="ml-1 size-5 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="ml-2 size-4" />
                     </>
                   )}
                 </Button>
-              )}
+              </motion.div>
             </div>
+          )}
 
-            <div className="flex flex-col items-center justify-center gap-4 border-t border-slate-100 pt-8 sm:flex-row sm:gap-10">
-              <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-                <Check className="size-4 shrink-0 text-[#4F46E5]" aria-hidden />
-                Your data is secure
-              </span>
-              <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-                <Check className="size-4 shrink-0 text-[#4F46E5]" aria-hidden />
-                We respond within 24 hours
-              </span>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    </>
+          <div className="mt-auto flex flex-col items-center justify-center gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:gap-10">
+            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+              <Check className="size-4 shrink-0 text-primary" aria-hidden />
+              Your data is secure
+            </span>
+            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+              <Check className="size-4 shrink-0 text-primary" aria-hidden />
+              We respond within 24 hours
+            </span>
+          </div>
+        </form>
+      </motion.section>
+    </div>
   );
 }
 
-const StitchFieldInput = memo(function StitchFieldInput({
+function FeatureCard({
+  title,
+  text,
+  icon,
+  wide = false,
+}: {
+  title: string;
+  text: string;
+  icon: React.ReactNode;
+  wide?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-white/80 bg-white/85 p-4 shadow-sm backdrop-blur",
+        wide && "sm:col-span-2"
+      )}
+    >
+      <div className="inline-flex rounded-lg bg-primary/10 p-2 text-primary">{icon}</div>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-slate-600">{text}</p>
+    </div>
+  );
+}
+
+const PremiumFieldInput = memo(function PremiumFieldInput({
   field,
   value,
   onChange,
@@ -469,31 +507,28 @@ const StitchFieldInput = memo(function StitchFieldInput({
   value: string | boolean | undefined;
   onChange: (v: string | boolean) => void;
 }) {
-  const id = `stitch-${field.id}`;
-  const opts = Array.isArray(field.options)
-    ? field.options.map(String)
-    : [];
+  const id = `premium-${field.id}`;
+  const opts = Array.isArray(field.options) ? field.options.map(String) : [];
 
   const shell =
-    "rounded-xl border-0 bg-[#F3F4F6] px-4 py-3 text-[#111827] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/35";
+    "rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/25";
 
   switch (field.type) {
     case "checkbox":
       return (
-        <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+        <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
           <Checkbox
             id={id}
             checked={Boolean(value)}
             onCheckedChange={(c) => onChange(Boolean(c))}
-            className="mt-1 border-slate-300 data-[state=checked]:bg-[#4F46E5] data-[state=checked]:text-white"
+            className="mt-1 data-[state=checked]:bg-[#4F46E5]"
           />
-          <Label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-slate-800">
+          <Label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-slate-700">
             {field.label}
             {field.required ? <span className="text-red-500"> *</span> : null}
           </Label>
         </div>
       );
-
     case "textarea":
       return (
         <Textarea
@@ -501,11 +536,10 @@ const StitchFieldInput = memo(function StitchFieldInput({
           required={field.required}
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Tell us more about what you're building..."
-          className={cn(shell, "min-h-[140px] resize-y text-base")}
+          placeholder="Describe your requirement..."
+          className={cn(shell, "min-h-[130px] resize-y")}
         />
       );
-
     case "select":
       if (opts.length === 0) {
         return (
@@ -514,57 +548,38 @@ const StitchFieldInput = memo(function StitchFieldInput({
             required={field.required}
             value={String(value ?? "")}
             onChange={(e) => onChange(e.target.value)}
-            className={cn(shell, "h-12 w-full cursor-pointer px-3 text-base")}
+            className={cn(shell, "h-12 w-full cursor-pointer")}
           >
             <option value="">
-              {field.required ? "Choose an option…" : "Optional"}
+              {field.required ? "Select an option..." : "Optional"}
             </option>
-            {opts.map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
           </select>
         );
       }
       return (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {opts.map((opt) => {
-            const selected = String(value ?? "") === opt;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onChange(opt)}
-                className={cn(
-                  "flex min-h-[3.75rem] items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-all duration-200 motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.99]",
-                  selected
-                    ? "border-[#4F46E5] bg-[#4F46E5] text-white shadow-md shadow-indigo-500/20"
-                    : "border-slate-200 bg-[#F3F4F6] text-slate-900 hover:border-slate-300 hover:bg-slate-100"
-                )}
-              >
-                <span className="leading-snug">{opt}</span>
-                {selected ? (
-                  <Check className="size-5 shrink-0 text-white" aria-hidden />
-                ) : (
-                  <Plus className="size-5 shrink-0 text-slate-400" aria-hidden />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <select
+          id={id}
+          required={field.required}
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn(shell, "h-12 w-full cursor-pointer")}
+        >
+          <option value="">
+            {field.required ? "Select an option..." : "Optional"}
+          </option>
+          {opts.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
       );
-
     default: {
       const inputType =
-        field.type === "email"
-          ? "email"
-          : field.type === "phone"
-            ? "tel"
-            : "text";
+        field.type === "email" ? "email" : field.type === "phone" ? "tel" : "text";
       const placeholder =
         field.type === "email"
-          ? "jane@company.com"
+          ? "name@company.com"
           : field.type === "phone"
             ? "+1 (555) 000-0000"
             : "Your answer";
@@ -576,14 +591,7 @@ const StitchFieldInput = memo(function StitchFieldInput({
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={cn(shell, "h-12 text-base")}
-          autoComplete={
-            field.type === "email"
-              ? "email"
-              : field.type === "phone"
-                ? "tel"
-                : "name"
-          }
+          className={cn(shell, "h-12")}
         />
       );
     }

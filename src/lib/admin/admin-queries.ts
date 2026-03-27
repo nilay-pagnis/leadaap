@@ -1,9 +1,18 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PLAN_LIMITS, normalizePlanId } from "@/lib/monetization/plans";
 import type { PlanId, ProfileRow } from "@/types/billing";
 
 export type AdminUserRow = ProfileRow & {
   email: string | null;
   leads_used: number;
+  monthly_leads_used: number;
+  monthly_lead_limit: number;
+};
+
+type MonthlyUsageRow = {
+  user_id: string;
+  monthly_leads_used: number;
+  monthly_lead_limit: number;
 };
 
 async function loadAuthEmailsByUserId(
@@ -60,10 +69,27 @@ export async function fetchAdminUsersList(): Promise<AdminUserRow[]> {
     leadCountByUser.set(uid, (leadCountByUser.get(uid) ?? 0) + 1);
   }
 
+  const monthlyByUser = new Map<string, { used: number; limit: number }>();
+  const { data: monthlyRows, error: monthlyErr } = await admin.rpc(
+    "admin_monthly_lead_usage"
+  );
+  if (!monthlyErr && Array.isArray(monthlyRows)) {
+    for (const row of monthlyRows as MonthlyUsageRow[]) {
+      monthlyByUser.set(row.user_id, {
+        used: Number(row.monthly_leads_used) || 0,
+        limit: Number(row.monthly_lead_limit) || 0,
+      });
+    }
+  }
+
   return (profiles as ProfileRow[]).map((p) => ({
     ...p,
     email: emailById.get(p.id) ?? null,
     leads_used: leadCountByUser.get(p.id) ?? 0,
+    monthly_leads_used: monthlyByUser.get(p.id)?.used ?? 0,
+    monthly_lead_limit:
+      monthlyByUser.get(p.id)?.limit ??
+      PLAN_LIMITS[normalizePlanId(p.plan)].creditAllocation,
   }));
 }
 

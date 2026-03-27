@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitizePublicLeadData } from "@/lib/leads/sanitize-public-submission";
+import { normalizePlanId, PLAN_LIMITS } from "@/lib/monetization/plans";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,13 @@ const NO_STORE_HEADERS = {
 
 function logError(context: string, err: unknown) {
   console.error(`[api/public/submit-lead] ${context}:`, err);
+}
+
+function monthStartUtcIso(): string {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)
+  ).toISOString();
 }
 
 /**
@@ -82,6 +90,42 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Could not load form fields" },
         { status: 500, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    // Backend plan enforcement (public endpoint): monthly lead cap per workspace owner.
+    const { data: profileRow, error: profileErr } = await admin
+      .from("profiles")
+      .select("plan")
+      .eq("id", form.user_id)
+      .maybeSingle();
+    if (profileErr || !profileRow) {
+      return NextResponse.json(
+        { error: "Could not load workspace plan" },
+        { status: 500, headers: NO_STORE_HEADERS }
+      );
+    }
+    const ownerPlan = normalizePlanId((profileRow as { plan?: unknown }).plan);
+    const monthlyLeadCap = PLAN_LIMITS[ownerPlan].creditAllocation;
+    const { count: monthLeadCount, error: leadsCountErr } = await admin
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", form.user_id)
+      .gte("created_at", monthStartUtcIso());
+    if (leadsCountErr) {
+      logError("leads monthly count", leadsCountErr);
+      return NextResponse.json(
+        { error: "Could not validate plan limits" },
+        { status: 500, headers: NO_STORE_HEADERS }
+      );
+    }
+    if ((monthLeadCount ?? 0) >= monthlyLeadCap) {
+      return NextResponse.json(
+        {
+          error: "Lead limit reached. You've reached your limit. Upgrade to continue.",
+          code: "LEAD_LIMIT",
+        },
+        { status: 403, headers: NO_STORE_HEADERS }
       );
     }
 

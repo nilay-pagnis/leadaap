@@ -15,7 +15,7 @@ export type PaidPlanKey = keyof typeof PLAN_PRICING;
 export const PLAN_CREDITS = {
   free: 10,
   starter: 300,
-  growth: 1500,
+  growth: 2000,
   premium: 5000,
 } as const;
 
@@ -25,7 +25,10 @@ export const PLAN_LIMITS: Record<
 > = {
   free: { maxForms: 1, creditAllocation: PLAN_CREDITS.free },
   starter: { maxForms: 5, creditAllocation: PLAN_CREDITS.starter },
-  growth: { maxForms: 15, creditAllocation: PLAN_CREDITS.growth },
+  growth: {
+    maxForms: UNLIMITED_FORMS_SENTINEL,
+    creditAllocation: PLAN_CREDITS.growth,
+  },
   premium: { maxForms: UNLIMITED_FORMS_SENTINEL, creditAllocation: PLAN_CREDITS.premium },
 };
 
