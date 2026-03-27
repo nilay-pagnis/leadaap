@@ -33,7 +33,7 @@ export default async function PublicFormPage({
       className={
         pilotMode
           ? "min-h-screen bg-gradient-to-b from-zinc-100 via-white to-zinc-50"
-          : "min-h-screen bg-[#eef0f4] bg-[radial-gradient(ellipse_100%_80%_at_50%_-20%,rgba(99,102,241,0.08),transparent)] px-4 py-10 sm:py-16"
+          : "min-h-screen bg-gradient-to-b from-[#F9FAFB] via-[#F3F4F6]/80 to-[#F9FAFB]"
       }
     >
       <Suspense fallback={<PublicFormLoading />}>
