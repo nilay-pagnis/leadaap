@@ -9,9 +9,7 @@ import {
   Loader2,
   Plus,
   RotateCcw,
-  Shield,
   Sparkles,
-  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -315,20 +313,7 @@ export function StepForm({ formId }: { formId: string }) {
             })}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <div
-              className="flex size-9 items-center justify-center rounded-full text-slate-500 ring-1 ring-slate-200"
-              aria-hidden
-            >
-              <Shield className="size-4" />
-            </div>
-            <div
-              className="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-1 ring-slate-200"
-              aria-hidden
-            >
-              <User className="size-4" />
-            </div>
-          </div>
+          <div className="w-[72px] shrink-0" aria-hidden />
         </div>
       </header>
 
