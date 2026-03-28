@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -11,7 +12,6 @@ import {
   Lock,
   MousePointerClick,
   Shield,
-  Sparkles,
   TrendingUp,
   Zap,
 } from "lucide-react";
@@ -62,12 +62,37 @@ export function LandingPage() {
           href="/"
           className="flex min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20">
-            <Sparkles className="size-5" />
+          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
+            <Image
+              src="/images/leadapp-logo.png"
+              alt="LeadAap logo"
+              width={40}
+              height={40}
+              className="h-full w-full object-cover"
+              priority
+            />
           </div>
           <span className="text-lg font-semibold tracking-tight">LeadAap</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+          <Link
+            href="/about"
+            className={cn(
+              buttonVariants({ variant: "ghost" }),
+              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+            )}
+          >
+            About
+          </Link>
+          <Link
+            href="/contact"
+            className={cn(
+              buttonVariants({ variant: "ghost" }),
+              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+            )}
+          >
+            Contact
+          </Link>
           <Link
             href="/pricing"
             className={cn(
@@ -571,9 +596,24 @@ export function LandingPage() {
 
       <footer className="border-t border-slate-200/80 bg-[#F8FAFC] py-12 text-center text-sm text-slate-500">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-6 sm:flex-row sm:gap-8">
-          <span>© {new Date().getFullYear()} LeadAap. All rights reserved.</span>
-          <Link href="/pricing" className="font-medium text-primary hover:underline">
+          <span>© 2026 LeadAap</span>
+          <Link href="/about" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
+            About
+          </Link>
+          <Link href="/contact" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
+            Contact
+          </Link>
+          <Link href="/pricing" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
             Pricing
+          </Link>
+          <Link href="/login" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
+            Login
+          </Link>
+          <Link href="/privacy" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
+            Privacy
+          </Link>
+          <Link href="/terms" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
+            Terms
           </Link>
         </div>
       </footer>
