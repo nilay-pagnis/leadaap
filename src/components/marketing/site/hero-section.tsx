@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { ProductMockup } from "./product-mockup";
@@ -43,21 +43,21 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-4 py-1.5 text-xs font-medium text-zinc-600 shadow-sm"
           >
             <Sparkles className="size-3.5 text-indigo-500" aria-hidden />
-            No code · Live in minutes
+            From clicks to clients - in one link.
           </motion.p>
           <motion.h1
             id="hero-heading"
             variants={fadeUp}
-            className="mt-6 text-balance text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]"
+            className="mt-6 text-balance text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.15rem] lg:leading-[1.08]"
           >
-            Turn every visitor into a qualified lead — in seconds.
+            Turn Visitors, Followers & Clicks into Real Leads - Instantly.
           </motion.h1>
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-5 max-w-xl text-pretty text-lg leading-relaxed text-zinc-600 lg:mx-0"
           >
-            LeadApp is the calm way to publish forms, share links, and watch responses land in one
-            inbox — so your team can follow up while intent is still hot.
+            Create smart forms, share anywhere (website, Instagram bio, WhatsApp), and capture
+            high-quality leads in seconds.
           </motion.p>
           <motion.div
             variants={fadeUp}
@@ -70,7 +70,7 @@ export function HeroSection() {
                 "h-12 min-w-[160px] rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:from-indigo-500 hover:to-blue-500 hover:shadow-xl"
               )}
             >
-              Start free
+              Start Free
               <ArrowRight className="ml-2 size-4" aria-hidden />
             </Link>
             <Link
@@ -80,8 +80,22 @@ export function HeroSection() {
                 "h-12 min-w-[160px] rounded-xl border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:bg-zinc-50"
               )}
             >
-              View demo
+              See Demo
             </Link>
+          </motion.div>
+          <motion.p variants={fadeUp} className="mt-3 text-xs font-medium text-zinc-500">
+            No credit card required
+          </motion.p>
+          <motion.div variants={fadeUp} className="mt-6 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200">
+              <BadgeCheck className="size-3.5 text-emerald-600" /> Trusted checkout
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200">
+              <BadgeCheck className="size-3.5 text-emerald-600" /> Secure form links
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200">
+              <BadgeCheck className="size-3.5 text-emerald-600" /> Built for mobile
+            </span>
           </motion.div>
         </motion.div>
         <div id="product" className="relative lg:pl-4">

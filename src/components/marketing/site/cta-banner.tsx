@@ -13,6 +13,7 @@ export function CTABanner({
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  microcopy,
   className,
 }: {
   title: string;
@@ -21,6 +22,7 @@ export function CTABanner({
   primaryLabel: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  microcopy?: string;
   className?: string;
 }) {
   return (
@@ -71,6 +73,9 @@ export function CTABanner({
           </Link>
         ) : null}
       </div>
+      {microcopy ? (
+        <p className="relative mt-3 text-xs font-medium text-indigo-100/90">{microcopy}</p>
+      ) : null}
     </motion.div>
   );
 }
