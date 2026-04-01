@@ -51,16 +51,18 @@ export function CTABanner({
         {description}
       </p>
       <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-        <Link
-          href={primaryHref}
-          className={cn(
-            buttonVariants({ size: "lg" }),
-            "h-12 min-w-[180px] rounded-xl border-0 bg-white text-indigo-700 shadow-lg transition-all duration-200 hover:bg-zinc-50 hover:shadow-xl"
-          )}
-        >
-          {primaryLabel}
-          <ArrowRight className="ml-2 size-4" aria-hidden />
-        </Link>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.99 }} transition={{ duration: 0.2 }}>
+          <Link
+            href={primaryHref}
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "h-12 min-w-[180px] rounded-xl border-0 bg-white text-indigo-700 shadow-lg shadow-indigo-950/20 transition-all duration-300 hover:bg-zinc-50 hover:shadow-xl hover:shadow-white/40"
+            )}
+          >
+            {primaryLabel}
+            <ArrowRight className="ml-2 size-4" aria-hidden />
+          </Link>
+        </motion.div>
         {secondaryHref && secondaryLabel ? (
           <Link
             href={secondaryHref}

@@ -16,7 +16,7 @@ export function SiteFooter() {
       className="border-t border-zinc-200/80 bg-white pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-12 sm:pt-16"
       role="contentinfo"
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-2.5" aria-label="LeadApp home">

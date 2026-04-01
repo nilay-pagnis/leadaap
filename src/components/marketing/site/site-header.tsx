@@ -18,7 +18,7 @@ const navItems = [
 
 const primaryCtaClass = cn(
   buttonVariants({ size: "sm" }),
-  "rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/25 transition-all duration-200 hover:from-indigo-500 hover:to-blue-500 hover:shadow-lg"
+  "marketing-cta-primary rounded-xl text-white shadow-md"
 );
 
 export function SiteHeader() {
@@ -29,7 +29,7 @@ export function SiteHeader() {
       className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/85 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md"
       role="banner"
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2.5 sm:gap-3"

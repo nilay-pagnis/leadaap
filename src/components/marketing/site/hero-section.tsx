@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, BadgeCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { ProductMockup } from "./product-mockup";
+import { HeroFormPreview } from "./hero-form-preview";
 import { SectionWrapper } from "./section-wrapper";
 
 const fadeUp = {
@@ -24,14 +24,22 @@ const stagger = {
 export function HeroSection() {
   return (
     <section
-      className="relative overflow-hidden border-b border-zinc-200/60 bg-gradient-to-b from-white via-zinc-50/80 to-zinc-50"
+      className="relative overflow-hidden border-b border-zinc-200/50 bg-gradient-to-b from-white via-indigo-50/[0.35] to-zinc-50/90"
       aria-labelledby="hero-heading"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.12),transparent)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_50%_-25%,rgba(99,102,241,0.14),transparent_60%)]"
         aria-hidden
       />
-      <SectionWrapper className="relative grid gap-12 py-16 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-28">
+      <div
+        className="pointer-events-none absolute -right-32 top-1/4 size-[520px] rounded-full bg-violet-400/15 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -left-24 bottom-0 size-[420px] rounded-full bg-blue-400/12 blur-3xl"
+        aria-hidden
+      />
+      <SectionWrapper className="relative grid gap-14 py-20 sm:py-24 lg:grid-cols-2 lg:items-center lg:gap-20 lg:py-32">
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -40,7 +48,7 @@ export function HeroSection() {
         >
           <motion.p
             variants={fadeUp}
-            className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-4 py-1.5 text-xs font-medium text-zinc-600 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-4 py-1.5 text-xs font-medium text-zinc-600 shadow-[0_8px_30px_-12px_rgba(79,70,229,0.2)] backdrop-blur-sm"
           >
             <Sparkles className="size-3.5 text-indigo-500" aria-hidden />
             From clicks to clients - in one link.
@@ -67,7 +75,7 @@ export function HeroSection() {
               href="/signup"
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "h-12 min-w-[160px] rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:from-indigo-500 hover:to-blue-500 hover:shadow-xl"
+                "marketing-cta-primary h-12 min-w-[160px]"
               )}
             >
               Start Free
@@ -77,7 +85,7 @@ export function HeroSection() {
               href="/#product"
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
-                "h-12 min-w-[160px] rounded-xl border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:bg-zinc-50"
+                "h-12 min-w-[160px] rounded-xl border-zinc-200/90 bg-white/90 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-indigo-200 hover:bg-white hover:shadow-md"
               )}
             >
               See Demo
@@ -98,8 +106,8 @@ export function HeroSection() {
             </span>
           </motion.div>
         </motion.div>
-        <div id="product" className="relative lg:pl-4">
-          <ProductMockup />
+        <div id="product" className="relative lg:pl-2">
+          <HeroFormPreview />
         </div>
       </SectionWrapper>
     </section>

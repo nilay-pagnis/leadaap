@@ -13,7 +13,7 @@ export function AudienceToggle({
 }) {
   return (
     <div
-      className="inline-flex w-full flex-col gap-2 rounded-2xl border border-zinc-200/80 bg-white p-2 shadow-sm sm:w-auto sm:flex-row"
+      className="inline-flex w-full flex-col gap-2 rounded-2xl border border-white/80 bg-white/90 p-2 shadow-[0_12px_40px_-16px_rgba(79,70,229,0.15)] backdrop-blur-md sm:w-auto sm:flex-row"
       role="tablist"
       aria-label="Audience selector"
     >

@@ -17,20 +17,32 @@ export function UseCaseCard({
   href?: string;
 }) {
   return (
-    <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-      <Link
-        href={href}
-        className="group block rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-[0_8px_24px_-12px_rgba(2,6,23,0.15)] transition-shadow duration-300 hover:shadow-[0_18px_40px_-18px_rgba(79,70,229,0.35)] sm:p-7"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/10 to-blue-500/10 text-indigo-600 ring-1 ring-indigo-500/10">
-            <Icon className="size-5" aria-hidden />
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -6 }}
+    >
+      <div className="gradient-border-wrap h-full rounded-2xl transition-shadow duration-300 hover:shadow-[0_22px_50px_-20px_rgba(99,102,241,0.35)]">
+        <Link
+          href={href}
+          className="group flex h-full flex-col rounded-[0.98rem] border border-white/80 bg-white/90 p-6 shadow-[0_8px_28px_-14px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:bg-white sm:p-7"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/12 to-violet-500/10 text-indigo-600 ring-1 ring-indigo-500/12">
+              <Icon className="size-5" aria-hidden />
+            </div>
+            <ArrowUpRight className="size-4 text-zinc-400 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-indigo-600" />
           </div>
-          <ArrowUpRight className="size-4 text-zinc-400 transition-colors group-hover:text-indigo-600" />
-        </div>
-        <h3 className="mt-5 text-lg font-semibold tracking-tight text-zinc-900">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-600">{description}</p>
-      </Link>
+          <h3 className="mt-5 text-lg font-semibold tracking-tight text-zinc-900">{title}</h3>
+          <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-600">{description}</p>
+          <span className="mt-5 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            Open workflow
+            <ArrowUpRight className="size-3.5 -rotate-0 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      </div>
     </motion.div>
   );
 }
