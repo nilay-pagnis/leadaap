@@ -29,7 +29,7 @@ create table if not exists public.leads (
   form_id uuid not null references public.forms (id) on delete cascade,
   user_id uuid not null references auth.users (id) on delete cascade,
   data jsonb not null default '{}'::jsonb,
-  status text not null default 'new' check (status in ('new', 'contacted', 'closed')),
+  status text not null default 'new' check (status in ('new', 'contacted', 'qualified', 'closed')),
   created_at timestamptz not null default now()
 );
 

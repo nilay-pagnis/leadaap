@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   Table,
@@ -27,7 +28,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
 
-const STATUSES: LeadStatus[] = ["new", "contacted", "closed"];
+const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
 function formatLeadValue(v: string | boolean | string[] | undefined): string {
   if (v === undefined || v === null) return "—";
@@ -168,6 +169,10 @@ export function LeadsTable({
   formNames: Record<string, string>;
   fieldDefs: LeadFieldDef[];
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const leadFromQuery = searchParams.get("lead");
+
   const [leads, setLeads] = useState(initialLeads);
   const [filter, setFilter] = useState<LeadStatus | "all">("all");
   const [search, setSearch] = useState("");
@@ -180,6 +185,19 @@ export function LeadsTable({
     for (const f of fieldDefs) m[f.id] = f;
     return m;
   }, [fieldDefs]);
+
+  useEffect(() => {
+    if (!leadFromQuery) return;
+    const row = leads.find((l) => l.id === leadFromQuery);
+    if (row) setDetail(row);
+  }, [leadFromQuery, leads]);
+
+  function closeDetail() {
+    setDetail(null);
+    if (searchParams.get("lead")) {
+      router.replace("/leads", { scroll: false });
+    }
+  }
 
   const selectFields = useMemo(
     () => fieldDefs.filter((f) => f.type === "select"),
@@ -274,8 +292,14 @@ export function LeadsTable({
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               {STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">
-                  {s}
+                <SelectItem key={s} value={s}>
+                  {s === "new"
+                    ? "New"
+                    : s === "contacted"
+                      ? "Contacted"
+                      : s === "qualified"
+                        ? "Qualified"
+                        : "Closed"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -383,11 +407,13 @@ export function LeadsTable({
                         >
                           <SelectTrigger
                             className={cn(
-                              "h-9 w-[148px] rounded-full border px-3 text-xs font-medium capitalize",
+                              "h-9 w-[158px] rounded-full border px-3 text-xs font-medium",
                               row.status === "new" &&
-                                "border-blue-200/80 bg-blue-50 text-blue-800 hover:bg-blue-100/80",
+                                "border-slate-200/90 bg-slate-50 text-slate-800 hover:bg-slate-100/80",
                               row.status === "contacted" &&
                                 "border-amber-200/80 bg-amber-50 text-amber-950 hover:bg-amber-100/80",
+                              row.status === "qualified" &&
+                                "border-violet-200/80 bg-violet-50 text-violet-900 hover:bg-violet-100/80",
                               row.status === "closed" &&
                                 "border-emerald-200/80 bg-emerald-50 text-emerald-900 hover:bg-emerald-100/80"
                             )}
@@ -396,8 +422,14 @@ export function LeadsTable({
                           </SelectTrigger>
                           <SelectContent>
                             {STATUSES.map((s) => (
-                              <SelectItem key={s} value={s} className="capitalize">
-                                {s}
+                              <SelectItem key={s} value={s}>
+                                {s === "new"
+                                  ? "New"
+                                  : s === "contacted"
+                                    ? "Contacted"
+                                    : s === "qualified"
+                                      ? "Qualified"
+                                      : "Closed"}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -428,7 +460,7 @@ export function LeadsTable({
 
       <LeadDetailDrawer
         open={!!detail}
-        onClose={() => setDetail(null)}
+        onClose={closeDetail}
         title="Lead details"
         subtitle="Full submission"
       >

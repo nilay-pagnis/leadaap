@@ -10,7 +10,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       defaultTheme="light"
       enableSystem
       storageKey="leadaap-theme"
-      disableTransitionOnChange
     >
       {children}
       <Toaster richColors position="top-center" />

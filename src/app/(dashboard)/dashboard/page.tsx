@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { LeadRow } from "@/types";
 import { DashboardExperience } from "./dashboard-experience";
+import { buildDailyLeadSeries } from "@/lib/dashboard-series";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -12,6 +13,14 @@ export default async function DashboardPage() {
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  const chartFrom = new Date();
+  chartFrom.setDate(chartFrom.getDate() - 13);
+  chartFrom.setHours(0, 0, 0, 0);
 
   const { count: totalLeads } = await supabase
     .from("leads")
@@ -31,6 +40,18 @@ export default async function DashboardPage() {
     .from("leads")
     .select("*", { count: "exact", head: true })
     .gte("created_at", startOfDay.toISOString());
+
+  const { count: leadsWeek } = await supabase
+    .from("leads")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", weekAgo.toISOString());
+
+  const { data: chartRows } = await supabase
+    .from("leads")
+    .select("created_at")
+    .gte("created_at", chartFrom.toISOString());
+
+  const chartSeries = buildDailyLeadSeries(chartRows ?? [], 14);
 
   const { data: forms } = await supabase
     .from("forms")
@@ -62,11 +83,13 @@ export default async function DashboardPage() {
       totalLeads={totalLeads ?? 0}
       newLeads={newLeads ?? 0}
       leadsToday={leadsToday ?? 0}
+      leadsWeek={leadsWeek ?? 0}
       conversionRatePct={conversionRatePct}
       formCount={formCount}
       firstFormId={firstFormId}
       recent={(recent ?? []) as LeadRow[]}
       formNames={formNames}
+      chartSeries={chartSeries}
     />
   );
 }

@@ -23,12 +23,30 @@ import { getPublicPaymentLink } from "@/lib/payments/payment-links";
 import type { PaidPlan } from "@/lib/payments/plan-paid";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Check, ExternalLink } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+type PaymentRow = {
+  id: string;
+  plan: string;
+  amount_inr: number;
+  payment_id: string;
+  status: string;
+  created_at: string;
+};
 
 type Props = {
   usage: UsageSnapshot;
   /** @deprecated kept for future prefill */
   userEmail?: string;
   hasPendingPayment: boolean;
+  payments: PaymentRow[];
 };
 
 const SELECTABLE_PAID: {
@@ -72,6 +90,7 @@ const SELECTABLE_PAID: {
 export function BillingClient({
   usage,
   hasPendingPayment,
+  payments,
 }: Props) {
   const pending = false;
 
@@ -102,7 +121,7 @@ export function BillingClient({
   const critical = usage.atLeadLimit || usage.atFormLimit;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 lg:space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10 lg:space-y-12">
       {usage.usedFallback && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
           We couldn’t sync your billing profile from the server — showing defaults.
@@ -144,7 +163,7 @@ export function BillingClient({
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+        <Card className="border-slate-200/90 shadow-none">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-slate-900">
               Current plan
@@ -172,7 +191,7 @@ export function BillingClient({
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className={cn(
-                      "h-full rounded-full transition-all",
+                      "h-full rounded-full transition-all duration-500",
                       progressBarClassForBand(usage.formBand)
                     )}
                     style={{ width: `${formPct}%` }}
@@ -184,10 +203,10 @@ export function BillingClient({
               <p className="text-sm font-medium text-slate-700">
                 {formatLeadsUsageLine(usage.leadsUsed, usage.leadCap)}
               </p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all",
+                    "h-full rounded-full transition-all duration-500",
                     progressBarClassForBand(usage.leadBand)
                   )}
                   style={{ width: `${leadPct}%` }}
@@ -224,7 +243,7 @@ export function BillingClient({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-slate-200/90 shadow-none">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Quick actions</CardTitle>
             <p className="text-sm text-slate-500">
@@ -256,6 +275,63 @@ export function BillingClient({
             </Link>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white">
+        <div className="border-b border-slate-100 px-6 py-4">
+          <h2 className="text-base font-semibold text-slate-900">Billing history</h2>
+          <p className="mt-1 text-sm text-slate-500">Payment link submissions tied to your account.</p>
+        </div>
+        {payments.length === 0 ? (
+          <div className="px-6 py-14 text-center text-sm text-slate-500">
+            No payment records yet. When you pay via a plan link, entries appear here.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-100 hover:bg-transparent">
+                  <TableHead className="text-slate-500">Date</TableHead>
+                  <TableHead className="text-slate-500">Plan</TableHead>
+                  <TableHead className="text-right text-slate-500">Amount</TableHead>
+                  <TableHead className="text-slate-500">Payment ID</TableHead>
+                  <TableHead className="text-slate-500">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((p) => (
+                  <TableRow key={p.id} className="border-slate-100">
+                    <TableCell className="whitespace-nowrap text-sm text-slate-700">
+                      {new Date(p.created_at).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </TableCell>
+                    <TableCell className="font-medium capitalize text-slate-900">{p.plan}</TableCell>
+                    <TableCell className="text-right tabular-nums text-slate-800">
+                      ₹{p.amount_inr.toLocaleString("en-IN")}
+                    </TableCell>
+                    <TableCell className="max-w-[180px] truncate font-mono text-xs text-slate-600">
+                      {p.payment_id}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+                          p.status === "approved" && "bg-emerald-50 text-emerald-800",
+                          p.status === "pending" && "bg-amber-50 text-amber-900",
+                          p.status === "rejected" && "bg-red-50 text-red-800"
+                        )}
+                      >
+                        {p.status}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
 
       <div>

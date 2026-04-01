@@ -8,6 +8,7 @@ import {
   type EffectiveProfile,
 } from "@/lib/monetization/profile";
 import { defaultFieldsForForm } from "@/lib/onboarding-defaults";
+import { FORM_TEMPLATES, fieldsForTemplate, type FormTemplateId } from "@/lib/form-templates";
 
 export type FormActionResult =
   | { ok: true; formId: string }
@@ -66,6 +67,61 @@ export async function createFormAction(formName: string): Promise<FormActionResu
 
   if (error || !form) {
     return { ok: false, error: error?.message ?? "Could not create form", code: "DB" };
+  }
+
+  return { ok: true, formId: form.id };
+}
+
+export async function createFormFromTemplateAction(
+  templateId: FormTemplateId
+): Promise<FormActionResult> {
+  const tmpl = FORM_TEMPLATES.find((t) => t.id === templateId);
+  if (!tmpl) {
+    return { ok: false, error: "Unknown template", code: "DB" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not signed in", code: "UNAUTHORIZED" };
+
+  const effective = await getEffectivePlanForUser(user.id);
+
+  const { count } = await supabase
+    .from("forms")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  const maxForms = PLAN_LIMITS[effective.plan].maxForms;
+  if (isAtFormLimit(count ?? 0, maxForms)) {
+    return {
+      ok: false,
+      error:
+        "Upgrade your plan to create more forms — you’ve reached your form limit.",
+      code: "FORM_LIMIT",
+    };
+  }
+
+  const { data: form, error } = await supabase
+    .from("forms")
+    .insert({ user_id: user.id, form_name: tmpl.formName })
+    .select("id")
+    .single();
+
+  if (error || !form) {
+    return { ok: false, error: error?.message ?? "Could not create form", code: "DB" };
+  }
+
+  const rows = fieldsForTemplate(form.id, templateId).map((r) => ({
+    ...r,
+    options: r.options,
+  }));
+
+  const { error: fieldsErr } = await supabase.from("fields").insert(rows);
+  if (fieldsErr) {
+    await supabase.from("forms").delete().eq("id", form.id);
+    return { ok: false, error: fieldsErr.message, code: "DB" };
   }
 
   return { ok: true, formId: form.id };

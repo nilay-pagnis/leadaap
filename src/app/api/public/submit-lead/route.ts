@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     const { data: form, error: formError } = await admin
       .from("forms")
-      .select("id, user_id")
+      .select("id, user_id, form_name")
       .eq("id", formId)
       .maybeSingle();
 
@@ -142,19 +142,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error: insertError } = await admin.from("leads").insert({
-      form_id: form.id,
-      user_id: form.user_id,
-      data: validated.sanitized,
-      status: "new",
-    });
+    const { data: leadRow, error: insertError } = await admin
+      .from("leads")
+      .insert({
+        form_id: form.id,
+        user_id: form.user_id,
+        data: validated.sanitized,
+        status: "new",
+      })
+      .select("id")
+      .single();
 
-    if (insertError) {
+    if (insertError || !leadRow) {
       logError("leads insert", insertError);
       return NextResponse.json(
-        { error: insertError.message },
+        { error: insertError?.message ?? "Could not save lead" },
         { status: 500, headers: NO_STORE_HEADERS }
       );
+    }
+
+    const formName = (form as { form_name?: string }).form_name ?? "Your form";
+    const { error: notifErr } = await admin.from("notifications").insert({
+      user_id: form.user_id,
+      type: "lead_received",
+      title: "New lead received",
+      body: `Submission on “${formName}”.`,
+      link: "/leads",
+      metadata: { lead_id: leadRow.id, form_id: form.id },
+    });
+    if (notifErr) {
+      logError("notifications insert", notifErr);
     }
 
     return NextResponse.json({ ok: true }, { headers: NO_STORE_HEADERS });

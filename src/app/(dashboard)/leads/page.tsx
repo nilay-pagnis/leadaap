@@ -1,7 +1,42 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LeadsTable } from "./leads-table";
 import type { LeadFieldDef, LeadRow } from "@/types";
+
+function LeadsTableFallback() {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24 rounded-md" />
+        <Skeleton className="h-9 w-48 max-w-full rounded-lg" />
+        <Skeleton className="h-4 w-full max-w-lg rounded-md" />
+      </div>
+      <Skeleton className="h-10 w-full max-w-md rounded-xl" />
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-10 w-40 rounded-xl" />
+        <Skeleton className="h-10 w-48 rounded-xl" />
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+        <div className="space-y-0">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 border-b border-slate-100 px-4 py-4 last:border-0"
+            >
+              <Skeleton className="h-4 flex-1 max-w-[200px] rounded" />
+              <Skeleton className="h-4 flex-1 max-w-[240px] rounded" />
+              <Skeleton className="h-9 w-[158px] rounded-full" />
+              <Skeleton className="h-4 w-28 rounded" />
+              <Skeleton className="h-8 w-16 rounded-xl" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function LeadsPage() {
   const supabase = await createClient();
@@ -34,10 +69,12 @@ export default async function LeadsPage() {
   }
 
   return (
-    <LeadsTable
-      initialLeads={(leads ?? []) as LeadRow[]}
-      formNames={formNames}
-      fieldDefs={fieldDefs}
-    />
+    <Suspense fallback={<LeadsTableFallback />}>
+      <LeadsTable
+        initialLeads={(leads ?? []) as LeadRow[]}
+        formNames={formNames}
+        fieldDefs={fieldDefs}
+      />
+    </Suspense>
   );
 }

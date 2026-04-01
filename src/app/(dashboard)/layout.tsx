@@ -29,8 +29,26 @@ export default async function DashboardLayout({
 
   const usage = user ? await getUsageForUser(user.id) : null;
 
+  let dashboardUser: {
+    id: string;
+    email: string;
+    fullName: string | null;
+  } | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    dashboardUser = {
+      id: user.id,
+      email: user.email ?? "",
+      fullName: profile?.full_name?.trim() ?? null,
+    };
+  }
+
   return (
-    <DashboardShell showAdminNav={false}>
+    <DashboardShell showAdminNav={false} user={dashboardUser}>
       {usage && <UsageBanner usage={usage} />}
       {usage && <UpgradeModalHost usage={usage} />}
       {children}

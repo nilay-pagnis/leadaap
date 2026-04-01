@@ -6,7 +6,7 @@ export type FieldType =
   | "select"
   | "checkbox";
 
-export type LeadStatus = "new" | "contacted" | "closed";
+export type LeadStatus = "new" | "contacted" | "qualified" | "closed";
 
 export interface FormRow {
   id: string;
