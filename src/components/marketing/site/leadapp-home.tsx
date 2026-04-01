@@ -207,11 +207,36 @@ export function LeadAppHome() {
             <p className="mt-4 text-lg text-zinc-600">Pick a workflow and launch today.</p>
           </motion.div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <UseCaseCard icon={BriefcaseBusiness} title="IT Services" description="Get project inquiries." />
-            <UseCaseCard icon={WandSparkles} title="Agencies" description="Capture client briefs." />
-            <UseCaseCard icon={Users} title="Creators" description="Get brand deals." />
-            <UseCaseCard icon={Handshake} title="Coaches" description="Book discovery calls." />
-            <UseCaseCard icon={MessagesSquare} title="Freelancers" description="Collect client requirements." />
+            <UseCaseCard
+              icon={BriefcaseBusiness}
+              title="IT Services"
+              description="Get project inquiries."
+              href="/use-cases/it-services"
+            />
+            <UseCaseCard
+              icon={WandSparkles}
+              title="Agencies"
+              description="Capture client briefs."
+              href="/use-cases/agencies"
+            />
+            <UseCaseCard
+              icon={Users}
+              title="Creators"
+              description="Get brand deals."
+              href="/use-cases/creators"
+            />
+            <UseCaseCard
+              icon={Handshake}
+              title="Coaches"
+              description="Book discovery calls."
+              href="/use-cases/coaches"
+            />
+            <UseCaseCard
+              icon={MessagesSquare}
+              title="Freelancers"
+              description="Collect client requirements."
+              href="/use-cases/freelancers"
+            />
           </div>
         </SectionWrapper>
       </section>
