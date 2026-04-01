@@ -341,7 +341,7 @@ export function LeadsTable({
         </motion.div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)]">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">

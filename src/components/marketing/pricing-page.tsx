@@ -146,11 +146,11 @@ const fadeUp = {
 
 export function PricingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-slate-900">
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-slate-900">
       <LightCanvas />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] sm:px-6 sm:py-6">
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
@@ -183,7 +183,7 @@ export function PricingPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 mx-auto max-w-4xl px-6 pb-16 pt-4 text-center lg:pb-20 lg:pt-8">
+      <section className="relative z-10 mx-auto max-w-4xl px-4 pb-16 pt-4 text-center sm:px-6 lg:pb-20 lg:pt-8">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -229,7 +229,7 @@ export function PricingPage() {
       </section>
 
       {/* Pricing cards */}
-      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-20 lg:pb-28">
+      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:pb-28">
         <motion.div
           variants={container}
           initial="hidden"
@@ -316,7 +316,7 @@ export function PricingPage() {
 
       {/* Comparison */}
       <section className="relative z-10 border-y border-slate-200/80 bg-white/70 py-20 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
               Compare plans
@@ -369,7 +369,7 @@ export function PricingPage() {
 
       {/* ROI */}
       <section className="relative z-10 py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               Why teams upgrade
@@ -474,7 +474,7 @@ export function PricingPage() {
 
       {/* Bottom CTA */}
       <section className="relative z-10 border-t border-slate-200/80 bg-gradient-to-b from-indigo-50/40 to-white py-20">
-        <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             Ready when you are
           </h2>

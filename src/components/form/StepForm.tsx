@@ -2,26 +2,13 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowRight,
-  Check,
-  CheckCircle2,
-  Loader2,
-  RotateCcw,
-  Sparkles,
-  Target,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { FieldRow } from "@/types";
-import { FormHeader } from "./FormHeader";
 
 type PublicPayload = {
   form: {
@@ -36,6 +23,25 @@ type StepGroup = {
   key: string;
   fields: FieldRow[];
 };
+
+const inputClass =
+  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 transition-all duration-200 outline-none hover:border-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:focus:scale-[1.01]";
+
+function showFormError(message: string) {
+  toast.custom(
+    () => (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="pointer-events-auto w-full max-w-sm rounded-xl border border-red-200/90 bg-white px-4 py-3 text-sm font-medium text-red-700 shadow-lg"
+      >
+        {message}
+      </motion.div>
+    ),
+    { duration: 3800 }
+  );
+}
 
 function sortFields(fields: FieldRow[]) {
   return [...fields].sort((a, b) => a.sort_order - b.sort_order);
@@ -60,13 +66,13 @@ function validateFields(
     const v = vals[f.id];
     if (f.type === "checkbox") {
       if (!v) {
-        toast.error(`Please confirm: ${f.label}`);
+        showFormError(`Please confirm: ${f.label}`);
         return false;
       }
       continue;
     }
     if (v === undefined || v === null || String(v).trim() === "") {
-      toast.error(`Please fill: ${f.label}`);
+      showFormError(`Please fill: ${f.label}`);
       return false;
     }
   }
@@ -93,22 +99,15 @@ function validateStep(
 
 export function StepFormLoading() {
   return (
-    <div className="mx-auto grid min-h-screen w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-10 lg:px-8">
-      <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-sm backdrop-blur">
-        <Skeleton className="h-10 w-72 rounded-xl" />
-        <Skeleton className="mt-4 h-5 w-full max-w-md" />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <Skeleton className="h-24 rounded-2xl" />
-          <Skeleton className="h-24 rounded-2xl" />
-        </div>
-      </div>
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl lg:min-h-[760px]">
-        <Skeleton className="h-2 w-full rounded-full" />
-        <Skeleton className="mx-auto mt-8 h-10 w-80 rounded-xl" />
-        <Skeleton className="mx-auto mt-2 h-4 w-56 rounded-lg" />
-        <div className="mt-8 space-y-5">
-          <Skeleton className="h-14 w-full rounded-xl" />
-          <Skeleton className="h-14 w-full rounded-xl" />
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
+      <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl" />
+      <div className="relative mx-auto flex w-full max-w-[900px] flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12">
+        <div className="rounded-3xl border border-gray-200 bg-white/80 p-5 shadow-xl backdrop-blur-xl sm:p-8 md:p-12">
+          <Skeleton className="h-5 w-48 rounded-lg" />
+          <Skeleton className="mt-8 h-1 w-full rounded-full" />
+          <Skeleton className="mt-8 h-10 w-full rounded-xl" />
+          <Skeleton className="mt-6 h-10 w-full rounded-xl" />
         </div>
       </div>
     </div>
@@ -159,20 +158,26 @@ export function StepForm({ formId }: { formId: string }) {
     [payload]
   );
   const steps = useMemo<StepGroup[]>(
-    () => generateSteps(orderedFields).map((group, i) => ({ key: `step-${i + 1}`, fields: group })),
+    () =>
+      generateSteps(orderedFields).map((group, i) => ({
+        key: `step-${i + 1}`,
+        fields: group,
+      })),
     [orderedFields]
   );
   const showStepUi = steps.length > 1;
   const totalSteps = Math.max(steps.length, 1);
   const isLast = stepIndex >= steps.length - 1;
-  const currentStep = steps[stepIndex];
-  const currentFields = currentStep?.fields ?? [];
-  const progressPct = Math.round(((stepIndex + 1) / totalSteps) * 100);
+  const currentFields = useMemo(
+    () => steps[stepIndex]?.fields ?? [],
+    [steps, stepIndex]
+  );
+  const progress = (stepIndex + 1) / totalSteps;
 
   const goNext = useCallback(() => {
     const error = validateStep(currentFields, values);
     if (error) {
-      toast.error(error);
+      showFormError(error);
       return;
     }
     setStepIndex((i) => Math.min(i + 1, Math.max(steps.length - 1, 0)));
@@ -199,15 +204,15 @@ export function StepForm({ formId }: { formId: string }) {
       const json = await res.json();
       if (!res.ok) {
         if (json?.code === "LEAD_LIMIT") {
-          toast.error("You've reached your limit. Upgrade to continue.");
+          showFormError("You've reached your limit. Upgrade to continue.");
         } else {
-          toast.error(json.error ?? "Submission failed");
+          showFormError(json.error ?? "Submission failed");
         }
         return;
       }
       setDone(true);
     } catch {
-      toast.error("Something went wrong");
+      showFormError("Something went wrong");
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -224,306 +229,257 @@ export function StepForm({ formId }: { formId: string }) {
     submitLock.current = false;
   }
 
+  const brandLine = payload?.form.company_name?.trim()
+    ? `${payload.form.company_name.trim()} × LeadAap`
+    : "Form by LeadAap";
+
   if (loading) return <StepFormLoading />;
 
   if (loadError || !payload) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <p className="text-lg font-semibold text-slate-900">Form unavailable</p>
-        <p className="mt-2 text-sm text-slate-600">{loadError}</p>
+      <div className="relative min-h-screen bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 py-24">
+        <div className="mx-auto max-w-[900px] text-center">
+          <p className="text-lg font-semibold text-gray-900">Form unavailable</p>
+          <p className="mt-2 text-sm text-gray-600">{loadError}</p>
+        </div>
       </div>
     );
   }
 
   if (payload.fields.length === 0) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <p className="text-lg font-semibold text-slate-900">No fields yet</p>
-        <p className="mt-2 text-sm text-slate-600">
-          This form doesn&apos;t have any questions configured.
-        </p>
+      <div className="relative min-h-screen bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 py-24">
+        <div className="mx-auto max-w-[900px] text-center">
+          <p className="text-lg font-semibold text-gray-900">No fields yet</p>
+          <p className="mt-2 text-sm text-gray-600">
+            This form doesn&apos;t have any questions configured.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (done) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="mx-auto max-w-2xl px-4 py-14"
-      >
-        <div className="rounded-3xl border border-emerald-200/80 bg-white p-10 text-center shadow-[0_24px_64px_-24px_rgba(16,185,129,0.25)] sm:p-12">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-            <CheckCircle2 className="size-9" />
-          </div>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
-            Your request has been submitted
-          </h2>
-          <p className="mt-3 text-slate-600">Thanks — we&apos;ll be in touch shortly.</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-8 rounded-2xl"
-            onClick={resetForAnother}
+      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
+        <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl" />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="success-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-[3px]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="success-title"
           >
-            <RotateCcw className="mr-2 size-4" />
-            Submit another response
-          </Button>
-        </div>
-      </motion.div>
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/95 p-8 text-center shadow-2xl backdrop-blur-xl md:p-10"
+            >
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 420, damping: 24, delay: 0.08 }}
+                className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"
+              >
+                <CheckCircle2 className="size-9" strokeWidth={2} />
+              </motion.div>
+              <h2
+                id="success-title"
+                className="mt-6 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl"
+              >
+                Your response has been submitted
+              </h2>
+              <p className="mt-2 text-sm text-gray-600 md:text-base">
+                Thanks — we&apos;ll be in touch shortly.
+              </p>
+              <button
+                type="button"
+                onClick={resetForAnother}
+                className="mt-8 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98]"
+              >
+                <RotateCcw className="size-4" />
+                Submit another response
+              </button>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     );
   }
 
   return (
-    <div className="mx-auto grid min-h-screen w-full max-w-[1400px] grid-cols-1 gap-8 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-10 lg:px-8">
-      <motion.section
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.35 }}
-        className="order-2 rounded-3xl border border-white/70 bg-white/70 p-6 shadow-[0_24px_64px_-28px_rgba(79,70,229,0.25)] backdrop-blur-sm lg:order-1 lg:p-8"
-      >
-        <h2 className="text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-          Build something great together
-        </h2>
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-          We help businesses capture and convert high-quality leads.
-        </p>
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
+      <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 top-1/3 size-56 rounded-full bg-violet-200/25 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-20 left-1/3 size-48 rounded-full bg-slate-200/40 blur-3xl" />
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <FeatureCard
-            title="Smart Lead Capture"
-            text="Structured forms that qualify intent from the first interaction."
-            icon={<Sparkles className="size-4" />}
-          />
-          <FeatureCard
-            title="Faster Response"
-            text="Prioritized submissions make follow-ups faster and more relevant."
-            icon={<Zap className="size-4" />}
-          />
-          <FeatureCard
-            title="Better Conversion"
-            text="Cleaner pipeline handoff improves close-rate consistency."
-            icon={<Target className="size-4" />}
-            wide
-          />
-        </div>
-
-        <div className="mt-8 h-28 rounded-2xl bg-gradient-to-r from-indigo-500/15 via-violet-500/15 to-sky-500/15 ring-1 ring-white/60" />
-      </motion.section>
-
-      <motion.section
-        initial={{ opacity: 0, x: 16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.35 }}
-        className="order-1 flex h-full min-h-[640px] flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-[0_24px_64px_-28px_rgba(15,23,42,0.18)] lg:order-2 lg:min-h-[760px] lg:p-10 sm:p-8"
-      >
-        {showStepUi ? (
-          <>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-              <motion.div
-                className="h-full bg-gradient-to-r from-[#4F46E5] via-[#6366F1] to-violet-500"
-                animate={{ width: `${progressPct}%` }}
-                initial={false}
-                transition={{ type: "spring", stiffness: 140, damping: 24 }}
-              />
-            </div>
-            <p className="mt-2 text-right text-xs font-semibold text-slate-500">{progressPct}%</p>
-          </>
-        ) : null}
-
-        <div className="mt-6">
-          <FormHeader companyName={payload.form.company_name} />
-        </div>
-
-        {showStepUi ? (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {steps.map((step, i) => (
-              <span
-                key={`${step.key}-${i}`}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium",
-                  i === stepIndex
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/20"
-                    : "bg-slate-100 text-slate-500"
-                )}
-              >
-                {i + 1}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        <form onSubmit={onSubmit} className="mt-6 flex flex-1 flex-col">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={stepIndex}
-              initial={{ opacity: 0, x: 14 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.22 }}
-              className="space-y-5"
+      <div className="relative mx-auto flex w-full max-w-[900px] flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="rounded-3xl border border-gray-200 bg-white/80 p-5 shadow-xl backdrop-blur-xl sm:p-8 md:p-12"
+        >
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <motion.h1
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
+              className="text-balance text-2xl font-bold tracking-tight text-gray-900 md:text-3xl md:tracking-tight"
+              style={{ letterSpacing: "-0.02em" }}
             >
-              {currentFields.map((field, fieldInStepIndex) => (
-                <div key={field.id} className="space-y-2">
-                  {showStepUi ? (
-                    <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Question {stepIndex * 2 + fieldInStepIndex + 1} of {orderedFields.length}
-                    </p>
-                  ) : null}
-                  {field.type !== "checkbox" && (
-                    <Label className="text-sm font-semibold text-slate-700">
-                      {field.label}
-                      {field.required ? <span className="text-red-500"> *</span> : null}
-                    </Label>
-                  )}
-                  <PremiumFieldInput
-                    field={field}
-                    value={values[field.id]}
-                    onChange={(v) => setValues((prev) => ({ ...prev, [field.id]: v }))}
-                  />
-                </div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+              {payload.form.form_name || "Form"}
+            </motion.h1>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.12 }}
+              className="shrink-0 text-sm text-gray-500"
+            >
+              {brandLine}
+            </motion.span>
+          </div>
 
           {showStepUi ? (
-            <div className="mt-8 flex items-center justify-between gap-3 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={stepIndex === 0}
-                className="rounded-xl text-slate-600"
-                onClick={goBack}
-              >
-                Back
-              </Button>
+            <div className="mb-6 h-1 overflow-hidden rounded-full bg-gray-200">
+              <div
+                className="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+          ) : null}
 
-              {!isLast ? (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="button"
-                    className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
-                    onClick={goNext}
-                  >
-                    Continue
-                    <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </motion.div>
+          {showStepUi ? (
+            <p className="mb-6 text-sm text-gray-500">
+              Step {stepIndex + 1} of {totalSteps}
+            </p>
+          ) : null}
+
+          <h2 className="mb-8 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl">
+            {currentFields.length === 1
+              ? currentFields[0].label
+              : "A few quick details"}
+          </h2>
+
+          <form onSubmit={onSubmit} className="flex flex-col">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={stepIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="space-y-6"
+              >
+                {currentFields.map((field) => (
+                  <div key={field.id} className="space-y-2">
+                    {field.type !== "checkbox" && currentFields.length > 1 ? (
+                      <label
+                        htmlFor={`field-${field.id}`}
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        {field.label}
+                        {field.required ? <span className="text-red-500"> *</span> : null}
+                      </label>
+                    ) : null}
+                    <EnterpriseFieldInput
+                      field={field}
+                      value={values[field.id]}
+                      onChange={(v) => setValues((prev) => ({ ...prev, [field.id]: v }))}
+                      hideLabel={currentFields.length === 1}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              {showStepUi && stepIndex > 0 ? (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="cursor-pointer self-start text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-900"
+                >
+                  Back
+                </button>
               ) : (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
+                <span />
+              )}
+
+              <div className="flex flex-col items-stretch gap-3 sm:ml-auto sm:items-end">
+                {!showStepUi || isLast ? (
+                  <button
                     type="submit"
                     disabled={submitting}
-                    className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
+                    className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-md transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 sm:w-auto md:hover:scale-[1.02] md:disabled:hover:scale-100"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        <Loader2 className="size-4 animate-spin" />
                         Sending…
                       </>
                     ) : (
                       <>
-                        Submit request
-                        <ArrowRight className="ml-2 size-4" />
+                        Submit
+                        <ArrowRight className="size-4" />
                       </>
                     )}
-                  </Button>
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <div className="mt-8 flex justify-end pt-2">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="h-12 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-7 text-sm font-semibold shadow-md shadow-indigo-500/20"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Sending…
-                    </>
-                  ) : (
-                    <>
-                      Submit request
-                      <ArrowRight className="ml-2 size-4" />
-                    </>
-                  )}
-                </Button>
-              </motion.div>
-            </div>
-          )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-md transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98] sm:w-auto md:hover:scale-[1.02]"
+                  >
+                    Continue
+                    <ArrowRight className="size-4" />
+                  </button>
+                )}
 
-          <div className="mt-auto flex flex-col items-center justify-center gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:gap-10">
-            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-              <Check className="size-4 shrink-0 text-primary" aria-hidden />
-              Your data is secure
-            </span>
-            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-              <Check className="size-4 shrink-0 text-primary" aria-hidden />
-              We respond within 24 hours
-            </span>
-          </div>
-        </form>
-      </motion.section>
+                <p className="text-xs text-gray-400">
+                  Your data is secure and never shared.
+                </p>
+              </div>
+            </div>
+          </form>
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-function FeatureCard({
-  title,
-  text,
-  icon,
-  wide = false,
-}: {
-  title: string;
-  text: string;
-  icon: React.ReactNode;
-  wide?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-white/80 bg-white/85 p-4 shadow-sm backdrop-blur",
-        wide && "sm:col-span-2"
-      )}
-    >
-      <div className="inline-flex rounded-lg bg-primary/10 p-2 text-primary">{icon}</div>
-      <p className="mt-2 text-sm font-semibold text-slate-900">{title}</p>
-      <p className="mt-1 text-xs leading-relaxed text-slate-600">{text}</p>
-    </div>
-  );
-}
-
-const PremiumFieldInput = memo(function PremiumFieldInput({
+const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
   field,
   value,
   onChange,
+  hideLabel,
 }: {
   field: FieldRow;
   value: string | boolean | undefined;
   onChange: (v: string | boolean) => void;
+  hideLabel?: boolean;
 }) {
-  const id = `premium-${field.id}`;
+  const id = `field-${field.id}`;
   const opts = Array.isArray(field.options) ? field.options.map(String) : [];
-
-  const shell =
-    "rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/25";
 
   switch (field.type) {
     case "checkbox":
       return (
-        <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+        <div className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-400">
           <Checkbox
             id={id}
             checked={Boolean(value)}
             onCheckedChange={(c) => onChange(Boolean(c))}
-            className="mt-1 data-[state=checked]:bg-[#4F46E5]"
+            className="mt-0.5 border-gray-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:text-white"
           />
-          <Label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-slate-700">
+          <Label htmlFor={id} className="cursor-pointer text-sm font-medium text-gray-700">
             {field.label}
             {field.required ? <span className="text-red-500"> *</span> : null}
           </Label>
@@ -531,68 +487,119 @@ const PremiumFieldInput = memo(function PremiumFieldInput({
       );
     case "textarea":
       return (
-        <Textarea
-          id={id}
-          required={field.required}
-          value={String(value ?? "")}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Describe your requirement..."
-          className={cn(shell, "min-h-[130px] resize-y")}
-        />
+        <>
+          {hideLabel ? (
+            <label htmlFor={id} className="sr-only">
+              {field.label}
+            </label>
+          ) : null}
+          <textarea
+            id={id}
+            required={field.required}
+            value={String(value ?? "")}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={hideLabel ? "Type your answer…" : undefined}
+            rows={5}
+            className={cn(inputClass, "min-h-[140px] resize-y")}
+          />
+        </>
       );
     case "select":
       if (opts.length === 0) {
         return (
+          <>
+            {hideLabel ? (
+              <label htmlFor={id} className="sr-only">
+                {field.label}
+              </label>
+            ) : null}
+            <select
+              id={id}
+              required={field.required}
+              value={String(value ?? "")}
+              onChange={(e) => onChange(e.target.value)}
+              className={cn(
+                inputClass,
+                "h-[50px] cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
+              )}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+              }}
+            >
+              <option value="">
+                {field.required ? "Select an option" : "Optional"}
+              </option>
+            </select>
+          </>
+        );
+      }
+      return (
+        <>
+          {hideLabel ? (
+            <label htmlFor={id} className="sr-only">
+              {field.label}
+              {field.required ? <span className="text-red-500"> *</span> : null}
+            </label>
+          ) : null}
           <select
             id={id}
             required={field.required}
             value={String(value ?? "")}
             onChange={(e) => onChange(e.target.value)}
-            className={cn(shell, "h-12 w-full cursor-pointer")}
+            className={cn(
+              inputClass,
+              "h-[50px] cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
+            )}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+            }}
           >
             <option value="">
-              {field.required ? "Select an option..." : "Optional"}
+              {field.required ? "Select an option" : "Optional"}
             </option>
+            {opts.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
           </select>
-        );
-      }
-      return (
-        <select
-          id={id}
-          required={field.required}
-          value={String(value ?? "")}
-          onChange={(e) => onChange(e.target.value)}
-          className={cn(shell, "h-12 w-full cursor-pointer")}
-        >
-          <option value="">
-            {field.required ? "Select an option..." : "Optional"}
-          </option>
-          {opts.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
+        </>
       );
     default: {
       const inputType =
         field.type === "email" ? "email" : field.type === "phone" ? "tel" : "text";
-      const placeholder =
+      const placeholderSingle =
         field.type === "email"
-          ? "name@company.com"
+          ? "you@company.com"
+          : field.type === "phone"
+            ? "+1 (555) 000-0000"
+            : field.label;
+      const placeholderMulti =
+        field.type === "email"
+          ? "you@company.com"
           : field.type === "phone"
             ? "+1 (555) 000-0000"
             : "Your answer";
       return (
-        <Input
-          id={id}
-          type={inputType}
-          required={field.required}
-          value={String(value ?? "")}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className={cn(shell, "h-12")}
-        />
+        <>
+          {hideLabel ? (
+            <label htmlFor={id} className="sr-only">
+              {field.label}
+            </label>
+          ) : null}
+          <input
+            id={id}
+            type={inputType}
+            required={field.required}
+            value={String(value ?? "")}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={hideLabel ? placeholderSingle : placeholderMulti}
+            className={inputClass}
+            autoComplete={
+              field.type === "email" ? "email" : field.type === "phone" ? "tel" : undefined
+            }
+          />
+        </>
       );
     }
   }

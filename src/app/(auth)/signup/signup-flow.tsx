@@ -76,7 +76,7 @@ const fade = {
 };
 
 const inputClass =
-  "h-12 rounded-xl border-slate-200/90 bg-white shadow-sm transition-colors duration-200 placeholder:text-slate-400 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/15";
+  "h-12 rounded-xl border-slate-200/90 bg-white text-base shadow-sm transition-colors duration-200 placeholder:text-slate-400 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/15 md:text-sm";
 
 export function SignupFlow() {
   const router = useRouter();
@@ -216,14 +216,14 @@ export function SignupFlow() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F6FB] lg:flex-row">
+    <div className="flex min-h-dvh flex-col bg-[#F4F6FB] lg:flex-row">
       {/* Brand — indigo → violet (matches login + primary token) */}
-      <div className="relative flex min-h-[40vh] flex-col justify-between overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B52E8] to-[#6D28D9] px-8 py-10 text-white lg:min-h-screen lg:w-[46%] lg:max-w-xl lg:px-12 lg:py-14">
+      <div className="relative flex min-h-[40vh] flex-col justify-between overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B52E8] to-[#6D28D9] px-5 py-8 text-white sm:px-8 sm:py-10 lg:min-h-dvh lg:w-[46%] lg:max-w-xl lg:px-12 lg:py-14">
         {leftPanel}
       </div>
 
       {/* Form */}
-      <div className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-8 sm:py-10 lg:px-12 lg:py-16">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,7 +239,7 @@ export function SignupFlow() {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-7 shadow-[0_24px_64px_-28px_rgba(15,23,42,0.22)] backdrop-blur-sm sm:p-8">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_24px_64px_-28px_rgba(15,23,42,0.22)] backdrop-blur-sm sm:p-7 md:p-8">
             <AnimatePresence mode="wait">
               {view === "form" && (
                 <motion.div

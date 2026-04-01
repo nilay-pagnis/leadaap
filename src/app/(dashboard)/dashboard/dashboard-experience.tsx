@@ -255,7 +255,7 @@ export function DashboardExperience({
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-100 hover:bg-transparent">

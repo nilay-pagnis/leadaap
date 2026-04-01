@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,12 @@ export const metadata: Metadata = {
     "Capture leads beautifully, follow up faster, and grow revenue — without another bloated stack.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +32,7 @@ export default function RootLayout({
       <body
         className={cn(
           jakarta.variable,
-          "min-h-screen font-sans text-base antialiased [font-feature-settings:'cv02','cv03','cv04','cv11']"
+          "min-h-dvh touch-manipulation font-sans text-base antialiased [font-feature-settings:'cv02','cv03','cv04','cv11']"
         )}
       >
         <Providers>{children}</Providers>

@@ -167,9 +167,9 @@ export function LoginForm() {
   const busy = loading || oauthLoading;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] lg:flex-row">
+    <div className="flex min-h-dvh flex-col bg-[#F8FAFC] lg:flex-row">
       {/* Left — brand */}
-      <div className="relative flex min-h-[42vh] flex-col justify-between overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B52E8] to-[#7C3AED] px-8 py-10 text-white lg:min-h-screen lg:w-[46%] lg:max-w-xl lg:px-12 lg:py-14">
+      <div className="relative flex min-h-[42vh] flex-col justify-between overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B52E8] to-[#7C3AED] px-5 py-8 text-white sm:px-8 sm:py-10 lg:min-h-dvh lg:w-[46%] lg:max-w-xl lg:px-12 lg:py-14">
         <div className="pointer-events-none absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.06%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-90" />
         <div className="pointer-events-none absolute -right-24 top-1/4 size-[380px] rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-16 size-[280px] rounded-full bg-violet-400/20 blur-3xl" />
@@ -209,7 +209,7 @@ export function LoginForm() {
       </div>
 
       {/* Right — form */}
-      <div className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-8 sm:py-10 lg:px-12 lg:py-16">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,7 +225,7 @@ export function LoginForm() {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-7 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)] sm:p-8">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)] sm:p-7 md:p-8">
             <div className="mb-8">
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Welcome back

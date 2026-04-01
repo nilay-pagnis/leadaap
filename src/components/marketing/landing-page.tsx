@@ -53,11 +53,11 @@ const item = {
 
 export function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-slate-900">
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-slate-900">
       <LightCanvas />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] sm:gap-4 sm:px-6 sm:py-6">
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
@@ -74,12 +74,12 @@ export function LandingPage() {
           </div>
           <span className="text-lg font-semibold tracking-tight">LeadAap</span>
         </Link>
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
           <Link
             href="/about"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+              "hidden rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 md:inline-flex md:px-4"
             )}
           >
             About
@@ -88,7 +88,7 @@ export function LandingPage() {
             href="/contact"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+              "hidden rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 md:inline-flex md:px-4"
             )}
           >
             Contact
@@ -97,7 +97,7 @@ export function LandingPage() {
             href="/pricing"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+              "rounded-full px-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 sm:px-3 sm:text-sm md:px-4"
             )}
           >
             Pricing
@@ -106,7 +106,7 @@ export function LandingPage() {
             href="/login"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "rounded-full px-3 text-sm font-medium text-slate-600 hover:text-slate-900 sm:px-4"
+              "rounded-full px-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 sm:px-3 sm:text-sm md:px-4"
             )}
           >
             Log in
@@ -115,7 +115,7 @@ export function LandingPage() {
             href={pilotHref}
             className={cn(
               buttonVariants(),
-              "rounded-full px-4 shadow-md shadow-indigo-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:px-6"
+              "min-h-10 shrink-0 rounded-full px-3 text-sm shadow-md shadow-indigo-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:min-h-11 sm:px-6 sm:text-base"
             )}
           >
             Start free
@@ -126,7 +126,7 @@ export function LandingPage() {
       {/* 1. Hero */}
       <section
         id="top"
-        className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-4 text-center lg:pb-24 lg:pt-8"
+        className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-4 text-center sm:px-6 lg:pb-24 lg:pt-8"
       >
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -192,7 +192,7 @@ export function LandingPage() {
         <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
           Trusted by teams who ship
         </p>
-        <div className="mx-auto mt-6 flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-6">
+        <div className="mx-auto mt-6 flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-4 sm:px-6">
           {logos.map((name) => (
             <span
               key={name}
@@ -206,7 +206,7 @@ export function LandingPage() {
 
       {/* 2. Problem → Solution */}
       <section className="relative z-10 py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -271,7 +271,7 @@ export function LandingPage() {
 
       {/* 3. How it works */}
       <section className="relative z-10 border-y border-slate-200/70 bg-white/60 py-20 backdrop-blur-sm lg:py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               How it works
@@ -338,7 +338,7 @@ export function LandingPage() {
 
       {/* 4. Features — value */}
       <section className="relative z-10 py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
               Outcomes you can feel — not a feature laundry list
@@ -403,7 +403,7 @@ export function LandingPage() {
         id="pricing-preview"
         className="relative z-10 scroll-mt-24 border-y border-slate-200/70 bg-gradient-to-b from-slate-50/80 to-white py-20 lg:py-24"
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               Pricing
@@ -493,7 +493,7 @@ export function LandingPage() {
 
       {/* 6. ROI */}
       <section className="relative z-10 py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               Revenue lens
@@ -532,7 +532,7 @@ export function LandingPage() {
 
       {/* 7. Free plan */}
       <section className="relative z-10 border-y border-emerald-200/40 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 py-20 lg:py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white px-4 py-1.5 text-xs font-semibold text-emerald-900 shadow-sm">
             <Check className="size-3.5 text-emerald-600" />
             Zero-risk way to try everything
@@ -562,7 +562,7 @@ export function LandingPage() {
 
       {/* 8. Final CTA */}
       <section className="relative z-10 bg-gradient-to-b from-slate-900 to-slate-950 py-24 text-white">
-        <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Ready to turn traffic into pipeline?
           </h2>
@@ -595,7 +595,7 @@ export function LandingPage() {
       </section>
 
       <footer className="border-t border-slate-200/80 bg-[#F8FAFC] py-12 text-center text-sm text-slate-500">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-6 sm:flex-row sm:gap-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-4 sm:flex-row sm:gap-8 sm:px-6">
           <span>© 2026 LeadAap</span>
           <Link href="/about" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
             About
