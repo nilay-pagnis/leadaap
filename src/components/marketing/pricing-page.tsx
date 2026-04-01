@@ -13,6 +13,7 @@ import {
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { LightCanvas } from "@/components/layout/light-canvas";
+import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import {
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -505,9 +506,7 @@ export function PricingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200/80 py-12 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} LeadAap. All rights reserved.
-      </footer>
+      <MarketingFooter startFreeHref={pilotHref} />
     </div>
   );
 }

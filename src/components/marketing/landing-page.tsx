@@ -19,6 +19,7 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { LightCanvas } from "@/components/layout/light-canvas";
+import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import {
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -60,19 +61,19 @@ export function LandingPage() {
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] sm:gap-4 sm:px-6 sm:py-6">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
+          className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
+          <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200/80 sm:size-16">
             <Image
               src="/images/leadapp-logo.png"
               alt="LeadAap logo"
-              width={40}
-              height={40}
+              width={64}
+              height={64}
               className="h-full w-full object-cover"
               priority
             />
           </div>
-          <span className="text-lg font-semibold tracking-tight">LeadAap</span>
+          <span className="text-xl font-semibold tracking-tight sm:text-2xl">LeadAap</span>
         </Link>
         <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
           <Link
@@ -594,29 +595,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200/80 bg-[#F8FAFC] py-12 text-center text-sm text-slate-500">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-4 sm:flex-row sm:gap-8 sm:px-6">
-          <span>© 2026 LeadAap</span>
-          <Link href="/about" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            About
-          </Link>
-          <Link href="/contact" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            Contact
-          </Link>
-          <Link href="/pricing" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            Pricing
-          </Link>
-          <Link href="/login" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            Login
-          </Link>
-          <Link href="/privacy" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            Privacy
-          </Link>
-          <Link href="/terms" className="font-medium text-slate-600 hover:text-slate-900 hover:underline">
-            Terms
-          </Link>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
