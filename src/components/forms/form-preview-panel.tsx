@@ -1,7 +1,7 @@
 "use client";
 
 import type { FieldRow } from "@/types";
-import { Sparkles } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 type Props = {
   formName: string;
@@ -15,9 +15,7 @@ export function FormPreviewPanel({ formName, fields }: Props) {
   return (
     <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_24px_-4px_rgba(15,23,42,0.08)]">
       <div className="flex items-center gap-2 border-b border-zinc-100 pb-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md">
-          <Sparkles className="size-4" />
-        </div>
+        <SiteLogo size="xs" className="rounded-xl shadow-md" />
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
             Preview

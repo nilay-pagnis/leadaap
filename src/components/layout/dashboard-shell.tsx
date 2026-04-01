@@ -8,7 +8,6 @@ import {
   Users,
   LogOut,
   Menu,
-  Sparkles,
   CreditCard,
   BookOpen,
   ClipboardCheck,
@@ -21,6 +20,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUiStore } from "@/stores/ui-store";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { DashboardPageMotion } from "@/components/layout/dashboard-page-motion";
 
@@ -71,9 +71,7 @@ export function DashboardShell({
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-5">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <Sparkles className="size-[18px]" aria-hidden />
-          </div>
+          <SiteLogo size="sm" className="shadow-sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold tracking-tight text-slate-900">
               LeadAap

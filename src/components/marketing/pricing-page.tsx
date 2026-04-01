@@ -2,16 +2,10 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Check,
-  LineChart,
-  Sparkles,
-  TrendingUp,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Check, LineChart, TrendingUp, Zap } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import {
@@ -154,12 +148,10 @@ export function PricingPage() {
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] sm:px-6 sm:py-6">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
+          className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <Sparkles className="size-5" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight">LeadAap</span>
+          <SiteLogo responsive />
+          <span className="text-xl font-semibold tracking-tight sm:text-2xl">LeadAap</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link

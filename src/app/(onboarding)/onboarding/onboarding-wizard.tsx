@@ -9,14 +9,8 @@ import { createOnboardingFormAction } from "@/app/actions/forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  ArrowRight,
-  Check,
-  Copy,
-  Sparkles,
-  PartyPopper,
-  LayoutTemplate,
-} from "lucide-react";
+import { ArrowRight, Check, Copy, PartyPopper, LayoutTemplate } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { ONBOARDING_DEFAULT_FORM_NAME } from "@/lib/onboarding-defaults";
 import { cn } from "@/lib/utils";
 
@@ -108,8 +102,8 @@ export function OnboardingWizard() {
             exit={{ opacity: 0, x: -12 }}
             className="flex flex-1 flex-col text-center"
           >
-            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25">
-              <Sparkles className="size-8" />
+            <div className="mx-auto mb-6">
+              <SiteLogo size="xl" className="shadow-xl shadow-indigo-500/20" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
               Let’s create your first form

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -18,6 +17,7 @@ import {
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import {
@@ -63,16 +63,7 @@ export function LandingPage() {
           href="/"
           className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200/80 sm:size-16">
-            <Image
-              src="/images/leadapp-logo.png"
-              alt="LeadAap logo"
-              width={64}
-              height={64}
-              className="h-full w-full object-cover"
-              priority
-            />
-          </div>
+          <SiteLogo responsive priority />
           <span className="text-xl font-semibold tracking-tight sm:text-2xl">LeadAap</span>
         </Link>
         <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2 md:gap-3">

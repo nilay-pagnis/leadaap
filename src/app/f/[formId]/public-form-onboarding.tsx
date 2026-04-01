@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { cn } from "@/lib/utils";
 import type { FieldRow } from "@/types";
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 
 const TOTAL_STEPS = 5;
 
@@ -325,8 +326,8 @@ export function PublicFormOnboarding({
     <div className="flex min-h-[100dvh] flex-col">
       <div className="mx-auto w-full max-w-lg flex-1 px-4 pb-10 pt-8 sm:px-6 sm:pt-12">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md">
-            <Sparkles className="size-6" />
+          <div className="mx-auto mb-4 flex justify-center">
+            <SiteLogo size="md" />
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
             LeadAap · 5-day pilot

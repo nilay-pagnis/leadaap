@@ -22,7 +22,8 @@ import {
 import type { UsageSnapshot } from "@/lib/monetization/get-usage";
 import type { UpgradeModalReason } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 type Props = {
   open: boolean;
@@ -97,9 +98,7 @@ export function UpgradeModal({
         <div className="border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white px-6 pb-5 pt-6">
           <DialogHeader className="space-y-2 text-left">
             <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Sparkles className="size-4" aria-hidden />
-              </div>
+              <SiteLogo size="xs" className="rounded-xl shadow-sm" />
               <DialogTitle className="text-xl font-semibold tracking-tight text-slate-900">
                 {title}
               </DialogTitle>

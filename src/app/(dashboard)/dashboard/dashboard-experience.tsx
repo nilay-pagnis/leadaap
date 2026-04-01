@@ -25,10 +25,10 @@ import {
   LayoutGrid,
   Rocket,
   Share2,
-  Sparkles,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 
 type Props = {
@@ -147,9 +147,7 @@ export function DashboardExperience({
         >
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <Sparkles className="size-6 text-primary" aria-hidden />
-              </div>
+              <SiteLogo size="md" className="shrink-0 shadow-sm" />
               <div className="min-w-0">
                 <h2 className="text-xl font-semibold text-slate-900">Create your first form</h2>
                 <p className="mt-1 text-sm text-slate-600">

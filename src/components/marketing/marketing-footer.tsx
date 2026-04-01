@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
 
@@ -73,15 +73,7 @@ export function MarketingFooter({
               href="/"
               className="inline-flex max-w-full items-center gap-3.5 rounded-2xl outline-none ring-offset-2 ring-offset-[#F0F4F8] transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200/90 sm:size-16">
-                <Image
-                  src="/images/leadapp-logo.png"
-                  alt="LeadAap logo"
-                  width={64}
-                  height={64}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+              <SiteLogo responsive />
               <div className="min-w-0 text-left">
                 <span className="block text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
                   LeadAap

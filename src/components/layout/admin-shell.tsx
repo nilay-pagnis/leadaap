@@ -10,7 +10,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -19,6 +18,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUiStore } from "@/stores/ui-store";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { DashboardPageMotion } from "@/components/layout/dashboard-page-motion";
 
@@ -63,9 +63,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-5">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
-            <Sparkles className="size-[18px]" aria-hidden />
-          </div>
+          <SiteLogo size="sm" className="shadow-sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold tracking-tight text-slate-900">
               LeadAap

@@ -11,8 +11,8 @@ import {
   Lock,
   Mail,
   Shield,
-  Sparkles,
 } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,9 +176,7 @@ export function LoginForm() {
 
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-90">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-white/15 shadow-lg ring-1 ring-white/20 backdrop-blur-sm">
-              <Sparkles className="size-6 text-white" />
-            </div>
+            <SiteLogo size="md" />
             <span className="text-xl font-semibold tracking-tight">LeadAap</span>
           </Link>
         </div>
@@ -218,9 +216,7 @@ export function LoginForm() {
         >
           <div className="mb-8 lg:hidden">
             <Link href="/" className="inline-flex items-center gap-2.5 text-slate-900">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-                <Sparkles className="size-5" />
-              </div>
+              <SiteLogo size="sm" />
               <span className="text-lg font-semibold">LeadAap</span>
             </Link>
           </div>

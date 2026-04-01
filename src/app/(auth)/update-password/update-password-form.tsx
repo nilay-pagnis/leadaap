@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 export function UpdatePasswordForm() {
   const router = useRouter();
@@ -63,8 +63,8 @@ export function UpdatePasswordForm() {
         className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-zinc-950"
       >
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
-            <Sparkles className="size-6" />
+          <div className="mb-4 flex justify-center">
+            <SiteLogo size="md" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             Set new password
