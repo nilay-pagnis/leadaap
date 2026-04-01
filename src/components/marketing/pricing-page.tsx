@@ -5,9 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, LineChart, TrendingUp, Zap } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
-import { SiteLogo } from "@/components/brand/site-logo";
-import { LightCanvas } from "@/components/layout/light-canvas";
-import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingShell } from "@/components/marketing/site/marketing-shell";
 import {
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -141,42 +139,9 @@ const fadeUp = {
 
 export function PricingPage() {
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-slate-900">
-      <LightCanvas />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
-
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] sm:px-6 sm:py-6">
-        <Link
-          href="/"
-          className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-90"
-        >
-          <SiteLogo responsive />
-          <span className="text-xl font-semibold tracking-tight sm:text-2xl">LeadAap</span>
-        </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ variant: "ghost" }),
-              "rounded-full px-4 text-sm font-medium text-slate-600 hover:text-slate-900"
-            )}
-          >
-            Log in
-          </Link>
-          <Link
-            href={pilotHref}
-            className={cn(
-              buttonVariants(),
-              "rounded-full px-6 shadow-md shadow-indigo-500/20"
-            )}
-          >
-            Start free
-          </Link>
-        </div>
-      </header>
-
+    <MarketingShell>
       {/* Hero */}
-      <section className="relative z-10 mx-auto max-w-4xl px-4 pb-16 pt-4 text-center sm:px-6 lg:pb-20 lg:pt-8">
+      <section className="relative mx-auto max-w-4xl px-4 pb-16 pt-8 text-center sm:px-6 lg:pb-20 lg:pt-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -498,7 +463,6 @@ export function PricingPage() {
         </div>
       </section>
 
-      <MarketingFooter startFreeHref={pilotHref} />
-    </div>
+    </MarketingShell>
   );
 }

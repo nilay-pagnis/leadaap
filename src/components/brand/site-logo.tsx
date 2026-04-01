@@ -23,7 +23,7 @@ type Props = {
 };
 
 /**
- * LeadAap mark: same image and chrome as the home page (`/images/leadapp-logo.png`).
+ * Brand mark (`/images/leadapp-logo.png`).
  */
 export function SiteLogo({
   responsive,
@@ -43,7 +43,7 @@ export function SiteLogo({
     >
       <Image
         src="/images/leadapp-logo.png"
-        alt="LeadAap logo"
+        alt="LeadApp logo"
         width={dim}
         height={dim}
         className="h-full w-full object-cover"

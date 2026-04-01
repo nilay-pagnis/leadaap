@@ -1,19 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
 
-const jakarta = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "LeadAap — Turn visitors into paying clients",
+  title: {
+    default: "LeadApp — Turn visitors into qualified leads",
+    template: "%s | LeadApp",
+  },
   description:
-    "Capture leads beautifully, follow up faster, and grow revenue — without another bloated stack.",
+    "Publish forms, share links, and capture leads in one inbox. Fast setup, no code, built for modern teams.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://leadaap.com"
+  ),
 };
 
 export const viewport: Viewport = {
@@ -31,8 +37,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body
         className={cn(
-          jakarta.variable,
-          "min-h-dvh touch-manipulation font-sans text-base antialiased [font-feature-settings:'cv02','cv03','cv04','cv11']"
+          inter.variable,
+          "min-h-dvh touch-manipulation font-sans text-base antialiased"
         )}
       >
         <Providers>{children}</Providers>
