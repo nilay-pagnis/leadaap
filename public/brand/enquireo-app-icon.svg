@@ -22,15 +22,15 @@
     </filter>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#app-bg)"/>
-  <g transform="translate(256 256) scale(5.75) translate(-32 -32)" filter="url(#app-glow)">
-    <g transform="translate(32 17) rotate(22)">
-      <rect x="-24" y="-2.75" width="48" height="5.5" rx="2.75" fill="url(#app-grad-top)"/>
+  <g transform="translate(256 256) scale(7.1111111) translate(-36 -36)" filter="url(#app-glow)">
+    <g transform="translate(36 24) rotate(22)">
+      <rect x="-23" y="-2.5" width="46" height="5" rx="1.85" fill="url(#app-grad-top)"/>
     </g>
-    <g transform="translate(32 28.5) rotate(22)">
-      <rect x="-18.5" y="-2.75" width="37" height="5.5" rx="2.75" fill="url(#app-grad-mid)"/>
+    <g transform="translate(36 36) rotate(22)">
+      <rect x="-18" y="-2.5" width="36" height="5" rx="1.85" fill="url(#app-grad-mid)"/>
     </g>
-    <g transform="translate(32 40) rotate(22)">
-      <rect x="-13" y="-2.75" width="26" height="5.5" rx="2.75" fill="url(#app-grad-bot)"/>
+    <g transform="translate(36 48) rotate(22)">
+      <rect x="-12.5" y="-2.5" width="25" height="5" rx="1.85" fill="url(#app-grad-bot)"/>
     </g>
   </g>
 </svg>

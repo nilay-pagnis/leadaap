@@ -3,15 +3,19 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 
-/** Refined 3-layer mark: equal gaps, shared tilt, consistent radii (design system). */
+/** Mark geometry: airy frame, tighter stroke, crisp caps, consistent rhythm. */
+const VIEW = 72;
+const CX = VIEW / 2;
 const ROT = 22;
-const BAR_H = 5.5;
-const RX = BAR_H / 2;
+/** ~10% thinner than prior 5.5 */
+const BAR_H = 5;
+/** Slightly tighter than half-height for sharper, less “pill” ends */
+const RX = 1.85;
 
 const LAYERS = [
-  { y: 17, w: 48 },
-  { y: 28.5, w: 37 },
-  { y: 40, w: 26 },
+  { y: 24, w: 46 },
+  { y: 36, w: 36 },
+  { y: 48, w: 25 },
 ] as const;
 
 export type EnquireoMarkTone = "color" | "monoBlack" | "monoWhite";
@@ -45,7 +49,7 @@ export function EnquireoMark({
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox={`0 0 ${VIEW} ${VIEW}`}
       role="img"
       shapeRendering="geometricPrecision"
       className={cn("shrink-0", className)}
@@ -56,7 +60,7 @@ export function EnquireoMark({
           {LAYERS.map((layer, i) => (
             <g
               key={i}
-              transform={`translate(32 ${layer.y}) rotate(${ROT})`}
+              transform={`translate(${CX} ${layer.y}) rotate(${ROT})`}
             >
               <rect
                 x={-layer.w / 2}
@@ -104,7 +108,7 @@ export function EnquireoMark({
           {LAYERS.map((layer, i) => (
             <g
               key={i}
-              transform={`translate(32 ${layer.y}) rotate(${ROT})`}
+              transform={`translate(${CX} ${layer.y}) rotate(${ROT})`}
             >
               <rect
                 x={-layer.w / 2}

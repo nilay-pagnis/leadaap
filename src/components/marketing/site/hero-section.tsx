@@ -39,7 +39,7 @@ export function HeroSection() {
         className="pointer-events-none absolute -left-24 bottom-0 size-[420px] rounded-full bg-blue-400/12 blur-3xl"
         aria-hidden
       />
-      <SectionWrapper className="relative grid gap-14 py-20 sm:py-24 lg:grid-cols-2 lg:items-center lg:gap-20 lg:py-32">
+      <SectionWrapper className="relative grid gap-10 py-12 sm:gap-12 sm:py-16 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-20">
         <motion.div
           variants={stagger}
           initial="hidden"
