@@ -115,7 +115,9 @@ export class LeadAapFormComponent {
           </h1>
           <p className="max-w-2xl text-pretty text-base text-zinc-600 dark:text-zinc-400">
             Load a tiny script, drop a <code className="rounded bg-zinc-200/80 px-1.5 py-0.5 text-sm dark:bg-zinc-800">data-form-id</code>{" "}
-            placeholder, and we render your published form in a responsive iframe at{" "}
+            placeholder, and we render your form in an isolated iframe at{" "}
+            <code className="rounded bg-zinc-200/80 px-1.5 py-0.5 text-sm dark:bg-zinc-800">/embed/form/[formId]</code>{" "}
+            with automatic height, theme detection, and optional modal mode. Full-page links still work at{" "}
             <code className="rounded bg-zinc-200/80 px-1.5 py-0.5 text-sm dark:bg-zinc-800">/f/[formId]</code>.
           </p>
         </div>
@@ -143,10 +145,31 @@ export class LeadAapFormComponent {
             code={htmlExample}
           />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Optional: set <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-min-height=&quot;520&quot;</code>{" "}
-            on the placeholder for a taller iframe, or{" "}
+            Optional attributes on the placeholder:{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-min-height=&quot;520&quot;</code>{" "}
+            (floor height while loading),{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-mode=&quot;modal&quot;</code>{" "}
+            with{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-modal-label</code>{" "}
+            for a trigger button + animated dialog,{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-width</code>{" "}
+            for iframe width. On the script tag,{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">data-base-url</code>{" "}
-            on the <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">&lt;script&gt;</code> tag if the iframe must load from a different origin than the script file.
+            overrides the iframe origin when it differs from the script URL.
+          </p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Analytics-style events from the iframe are mirrored to{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">window</code> as{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">leadaap-embed</code>{" "}
+            custom events (payload in <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">event.detail</code>
+            ; use <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">detail.kind === &quot;analytics&quot;</code>
+            ). The iframe also uses{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">postMessage</code> with{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">source: &quot;leadaap-embed&quot;</code> for{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">resize</code>,{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">ready</code>,{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">error</code>, and{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">analytics</code>.
           </p>
         </section>
 

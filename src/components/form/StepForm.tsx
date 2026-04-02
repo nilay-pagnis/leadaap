@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { EmbedBridgeEvent } from "@/lib/embed/post-message";
 import { cn } from "@/lib/utils";
 import type { FieldRow } from "@/types";
 
@@ -25,7 +26,7 @@ type StepGroup = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 transition-all duration-200 outline-none hover:border-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:focus:scale-[1.01]";
+  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 transition-all duration-200 outline-none hover:border-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:focus:scale-[1.01] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:hover:border-zinc-500";
 
 function showFormError(message: string) {
   toast.custom(
@@ -59,20 +60,21 @@ function generateSteps(fields: FieldRow[]): FieldRow[][] {
 
 function validateFields(
   fields: FieldRow[],
-  vals: Record<string, string | boolean>
+  vals: Record<string, string | boolean>,
+  onRequiredError: (message: string) => void
 ): boolean {
   for (const f of fields) {
     if (!f.required) continue;
     const v = vals[f.id];
     if (f.type === "checkbox") {
       if (!v) {
-        showFormError(`Please confirm: ${f.label}`);
+        onRequiredError(`Please confirm: ${f.label}`);
         return false;
       }
       continue;
     }
     if (v === undefined || v === null || String(v).trim() === "") {
-      showFormError(`Please fill: ${f.label}`);
+      onRequiredError(`Please fill: ${f.label}`);
       return false;
     }
   }
@@ -97,24 +99,59 @@ function validateStep(
   return null;
 }
 
-export function StepFormLoading() {
+export function StepFormLoading({
+  variant = "page",
+}: {
+  variant?: "page" | "embed";
+}) {
+  const shell =
+    variant === "embed"
+      ? "relative w-full min-h-0 bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-3 py-4 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900"
+      : "relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900";
+  const inner =
+    variant === "embed"
+      ? "relative mx-auto w-full max-w-lg"
+      : "relative mx-auto flex w-full max-w-[900px] flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12";
+  const cardPad = variant === "embed" ? "p-4 sm:p-5" : "p-5 shadow-xl backdrop-blur-xl sm:p-8 md:p-12";
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
-      <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl" />
-      <div className="relative mx-auto flex w-full max-w-[900px] flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12">
-        <div className="rounded-3xl border border-gray-200 bg-white/80 p-5 shadow-xl backdrop-blur-xl sm:p-8 md:p-12">
+    <div className={shell}>
+      {variant === "page" ? (
+        <>
+          <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/10" />
+          <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl dark:bg-violet-500/10" />
+        </>
+      ) : (
+        <>
+          <div className="pointer-events-none absolute -left-12 top-8 size-32 rounded-full bg-indigo-200/25 blur-2xl dark:bg-indigo-500/10" />
+          <div className="pointer-events-none absolute -right-8 bottom-12 size-28 rounded-full bg-violet-200/20 blur-2xl dark:bg-violet-500/10" />
+        </>
+      )}
+      <div className={inner}>
+        <div
+          className={cn(
+            "rounded-2xl border border-gray-200 bg-white/80 dark:border-zinc-700 dark:bg-zinc-900/80",
+            cardPad
+          )}
+        >
           <Skeleton className="h-5 w-48 rounded-lg" />
-          <Skeleton className="mt-8 h-1 w-full rounded-full" />
-          <Skeleton className="mt-8 h-10 w-full rounded-xl" />
-          <Skeleton className="mt-6 h-10 w-full rounded-xl" />
+          <Skeleton className="mt-5 h-1 w-full rounded-full" />
+          <Skeleton className="mt-5 h-10 w-full rounded-xl" />
+          <Skeleton className="mt-4 h-10 w-full rounded-xl" />
         </div>
       </div>
     </div>
   );
 }
 
-export function StepForm({ formId }: { formId: string }) {
+export function StepForm({
+  formId,
+  variant = "page",
+  onEmbedEvent,
+}: {
+  formId: string;
+  variant?: "page" | "embed";
+  onEmbedEvent?: (event: EmbedBridgeEvent) => void;
+}) {
   const [payload, setPayload] = useState<PublicPayload | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,6 +160,7 @@ export function StepForm({ formId }: { formId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const submitLock = useRef(false);
+  const isEmbed = variant === "embed";
 
   useEffect(() => {
     let cancelled = false;
@@ -132,8 +170,17 @@ export function StepForm({ formId }: { formId: string }) {
         const json = (await res.json()) as PublicPayload & { error?: string };
         if (cancelled) return;
         if (!res.ok) {
-          setLoadError(json.error ?? "Could not load form");
+          const msg = json.error ?? "Could not load form";
+          setLoadError(msg);
           setLoading(false);
+          if (isEmbed && onEmbedEvent) {
+            onEmbedEvent({ kind: "error", message: msg });
+            onEmbedEvent({
+              kind: "analytics",
+              name: "form_load_error",
+              detail: { message: msg },
+            });
+          }
           return;
         }
         setPayload(json);
@@ -141,17 +188,42 @@ export function StepForm({ formId }: { formId: string }) {
         for (const f of json.fields) initial[f.id] = f.type === "checkbox" ? false : "";
         setValues(initial);
         setLoading(false);
+        if (isEmbed && onEmbedEvent) {
+          onEmbedEvent({ kind: "ready" });
+          onEmbedEvent({
+            kind: "analytics",
+            name: "form_loaded",
+            detail: { fieldCount: json.fields.length },
+          });
+        }
       } catch {
         if (!cancelled) {
           setLoadError("Network error");
           setLoading(false);
+          if (isEmbed && onEmbedEvent) {
+            onEmbedEvent({ kind: "error", message: "Network error" });
+            onEmbedEvent({
+              kind: "analytics",
+              name: "form_load_error",
+              detail: { message: "Network error" },
+            });
+          }
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [formId]);
+  }, [formId, isEmbed, onEmbedEvent]);
+
+  useEffect(() => {
+    if (!isEmbed || !onEmbedEvent || !payload || payload.fields.length !== 0) return;
+    onEmbedEvent({
+      kind: "analytics",
+      name: "form_empty_fields",
+      detail: { formId: payload.form.id },
+    });
+  }, [isEmbed, onEmbedEvent, payload]);
 
   const orderedFields = useMemo(
     () => (payload ? sortFields(payload.fields) : []),
@@ -178,10 +250,17 @@ export function StepForm({ formId }: { formId: string }) {
     const error = validateStep(currentFields, values);
     if (error) {
       showFormError(error);
+      if (isEmbed && onEmbedEvent) {
+        onEmbedEvent({
+          kind: "analytics",
+          name: "validation_error",
+          detail: { message: error },
+        });
+      }
       return;
     }
     setStepIndex((i) => Math.min(i + 1, Math.max(steps.length - 1, 0)));
-  }, [currentFields, steps.length, values]);
+  }, [currentFields, isEmbed, onEmbedEvent, steps.length, values]);
 
   const goBack = useCallback(() => {
     setStepIndex((i) => Math.max(0, i - 1));
@@ -191,9 +270,24 @@ export function StepForm({ formId }: { formId: string }) {
     e.preventDefault();
     if (!payload || submitLock.current || submitting) return;
     const all = sortFields(payload.fields);
-    if (!validateFields(all, values)) return;
+    if (
+      !validateFields(all, values, (msg) => {
+        showFormError(msg);
+        if (isEmbed && onEmbedEvent) {
+          onEmbedEvent({
+            kind: "analytics",
+            name: "validation_error",
+            detail: { message: msg },
+          });
+        }
+      })
+    )
+      return;
     submitLock.current = true;
     setSubmitting(true);
+    if (isEmbed && onEmbedEvent) {
+      onEmbedEvent({ kind: "analytics", name: "submit_start" });
+    }
     try {
       const res = await fetch("/api/public/submit-lead", {
         method: "POST",
@@ -203,6 +297,13 @@ export function StepForm({ formId }: { formId: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
+        if (isEmbed && onEmbedEvent) {
+          onEmbedEvent({
+            kind: "analytics",
+            name: "submit_error",
+            detail: { code: json?.code, status: res.status },
+          });
+        }
         if (json?.code === "LEAD_LIMIT") {
           showFormError("You've reached your limit. Upgrade to continue.");
         } else {
@@ -210,8 +311,18 @@ export function StepForm({ formId }: { formId: string }) {
         }
         return;
       }
+      if (isEmbed && onEmbedEvent) {
+        onEmbedEvent({ kind: "analytics", name: "submit_success" });
+      }
       setDone(true);
     } catch {
+      if (isEmbed && onEmbedEvent) {
+        onEmbedEvent({
+          kind: "analytics",
+          name: "submit_error",
+          detail: { reason: "network" },
+        });
+      }
       showFormError("Something went wrong");
     } finally {
       submitLock.current = false;
@@ -233,14 +344,21 @@ export function StepForm({ formId }: { formId: string }) {
     ? `${payload.form.company_name.trim()} × LeadAap`
     : "Form by LeadAap";
 
-  if (loading) return <StepFormLoading />;
+  if (loading) return <StepFormLoading variant={variant} />;
 
   if (loadError || !payload) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 py-24">
-        <div className="mx-auto max-w-[900px] text-center">
-          <p className="text-lg font-semibold text-gray-900">Form unavailable</p>
-          <p className="mt-2 text-sm text-gray-600">{loadError}</p>
+      <div
+        className={cn(
+          "relative bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900",
+          isEmbed ? "min-h-0 py-8" : "min-h-screen py-24"
+        )}
+      >
+        <div className={cn("mx-auto text-center", isEmbed ? "max-w-lg" : "max-w-[900px]")}>
+          <p className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+            Form unavailable
+          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400">{loadError}</p>
         </div>
       </div>
     );
@@ -248,10 +366,17 @@ export function StepForm({ formId }: { formId: string }) {
 
   if (payload.fields.length === 0) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 py-24">
-        <div className="mx-auto max-w-[900px] text-center">
-          <p className="text-lg font-semibold text-gray-900">No fields yet</p>
-          <p className="mt-2 text-sm text-gray-600">
+      <div
+        className={cn(
+          "relative bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-4 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900",
+          isEmbed ? "min-h-0 py-8" : "min-h-screen py-24"
+        )}
+      >
+        <div className={cn("mx-auto text-center", isEmbed ? "max-w-lg" : "max-w-[900px]")}>
+          <p className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+            No fields yet
+          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400">
             This form doesn&apos;t have any questions configured.
           </p>
         </div>
@@ -260,10 +385,41 @@ export function StepForm({ formId }: { formId: string }) {
   }
 
   if (done) {
+    if (isEmbed) {
+      return (
+        <div className="relative w-full min-h-0 bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] px-3 py-6 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="mx-auto w-full max-w-lg rounded-2xl border border-gray-200 bg-white/95 p-6 text-center shadow-lg dark:border-zinc-700 dark:bg-zinc-900/95"
+            role="status"
+          >
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <CheckCircle2 className="size-8" strokeWidth={2} />
+            </div>
+            <h2 className="mt-4 text-lg font-semibold tracking-tight text-gray-900 dark:text-zinc-50">
+              Your response has been submitted
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400">
+              Thanks — we&apos;ll be in touch shortly.
+            </p>
+            <button
+              type="button"
+              onClick={resetForAnother}
+              className="mt-6 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98] dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            >
+              <RotateCcw className="size-4" />
+              Submit another response
+            </button>
+          </motion.div>
+        </div>
+      );
+    }
     return (
-      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
-        <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl" />
+      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
+        <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/10" />
+        <div className="pointer-events-none absolute -right-16 bottom-32 size-56 rounded-full bg-violet-200/25 blur-3xl dark:bg-violet-500/10" />
         <AnimatePresence mode="wait">
           <motion.div
             key="success-modal"
@@ -280,29 +436,29 @@ export function StepForm({ formId }: { formId: string }) {
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/95 p-8 text-center shadow-2xl backdrop-blur-xl md:p-10"
+              className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/95 p-8 text-center shadow-2xl backdrop-blur-xl md:p-10 dark:border-zinc-700 dark:bg-zinc-900/95"
             >
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 420, damping: 24, delay: 0.08 }}
-                className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"
+                className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
               >
                 <CheckCircle2 className="size-9" strokeWidth={2} />
               </motion.div>
               <h2
                 id="success-title"
-                className="mt-6 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl"
+                className="mt-6 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl dark:text-zinc-50"
               >
                 Your response has been submitted
               </h2>
-              <p className="mt-2 text-sm text-gray-600 md:text-base">
+              <p className="mt-2 text-sm text-gray-600 md:text-base dark:text-zinc-400">
                 Thanks — we&apos;ll be in touch shortly.
               </p>
               <button
                 type="button"
                 onClick={resetForAnother}
-                className="mt-8 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98]"
+                className="mt-8 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98] dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
               >
                 <RotateCcw className="size-4" />
                 Submit another response
@@ -315,24 +471,39 @@ export function StepForm({ formId }: { formId: string }) {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc]">
-      <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 top-1/3 size-56 rounded-full bg-violet-200/25 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-20 left-1/3 size-48 rounded-full bg-slate-200/40 blur-3xl" />
+    <div
+      className={cn(
+        "relative flex flex-col bg-gradient-to-br from-[#eef2ff] via-white to-[#f8fafc] dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900",
+        isEmbed ? "min-h-0 w-full" : "min-h-screen"
+      )}
+    >
+      <div className="pointer-events-none absolute -left-24 top-20 size-64 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/10" />
+      <div className="pointer-events-none absolute -right-16 top-1/3 size-56 rounded-full bg-violet-200/25 blur-3xl dark:bg-violet-500/10" />
+      <div className="pointer-events-none absolute bottom-20 left-1/3 size-48 rounded-full bg-slate-200/40 blur-3xl dark:bg-slate-500/10" />
 
-      <div className="relative mx-auto flex w-full max-w-[900px] flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12">
+      <div
+        className={cn(
+          "relative mx-auto flex w-full flex-1 flex-col justify-center",
+          isEmbed
+            ? "max-w-lg px-3 py-4"
+            : "max-w-[900px] px-4 py-8 md:px-6 md:py-12"
+        )}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="rounded-3xl border border-gray-200 bg-white/80 p-5 shadow-xl backdrop-blur-xl sm:p-8 md:p-12"
+          className={cn(
+            "rounded-3xl border border-gray-200 bg-white/80 shadow-xl backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80",
+            isEmbed ? "p-4 sm:p-5" : "p-5 sm:p-8 md:p-12"
+          )}
         >
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
             <motion.h1
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
-              className="text-balance text-2xl font-bold tracking-tight text-gray-900 md:text-3xl md:tracking-tight"
+              className="text-balance text-2xl font-bold tracking-tight text-gray-900 md:text-3xl md:tracking-tight dark:text-zinc-50"
               style={{ letterSpacing: "-0.02em" }}
             >
               {payload.form.form_name || "Form"}
@@ -341,14 +512,14 @@ export function StepForm({ formId }: { formId: string }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, ease: "easeOut", delay: 0.12 }}
-              className="shrink-0 text-sm text-gray-500"
+              className="shrink-0 text-sm text-gray-500 dark:text-zinc-400"
             >
               {brandLine}
             </motion.span>
           </div>
 
           {showStepUi ? (
-            <div className="mb-6 h-1 overflow-hidden rounded-full bg-gray-200">
+            <div className="mb-6 h-1 overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-700">
               <div
                 className="h-full bg-indigo-500 transition-all duration-500 ease-out"
                 style={{ width: `${progress * 100}%` }}
@@ -357,12 +528,12 @@ export function StepForm({ formId }: { formId: string }) {
           ) : null}
 
           {showStepUi ? (
-            <p className="mb-6 text-sm text-gray-500">
+            <p className="mb-6 text-sm text-gray-500 dark:text-zinc-400">
               Step {stepIndex + 1} of {totalSteps}
             </p>
           ) : null}
 
-          <h2 className="mb-8 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl">
+          <h2 className="mb-8 text-xl font-semibold tracking-tight text-gray-900 md:text-2xl dark:text-zinc-50">
             {currentFields.length === 1
               ? currentFields[0].label
               : "A few quick details"}
@@ -472,7 +643,7 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
   switch (field.type) {
     case "checkbox":
       return (
-        <div className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-400">
+        <div className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:border-zinc-500">
           <Checkbox
             id={id}
             checked={Boolean(value)}

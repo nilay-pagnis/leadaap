@@ -61,7 +61,15 @@ export function FormEmbedModal({
               <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
                 embed.js
               </code>{" "}
-              once per page; each placeholder gets its own iframe.
+              once per page; each placeholder gets an isolated iframe pointing at{" "}
+              <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                /embed/form/…
+              </code>
+              . Height resizes automatically; use{" "}
+              <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">
+                data-mode=&quot;modal&quot;
+              </code>{" "}
+              on the placeholder for a button + modal.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -98,7 +106,7 @@ export function FormEmbedModal({
             </Link>
             {" · "}
             <span className="tabular-nums text-zinc-400">
-              Public URL:{" "}
+              Direct link:{" "}
               <code className="text-zinc-600 dark:text-zinc-300">
                 /f/{formId.slice(0, 8)}…
               </code>
