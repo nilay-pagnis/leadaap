@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -23,10 +22,12 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
-import { Eye, Search } from "lucide-react";
+import { Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { EnquiryFilters } from "@/components/leads/enquiry-filters";
 import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
+import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
@@ -175,10 +176,17 @@ export function LeadsTable({
 
   const [leads, setLeads] = useState(initialLeads);
   const [filter, setFilter] = useState<LeadStatus | "all">("all");
+  const [formFilter, setFormFilter] = useState<"all" | string>("all");
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<LeadRow | null>(null);
-  const [filterFieldId, setFilterFieldId] = useState<string>("all");
-  const [filterValue, setFilterValue] = useState<string>("all");
+
+  const formsList = useMemo(
+    () =>
+      Object.entries(formNames)
+        .map(([id, name]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [formNames]
+  );
 
   const fieldById = useMemo(() => {
     const m: Record<string, LeadFieldDef> = {};
@@ -199,49 +207,20 @@ export function LeadsTable({
     }
   }
 
-  const selectFields = useMemo(
-    () => fieldDefs.filter((f) => f.type === "select"),
-    [fieldDefs]
-  );
-
-  const valueOptions = useMemo(() => {
-    if (filterFieldId === "all") return [] as string[];
-    const set = new Set<string>();
-    for (const l of leads) {
-      const v = l.data?.[filterFieldId];
-      if (typeof v === "string" && v.trim()) set.add(v.trim());
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [leads, filterFieldId]);
-
   const filtered = useMemo(() => {
     let list =
       filter === "all" ? leads : leads.filter((l) => l.status === filter);
-    if (filterFieldId !== "all" && filterValue !== "all") {
-      list = list.filter((l) => {
-        const v = l.data?.[filterFieldId];
-        return typeof v === "string" && v === filterValue;
-      });
+    if (formFilter !== "all") {
+      list = list.filter((l) => l.form_id === formFilter);
     }
     return list;
-  }, [leads, filter, filterFieldId, filterValue]);
+  }, [leads, filter, formFilter]);
 
   const searchFiltered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim();
     if (!q) return filtered;
-    return filtered.filter((row) => {
-      const formName = formNames[row.form_id] ?? "";
-      const preview = Object.entries(row.data ?? {})
-        .map(([k, v]) => {
-          const label = fieldById[k]?.label ?? k;
-          const text = formatLeadValue(v);
-          return `${label} ${text}`;
-        })
-        .join(" ");
-      const blob = `${formName} ${preview} ${row.status}`.toLowerCase();
-      return blob.includes(q);
-    });
-  }, [filtered, search, formNames, fieldById]);
+    return filtered.filter((row) => leadMatchesNameOrEmail(row, fieldDefs, q));
+  }, [filtered, search, fieldDefs]);
 
   async function updateStatus(id: string, status: LeadStatus) {
     const supabase = createClient();
@@ -257,102 +236,25 @@ export function LeadsTable({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0 space-y-2">
-          <p className="text-sm font-medium text-primary">Inbox</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-            Enquiries
-          </h1>
-          <p className="max-w-lg text-sm text-slate-600 sm:text-base">
-            Search, filter, and open an enquiry in the side panel.
-          </p>
-        </div>
-        <div className="relative w-full max-w-md lg:max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search enquiries…"
-            className="h-10 rounded-xl border-slate-200 bg-white pl-9 shadow-sm"
-            aria-label="Search enquiries"
-          />
-        </div>
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-primary">Inbox</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+          Enquiries
+        </h1>
+        <p className="max-w-lg text-sm text-slate-600 sm:text-base">
+          Search, filter, and open an enquiry in the side panel.
+        </p>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="text-sm text-slate-500">Status</span>
-          <Select
-            value={filter}
-            onValueChange={(v) => setFilter(v as LeadStatus | "all")}
-          >
-            <SelectTrigger className="w-full min-w-[140px] max-w-[200px] rounded-xl sm:w-[160px]">
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s === "new"
-                    ? "New"
-                    : s === "contacted"
-                      ? "Contacted"
-                      : s === "qualified"
-                        ? "Qualified"
-                        : "Closed"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {selectFields.length > 0 && (
-          <>
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="text-sm text-slate-500">Field</span>
-              <Select
-                value={filterFieldId}
-                onValueChange={(v) => {
-                  setFilterFieldId(v ?? "all");
-                  setFilterValue("all");
-                }}
-              >
-                <SelectTrigger className="w-full min-w-[160px] max-w-[240px] rounded-xl">
-                  <SelectValue placeholder="Any field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All fields</SelectItem>
-                  {selectFields.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.label} ({formNames[f.form_id] ?? "Form"})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {filterFieldId !== "all" && valueOptions.length > 0 && (
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className="text-sm text-slate-500">Value</span>
-                <Select
-                  value={filterValue}
-                  onValueChange={(v) => setFilterValue(v ?? "all")}
-                >
-                  <SelectTrigger className="w-full min-w-[140px] max-w-[220px] rounded-xl">
-                    <SelectValue placeholder="Any value" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any value</SelectItem>
-                    {valueOptions.map((v) => (
-                      <SelectItem key={v} value={v}>
-                        {v}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      <EnquiryFilters
+        status={filter}
+        onStatusChange={setFilter}
+        formId={formFilter}
+        onFormChange={setFormFilter}
+        search={search}
+        onSearchChange={setSearch}
+        forms={formsList}
+      />
 
       {searchFiltered.length === 0 ? (
         <motion.div
