@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { LegalDocument, LegalSection } from "@/components/marketing/site/legal-document";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — LeadApp",
-  description: "How LeadApp collects, uses, and protects your data.",
+  title: "Privacy Policy — Enquireo",
+  description: "How Enquireo collects, uses, and protects your data.",
   robots: { index: true, follow: true },
 };
 
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <div className="border-b border-zinc-200/60 bg-white">
       <LegalDocument
         title="Privacy Policy"
-        intro="This policy describes how LeadApp handles personal and usage data when you use our website and product. It is a summary for transparency — not a substitute for legal advice."
+        intro="This policy describes how Enquireo handles personal and usage data when you use our website and product. It is a summary for transparency — not a substitute for legal advice."
         lastUpdated="April 1, 2026"
       >
         <LegalSection id="collection" title="Data we collect">
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         </LegalSection>
         <LegalSection id="usage" title="How we use data">
           <p>
-            Data is used to provide and improve LeadApp, authenticate users, process transactions,
+            Data is used to provide and improve Enquireo, authenticate users, process transactions,
             communicate with you, detect abuse, and comply with legal obligations. We do not sell your
             personal information.
           </p>
@@ -56,10 +56,10 @@ export default function PrivacyPage() {
           <p>
             For privacy-related questions, contact{" "}
             <a
-              href="mailto:support@leadaap.com"
+              href="mailto:support@enquireo.com"
               className="font-medium text-indigo-600 underline-offset-4 hover:underline"
             >
-              support@leadaap.com
+              support@enquireo.com
             </a>
             .
           </p>

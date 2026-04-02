@@ -57,13 +57,13 @@ export function formatFormsLabel(maxForms: number): string {
 
 export function formatFormsUsageLine(formCount: number, maxForms: number): string {
   if (isUnlimitedForms(maxForms)) {
-    return `${formCount} form${formCount === 1 ? "" : "s"} used (unlimited)`;
+    return `${formCount} enquiry form${formCount === 1 ? "" : "s"} used (unlimited)`;
   }
-  return `${formCount} / ${maxForms} forms used`;
+  return `${formCount} / ${maxForms} enquiry forms used`;
 }
 
 export function formatLeadsUsageLine(leadsUsed: number, leadCap: number): string {
-  return `${leadsUsed} / ${leadCap} leads used`;
+  return `${leadsUsed} / ${leadCap} enquiries used`;
 }
 
 export function isFreeTier(plan: PlanId): boolean {

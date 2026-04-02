@@ -50,7 +50,7 @@ export function FormEmbedModal({
         <div className="border-b border-zinc-200 bg-zinc-50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
           <DialogHeader className="space-y-1.5 text-left">
             <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Embed form
+              Embed enquiry form
             </DialogTitle>
             <DialogDescription className="text-sm text-zinc-600 dark:text-zinc-400">
               <span className="font-medium text-zinc-800 dark:text-zinc-200">

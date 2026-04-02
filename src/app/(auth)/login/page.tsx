@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — LeadAap",
-  description: "Sign in to your LeadAap workspace. Secure login with email or Google.",
+  title: "Sign in — Enquireo",
+  description: "Sign in to your Enquireo workspace. Secure login with email or Google.",
 };
 
 export default function LoginPage() {

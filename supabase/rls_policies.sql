@@ -1,4 +1,4 @@
--- LeadAap — strict RLS + admin bypass via public.is_admin()
+-- Enquireo — strict RLS + admin bypass via public.is_admin()
 -- Run after schema.sql, monetization.sql, payments.sql, and admin_roles_and_payments.sql
 
 -- Helper: reads profiles with SECURITY DEFINER (bypasses RLS — no recursion)

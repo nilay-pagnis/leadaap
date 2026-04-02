@@ -61,8 +61,8 @@ const SELECTABLE_PAID: {
     title: PLAN_PRICING.starter.label,
     priceInr: PLAN_PRICING.starter.priceInr,
     highlights: [
-      `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} forms`,
-      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} enquiry forms`,
+      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
     ],
   },
   {
@@ -71,8 +71,8 @@ const SELECTABLE_PAID: {
     priceInr: PLAN_PRICING.growth.priceInr,
     popular: true,
     highlights: [
-      `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} forms`,
-      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} enquiry forms`,
+      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
       "Best for growing teams",
     ],
   },
@@ -81,8 +81,8 @@ const SELECTABLE_PAID: {
     title: PLAN_PRICING.premium.label,
     priceInr: PLAN_PRICING.premium.priceInr,
     highlights: [
-      `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} forms`,
-      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} enquiry forms`,
+      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
     ],
   },
 ];
@@ -101,7 +101,7 @@ export function BillingClient({
       return;
     }
     try {
-      localStorage.setItem("leadaap:selectedPlan", plan);
+      localStorage.setItem("enquireo:selectedPlan", plan);
     } catch {
       // ignore
     }
@@ -156,8 +156,8 @@ export function BillingClient({
           </span>
           <span className="text-slate-600 dark:text-slate-400">
             {" "}
-            — {PLAN_LIMITS.free.maxForms} form,{" "}
-            {PLAN_LIMITS.free.creditAllocation} lead credits to get started.
+            — {PLAN_LIMITS.free.maxForms} enquiry form,{" "}
+            {PLAN_LIMITS.free.creditAllocation} enquiry credits to get started.
           </span>
         </p>
       )}
@@ -383,11 +383,16 @@ export function BillingClient({
         </div>
       </div>
 
-      <p className="text-center text-sm text-slate-500">
-        <Link href="/dashboard" className="font-medium text-primary hover:underline">
-          Back to dashboard
-        </Link>
-      </p>
+      <div className="space-y-2 text-center">
+        <p className="text-xs font-medium tracking-wide text-slate-400">
+          Powered by Enquireo
+        </p>
+        <p className="text-sm text-slate-500">
+          <Link href="/dashboard" className="font-medium text-primary hover:underline">
+            Back to dashboard
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

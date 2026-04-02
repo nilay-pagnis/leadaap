@@ -13,9 +13,9 @@ import {
 export const metadata: Metadata = {
   title: "For Agencies",
   description:
-    "LeadApp for agencies: capture, qualify, and close better clients with structured lead systems.",
+    "Enquireo for agencies: capture, qualify, and close better clients with structured enquiry systems.",
   openGraph: {
-    title: "LeadApp for Agencies",
+    title: "Enquireo for Agencies",
     description: "Stop losing high-value clients to poor lead systems.",
   },
 };
@@ -29,7 +29,7 @@ export default function ForAgenciesPage() {
         primaryCta="Start Free"
         primaryHref="/signup"
         secondaryCta="Book Demo"
-        secondaryHref="mailto:hello@leadaap.com?subject=Book%20Demo%20-%20LeadApp%20for%20Agencies"
+        secondaryHref="mailto:hello@enquireo.com?subject=Book%20Demo%20-%20Enquireo%20for%20Agencies"
       />
       <PainSection
         title="What is costing agencies revenue today?"

@@ -63,7 +63,7 @@ export function USPSection() {
                 10
               </span>
               <div>
-                <p className="text-sm font-semibold text-zinc-900">10 lead credits</p>
+                <p className="text-sm font-semibold text-zinc-900">10 enquiry credits</p>
                 <p className="text-xs text-zinc-600">Enough to prove inbound before you scale.</p>
               </div>
             </li>

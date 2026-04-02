@@ -4,15 +4,15 @@ import { ContactForm } from "@/components/marketing/site/contact-form";
 import { SectionWrapper } from "@/components/marketing/site/section-wrapper";
 
 export const metadata: Metadata = {
-  title: "Contact — LeadApp",
-  description: "Reach the LeadApp team for product questions and support.",
+  title: "Contact — Enquireo",
+  description: "Reach the Enquireo team for product questions and support.",
   openGraph: {
-    title: "Contact — LeadApp",
+    title: "Contact — Enquireo",
     description: "We’d love to hear from you.",
   },
 };
 
-const supportEmail = "support@leadaap.com";
+const supportEmail = "support@enquireo.com";
 
 export default function ContactPage() {
   return (
@@ -23,7 +23,7 @@ export default function ContactPage() {
             Contact us
           </h1>
           <p className="mt-4 text-lg text-zinc-600">
-            Questions about LeadApp, partnerships, or support — send a note and we’ll respond as soon
+            Questions about Enquireo, partnerships, or support — send a note and we’ll respond as soon
             as we can.
           </p>
           <p className="mt-4 text-sm text-zinc-500">

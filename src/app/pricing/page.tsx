@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Simple plans for lead capture and pipeline. Start free, upgrade anytime.",
   openGraph: {
-    title: "Pricing — LeadApp",
+    title: "Pricing — Enquireo",
     description: "Plans that scale with your funnel. Start free, upgrade anytime.",
   },
 };

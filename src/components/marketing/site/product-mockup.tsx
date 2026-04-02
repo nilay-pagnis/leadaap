@@ -20,12 +20,12 @@ export function ProductMockup() {
             <span className="size-2.5 rounded-full bg-amber-400/80" />
             <span className="size-2.5 rounded-full bg-emerald-400/80" />
           </div>
-          <span className="ml-2 text-xs font-medium text-zinc-400">app.leadapp.io / inbox</span>
+          <span className="ml-2 text-xs font-medium text-zinc-400">app.enquireo.com / inbox</span>
         </div>
         <div className="grid gap-4 p-5 sm:p-6">
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "New leads", value: "128", icon: Users, tone: "text-indigo-600" },
+              { label: "New enquiries", value: "128", icon: Users, tone: "text-indigo-600" },
               { label: "Forms live", value: "6", icon: LineChart, tone: "text-blue-600" },
               { label: "Inbox", value: "24", icon: Inbox, tone: "text-violet-600" },
             ].map((k) => (

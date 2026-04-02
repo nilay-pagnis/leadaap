@@ -177,16 +177,16 @@ export function LoginForm() {
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-90">
             <SiteLogo size="md" />
-            <span className="text-xl font-semibold tracking-tight">LeadAap</span>
+            <span className="text-xl font-semibold tracking-tight">Enquireo</span>
           </Link>
         </div>
 
         <div className="relative z-10 mt-8 max-w-md lg:mt-0">
           <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-            Turn visitors into paying clients
+            Capture. Qualify. Convert.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-indigo-100/95 sm:text-lg">
-            Secure sign-in to your workspace. Your leads and data stay private —
+            Secure sign-in to your workspace. Your enquiries and data stay private —
             row-level security by design.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 text-sm text-indigo-100/90">
@@ -202,7 +202,7 @@ export function LoginForm() {
         </div>
 
         <p className="relative z-10 mt-10 text-xs text-indigo-200/80 lg:mt-0">
-          © {new Date().getFullYear()} LeadAap
+          © {new Date().getFullYear()} Enquireo
         </p>
       </div>
 
@@ -217,7 +217,7 @@ export function LoginForm() {
           <div className="mb-8 lg:hidden">
             <Link href="/" className="inline-flex items-center gap-2.5 text-slate-900">
               <SiteLogo size="sm" />
-              <span className="text-lg font-semibold">LeadAap</span>
+              <span className="text-lg font-semibold">Enquireo</span>
             </Link>
           </div>
 

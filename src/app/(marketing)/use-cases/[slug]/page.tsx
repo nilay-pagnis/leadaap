@@ -21,14 +21,14 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       "Slow triage delays first response to high-intent prospects",
       "Unqualified inquiries consume engineering and sales time",
     ],
-    solutionTitle: "LeadApp helps IT teams qualify faster",
+    solutionTitle: "Enquireo helps IT teams qualify faster",
     solutions: [
       { icon: "folder-kanban", title: "Centralized project intake", description: "Website, ads, and referrals in one queue." },
       { icon: "clipboard-list", title: "Technical qualification forms", description: "Collect scope, stack, timeline, and budget up front." },
       { icon: "bar-chart", title: "Priority lead view", description: "Rank opportunities by fit and urgency." },
       { icon: "briefcase", title: "Client-ready pipeline", description: "Move inquiries from contact to proposal cleanly." },
     ],
-    howItWorksTitle: "How IT services teams use LeadApp",
+    howItWorksTitle: "How IT services teams use Enquireo",
     howItWorksSteps: [
       { icon: "wand", title: "Create your intake form", body: "Add project scope and qualification questions." },
       { icon: "link", title: "Share across channels", body: "Publish on site, ads, and outbound campaigns." },
@@ -54,7 +54,7 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       subtext: "Capture, qualify, and close better clients using structured lead forms.",
       primaryCta: "Start Free",
       secondaryCta: "Book Demo",
-      secondaryHref: "mailto:hello@leadaap.com?subject=Book%20Demo%20-%20LeadApp%20for%20Agencies",
+      secondaryHref: "mailto:hello@enquireo.com?subject=Book%20Demo%20-%20Enquireo%20for%20Agencies",
     },
     painTitle: "What slows agency growth",
     painPoints: [
@@ -70,7 +70,7 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       { icon: "briefcase", title: "CRM-like dashboard", description: "Track status and context for every prospect." },
       { icon: "bar-chart", title: "Faster response, higher conversion", description: "Win more by replying with context instantly." },
     ],
-    howItWorksTitle: "How agencies run intake with LeadApp",
+    howItWorksTitle: "How agencies run intake with Enquireo",
     howItWorksSteps: [
       { icon: "wand", title: "Build your client brief form", body: "Ask budget, goals, timeline, and scope." },
       { icon: "link", title: "Share across channels", body: "Drop your link in ads, DMs, and website CTAs." },
@@ -112,7 +112,7 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       { icon: "handshake", title: "Collaboration tracking", description: "Track each brand conversation end-to-end." },
       { icon: "bar-chart", title: "Monetization funnel", description: "Convert audience attention into revenue." },
     ],
-    howItWorksTitle: "How creators monetize with LeadApp",
+    howItWorksTitle: "How creators monetize with Enquireo",
     howItWorksSteps: [
       { icon: "wand", title: "Create your creator form", body: "Ask campaign details and budget fit." },
       { icon: "link", title: "Add to bio and content", body: "Share one link everywhere your audience clicks." },
@@ -154,7 +154,7 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       { icon: "bar-chart", title: "Faster follow-up", description: "Prioritize the right prospects immediately." },
       { icon: "briefcase", title: "Smooth onboarding", description: "Capture key onboarding details in your first touchpoint." },
     ],
-    howItWorksTitle: "How coaches use LeadApp",
+    howItWorksTitle: "How coaches use Enquireo",
     howItWorksSteps: [
       { icon: "wand", title: "Create your application form", body: "Capture fit, goals, and preferred coaching outcomes." },
       { icon: "link", title: "Share where prospects engage", body: "Website, social bio, newsletter, and community." },
@@ -189,14 +189,14 @@ const contentBySlug: Record<Slug, UseCasePageContent> = {
       "Important details get lost across chats and emails",
       "Qualification happens too late in the process",
     ],
-    solutionTitle: "LeadApp gives freelancers intake clarity",
+    solutionTitle: "Enquireo gives freelancers intake clarity",
     solutions: [
       { icon: "clipboard-list", title: "Structured requirement forms", description: "Collect scope, deliverables, timeline, and budget." },
       { icon: "messages", title: "One source of truth", description: "Keep all inquiries in one organized dashboard." },
       { icon: "target", title: "Fit filtering", description: "Focus only on projects that match your services." },
       { icon: "bar-chart", title: "Faster proposal cycles", description: "Respond with complete context and fewer revisions." },
     ],
-    howItWorksTitle: "How freelancers use LeadApp",
+    howItWorksTitle: "How freelancers use Enquireo",
     howItWorksSteps: [
       { icon: "wand", title: "Create your project brief form", body: "Ask exactly what you need to estimate accurately." },
       { icon: "link", title: "Share your intake link", body: "Portfolio, social profiles, and job platform messages." },
@@ -228,7 +228,7 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   if (!content) {
     return {
       title: "Use Cases",
-      description: "LeadApp use case pages.",
+      description: "Enquireo use case pages.",
     };
   }
   return {

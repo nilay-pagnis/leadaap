@@ -1,6 +1,6 @@
 /** Messages from iframe → parent (`embed.js` and host listeners). */
 
-export const EMBED_MESSAGE_SOURCE = "leadaap-embed" as const;
+export const EMBED_MESSAGE_SOURCE = "enquireo-embed" as const;
 
 /** Iframe → `EmbedFormPage` bridge (maps to postMessage). */
 export type EmbedBridgeEvent =
@@ -40,4 +40,4 @@ export function postToParent(data: EmbedMessageToParent) {
   }
 }
 
-export const EMBED_WINDOW_EVENT = "leadaap-embed" as const;
+export const EMBED_WINDOW_EVENT = "enquireo-embed" as const;

@@ -22,7 +22,7 @@ type Props = {
 
 function bandMessage(worst: UsageBand, atLimit: boolean): string | null {
   if (atLimit || worst === "limit") {
-    return "You’re at a plan limit — upgrade to keep capturing leads and publishing forms without interruption.";
+    return "You’re at a plan limit — upgrade to keep capturing enquiries and publishing enquiry forms without interruption.";
   }
   if (worst === "strong") {
     return "You’re in the top 10% of your allocation. Upgrade soon so growth never hits a ceiling.";
@@ -112,7 +112,7 @@ export function UsageBanner({ usage, className }: Props) {
               usage.creditsRemaining <= 2 &&
               usage.leadCap > 0 && (
                 <p className="mt-2 text-xs text-slate-600">
-                  Only {usage.creditsRemaining} lead credit
+                  Only {usage.creditsRemaining} enquiry credit
                   {usage.creditsRemaining === 1 ? "" : "s"} left this cycle — add
                   capacity anytime from Billing.
                 </p>
@@ -141,7 +141,7 @@ export function UsageBanner({ usage, className }: Props) {
       </div>
       <div className="mt-4 space-y-2">
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Lead usage</span>
+          <span>Enquiry usage</span>
           <span className="tabular-nums">{leadPct}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-slate-100">
@@ -156,7 +156,7 @@ export function UsageBanner({ usage, className }: Props) {
         {!isUnlimitedForms(usage.maxForms) && (
           <>
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Form slots</span>
+              <span>Enquiry form slots</span>
               <span className="tabular-nums">{formPct}%</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-slate-100">

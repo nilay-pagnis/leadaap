@@ -13,9 +13,9 @@ import {
 export const metadata: Metadata = {
   title: "For Creators",
   description:
-    "LeadApp for creators: capture brand deals, collaborations, and client inquiries from one link.",
+    "Enquireo for creators: capture brand deals, collaborations, and client inquiries from one link.",
   openGraph: {
-    title: "LeadApp for Creators",
+    title: "Enquireo for Creators",
     description: "Turn your audience into income - automatically.",
   },
 };
@@ -78,7 +78,7 @@ export default function ForCreatorsPage() {
       <TestimonialsPlaceholder />
       <CTASection
         title="Start monetizing your audience today"
-        description="Whether you sell services or collaborations, LeadApp helps you capture revenue-ready opportunities."
+        description="Whether you sell services or collaborations, Enquireo helps you capture revenue-ready opportunities."
         ctaLabel="Start monetizing your audience today"
       />
     </>

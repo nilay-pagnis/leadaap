@@ -341,8 +341,8 @@ export function StepForm({
   }
 
   const brandLine = payload?.form.company_name?.trim()
-    ? `${payload.form.company_name.trim()} × LeadAap`
-    : "Form by LeadAap";
+    ? `${payload.form.company_name.trim()} × Enquireo`
+    : "Form by Enquireo";
 
   if (loading) return <StepFormLoading variant={variant} />;
 
@@ -614,8 +614,10 @@ export function StepForm({
                   </button>
                 )}
 
-                <p className="text-xs text-gray-400">
-                  Your data is secure and never shared.
+                <p className="text-xs text-gray-400 dark:text-zinc-500">
+                  {isEmbed
+                    ? "Powered by Enquireo"
+                    : "Your data is secure and never shared."}
                 </p>
               </div>
             </div>

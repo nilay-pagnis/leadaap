@@ -12,13 +12,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "LeadApp — Turn visitors into qualified leads",
-    template: "%s | LeadApp",
+    default: "Enquireo — Capture. Qualify. Convert.",
+    template: "%s | Enquireo",
   },
   description:
-    "Publish forms, share links, and capture leads in one inbox. Fast setup, no code, built for modern teams.",
+    "Turn every enquiry into a qualified opportunity with Enquireo.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://leadaap.com"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://enquireo.com"
   ),
 };
 

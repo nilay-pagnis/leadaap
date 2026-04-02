@@ -117,7 +117,7 @@ function CommandPaletteDialog({
             <Command.Input
               value={search}
               onValueChange={setSearch}
-              placeholder="Search forms & leads, or run an action…"
+              placeholder="Search enquiry forms & enquiries, or run an action…"
               className="flex h-12 w-full bg-transparent py-3 text-sm outline-none placeholder:text-slate-400"
             />
           </div>
@@ -140,7 +140,7 @@ function CommandPaletteDialog({
 
             {forms.length > 0 ? (
               <Command.Group
-                heading="Forms"
+                heading="Enquiry forms"
                 className="mb-2 overflow-hidden px-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-slate-500"
               >
                 {forms.map((f) => (
@@ -163,7 +163,7 @@ function CommandPaletteDialog({
 
             {leads.length > 0 ? (
               <Command.Group
-                heading="Leads"
+                heading="Enquiries"
                 className="mb-2 overflow-hidden px-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-slate-500"
               >
                 {leads.map((l) => (
@@ -212,7 +212,7 @@ function CommandPaletteDialog({
                 className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-slate-900 aria-selected:bg-slate-100 dark:text-slate-100 dark:aria-selected:bg-slate-900"
               >
                 <Users className="size-4 text-slate-500" />
-                Go to Leads
+                Go to Enquiries
               </Command.Item>
               <Command.Item
                 value="action-form-new"
@@ -224,7 +224,7 @@ function CommandPaletteDialog({
                 className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-slate-900 aria-selected:bg-slate-100 dark:text-slate-100 dark:aria-selected:bg-slate-900"
               >
                 <FilePlus className="size-4 text-slate-500" />
-                Create form (opens Forms)
+                Create enquiry form (opens Enquiry Forms)
               </Command.Item>
             </Command.Group>
           </Command.List>

@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsClient } from "./settings-client";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "Account Settings — Enquireo",
+  },
+  description: "Manage your Enquireo workspace profile, security, and integrations.",
+};
 
 export default async function SettingsPage() {
   const supabase = await createClient();

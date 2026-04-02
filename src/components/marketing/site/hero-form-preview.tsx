@@ -67,7 +67,7 @@ export function HeroFormPreview() {
               <span className="size-2.5 rounded-full bg-emerald-400/85" />
             </div>
             <span className="hidden text-xs font-medium text-zinc-500 sm:inline">
-              forms.leadapp.io / project inquiry
+              forms.enquireo.com / project inquiry
             </span>
           </div>
           <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-700">
@@ -142,7 +142,7 @@ export function HeroFormPreview() {
                 Submitted
               </>
             ) : (
-              "Submit & capture lead"
+              "Submit & capture enquiry"
             )}
           </motion.button>
 
@@ -160,7 +160,7 @@ export function HeroFormPreview() {
                   <Check className="size-5" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">Lead captured</p>
+                  <p className="text-sm font-semibold text-zinc-900">Enquiry captured</p>
                   <p className="text-xs text-zinc-600">
                     Routed to inbox · Slack notified
                   </p>

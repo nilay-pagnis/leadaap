@@ -28,8 +28,8 @@ import { CommandPaletteProvider } from "@/components/command-palette/command-pal
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/forms", label: "Forms", icon: FileText },
-  { href: "/leads", label: "Leads", icon: Users },
+  { href: "/forms", label: "Enquiry Forms", icon: FileText },
+  { href: "/leads", label: "Enquiries", icon: Users },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ] as const;
@@ -45,9 +45,9 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith("/dashboard/billing/confirm")) return "Payment";
   if (pathname.startsWith("/dashboard/billing")) return "Billing";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
-  if (pathname.startsWith("/forms/")) return "Form";
-  if (pathname === "/forms" || pathname.startsWith("/forms?")) return "Forms";
-  if (pathname === "/leads" || pathname.startsWith("/leads?")) return "Leads";
+  if (pathname.startsWith("/forms/")) return "Enquiry Form";
+  if (pathname === "/forms" || pathname.startsWith("/forms?")) return "Enquiry Forms";
+  if (pathname === "/leads" || pathname.startsWith("/leads?")) return "Enquiries";
   if (pathname === "/dashboard" || pathname === "/dashboard/") return "Dashboard";
   return "Workspace";
 }
@@ -89,8 +89,10 @@ export function DashboardShell({
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-5">
           <SiteLogo size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold tracking-tight text-slate-900">LeadApp</p>
-            <p className="text-xs font-medium text-slate-500">Workspace</p>
+            <p className="truncate text-sm font-semibold tracking-tight text-slate-900">Enquireo</p>
+            <p className="truncate text-[10px] font-medium leading-snug text-slate-500">
+              Capture. Qualify. Convert.
+            </p>
           </div>
         </div>
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3" aria-label="Main">

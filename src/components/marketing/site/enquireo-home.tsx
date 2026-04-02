@@ -34,14 +34,14 @@ const audienceContent: Record<
   { headline: string; points: string[]; cta: string; icon: typeof BriefcaseBusiness }
 > = {
   businesses: {
-    headline: "Close More Deals Without Losing Leads",
+    headline: "Close more deals without losing enquiries",
     points: [
-      "Capture client inquiries from website & ads",
-      "Qualify leads with smart forms",
-      "Centralize leads in one dashboard",
+      "Capture client enquiries from website and ads",
+      "Qualify prospects with smart enquiry forms",
+      "Centralize enquiries in one dashboard",
       "Improve response time and conversions",
     ],
-    cta: "Start capturing client leads",
+    cta: "Start capturing client enquiries",
     icon: BriefcaseBusiness,
   },
   creators: {
@@ -50,14 +50,14 @@ const audienceContent: Record<
       "Add your form link in bio",
       "Capture brand deals & collaborations",
       "Sell services (coaching, consulting)",
-      "Replace messy DMs with structured leads",
+      "Replace messy DMs with structured enquiries",
     ],
     cta: "Start monetizing your audience",
     icon: UserRound,
   },
 };
 
-export function LeadAppHome() {
+export function EnquireoHome() {
   const [audience, setAudience] = useState<Audience>("businesses");
   const current = audienceContent[audience];
 
@@ -117,7 +117,7 @@ export function LeadAppHome() {
             />
             <FeatureCard
               icon={BarChart3}
-              title="Real-time lead tracking"
+              title="Real-time enquiry tracking"
               description="See who submitted, when, and from where. Keep your pipeline honest and your follow-up timely."
             />
             <FeatureCard
@@ -128,12 +128,12 @@ export function LeadAppHome() {
             <FeatureCard
               icon={Target}
               title="Smart qualification"
-              description="Ask better questions up front so you spend time on high-intent leads."
+              description="Ask better questions up front so you spend time on high-intent enquiries."
             />
             <FeatureCard
               icon={Rocket}
               title="Scale your intake"
-              description="From first inbound tests to large campaigns, LeadApp keeps your flow organized."
+              description="From first inbound tests to large campaigns, Enquireo keeps your flow organized."
             />
           </div>
         </SectionWrapper>
@@ -147,7 +147,7 @@ export function LeadAppHome() {
               Built for businesses and creators
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600 sm:text-lg">
-              Choose your mode to see how LeadApp helps your exact workflow.
+              Choose your mode to see how Enquireo helps your exact workflow.
             </p>
             <div className="mt-8 flex justify-center">
               <AudienceToggle value={audience} onChange={setAudience} />
@@ -260,9 +260,9 @@ export function LeadAppHome() {
           </motion.div>
           <ol className="mt-14 grid gap-6 md:grid-cols-3">
             {[
-              { icon: WandSparkles, title: "Create your form", body: "Build in minutes with smart defaults." },
+              { icon: WandSparkles, title: "Create your enquiry form", body: "Build in minutes with smart defaults." },
               { icon: Share2, title: "Share link anywhere", body: "Website, bio, ads, WhatsApp, and more." },
-              { icon: BarChart3, title: "Capture & manage leads", body: "Track responses and follow up faster." },
+              { icon: BarChart3, title: "Capture and manage enquiries", body: "Track responses and follow up faster." },
             ].map((item, i) => (
               <motion.li
                 key={item.title}
@@ -296,15 +296,15 @@ export function LeadAppHome() {
             className="mx-auto max-w-2xl text-center"
           >
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-              Teams shipping faster with LeadApp
+              Teams shipping faster with Enquireo
             </h2>
             <p className="mt-4 text-lg text-zinc-600">Placeholder testimonials — swap with customer quotes.</p>
           </motion.div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
-              "“We replaced our contact stack in a day and improved lead response speed by 2x.”",
+              "“We replaced our contact stack in a day and improved enquiry response speed by 2x.”",
               "“Perfect for bio links. We finally stopped losing brand opportunities in DMs.”",
-              "“Our agency now captures cleaner briefs and qualifies leads before calls.”",
+              "“Our agency now captures cleaner briefs and qualifies enquiries before calls.”",
             ].map((quote) => (
               <motion.div
                 key={quote}
@@ -324,10 +324,10 @@ export function LeadAppHome() {
 
       <SectionWrapper className="py-20 sm:py-28">
         <CTABanner
-          title="Stop Losing Leads. Start Converting Today."
-          description="Whether you're a business or creator, LeadApp helps you turn interest into revenue."
+          title="Stop losing enquiries. Start converting today."
+          description="Whether you are a business or creator, Enquireo helps you turn interest into revenue."
           primaryHref="/signup"
-          primaryLabel="Get your first lead in minutes"
+          primaryLabel="Get your first enquiry in minutes"
           secondaryHref="/pricing"
           secondaryLabel="See plans"
           microcopy="No credit card required"

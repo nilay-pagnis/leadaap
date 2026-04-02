@@ -1,7 +1,7 @@
 "use client";
 
 type FormHeaderProps = {
-  /** From form owner profile — drives “Company × LeadAap” vs “Form by LeadAap”. */
+  /** From form owner profile — drives “Company × Enquireo” vs “Form by Enquireo”. */
   companyName?: string | null;
 };
 
@@ -12,7 +12,7 @@ export function FormHeader({
   companyName,
 }: FormHeaderProps) {
   const trimmed = companyName?.trim();
-  const title = trimmed ? `${trimmed} × LeadAap` : "Form by LeadAap";
+  const title = trimmed ? `${trimmed} × Enquireo` : "Form by Enquireo";
 
   return (
     <header className="text-center">

@@ -1,4 +1,4 @@
--- LeadAap monetization — run after schema.sql
+-- Enquireo monetization — run after schema.sql
 -- Profiles: plan and credits
 
 create table if not exists public.profiles (

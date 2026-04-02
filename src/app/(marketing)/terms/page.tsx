@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { LegalDocument, LegalSection } from "@/components/marketing/site/legal-document";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — LeadApp",
-  description: "Terms governing use of LeadApp.",
+  title: "Terms of Service — Enquireo",
+  description: "Terms governing use of Enquireo.",
   robots: { index: true, follow: true },
 };
 
@@ -12,12 +12,12 @@ export default function TermsPage() {
     <div className="border-b border-zinc-200/60 bg-white">
       <LegalDocument
         title="Terms of Service"
-        intro="By accessing or using LeadApp, you agree to these terms. If you disagree, do not use the service."
+        intro="By accessing or using Enquireo, you agree to these terms. If you disagree, do not use the service."
         lastUpdated="April 1, 2026"
       >
         <LegalSection id="usage" title="Acceptable use">
           <p>
-            You agree to use LeadApp only for lawful purposes and in line with applicable regulations.
+            You agree to use Enquireo only for lawful purposes and in line with applicable regulations.
             You will not attempt to disrupt the service, access data you are not authorized to view,
             or use the product to distribute malware, spam, or misleading content.
           </p>
@@ -31,14 +31,14 @@ export default function TermsPage() {
         </LegalSection>
         <LegalSection id="restrictions" title="Restrictions">
           <p>
-            You may not reverse engineer, scrape, or resell access to LeadApp except as expressly
+            You may not reverse engineer, scrape, or resell access to Enquireo except as expressly
             permitted. You may not use the service to violate privacy rights, send unsolicited bulk
             communications without consent, or process illegal content.
           </p>
         </LegalSection>
         <LegalSection id="liability" title="Disclaimer and limitation of liability">
           <p>
-            LeadApp is provided “as is” to the fullest extent permitted by law. We disclaim implied
+            Enquireo is provided “as is” to the fullest extent permitted by law. We disclaim implied
             warranties where allowed. To the maximum extent permitted, our aggregate liability arising
             out of these terms or the service will not exceed the amounts you paid us in the twelve
             months before the claim (or, if none, fifty dollars).
@@ -59,10 +59,10 @@ export default function TermsPage() {
           <p>
             Questions about these terms:{" "}
             <a
-              href="mailto:support@leadaap.com"
+              href="mailto:support@enquireo.com"
               className="font-medium text-indigo-600 underline-offset-4 hover:underline"
             >
-              support@leadaap.com
+              support@enquireo.com
             </a>
             .
           </p>

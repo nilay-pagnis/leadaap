@@ -65,8 +65,8 @@ export function FormsClient({
         if (result.code === "FORM_LIMIT") {
           setOpen(false);
           openUpgradeModal("form_limit");
-          toast.message("Form limit reached", {
-            description: "Upgrade for more forms — see options in the dialog.",
+          toast.message("Enquiry form limit reached", {
+            description: "Upgrade for more enquiry forms — see options in the dialog.",
           });
         } else {
           toast.error(result.error);
@@ -74,7 +74,7 @@ export function FormsClient({
         return;
       }
 
-      toast.success("Form created");
+      toast.success("Enquiry form created");
       setOpen(false);
       setName("");
       router.push(`/forms/${result.formId}`);
@@ -95,13 +95,15 @@ export function FormsClient({
           if (result.code === "FORM_LIMIT") {
             setTemplateOpen(false);
             openUpgradeModal("form_limit");
-            toast.message("Form limit reached", { description: "Upgrade for more forms." });
+            toast.message("Enquiry form limit reached", {
+              description: "Upgrade for more enquiry forms.",
+            });
           } else {
             toast.error(result.error);
           }
           return;
         }
-        toast.success("Form created");
+        toast.success("Enquiry form created");
         setTemplateOpen(false);
         router.push(`/forms/${result.formId}`);
         router.refresh();
@@ -124,7 +126,7 @@ export function FormsClient({
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="outline" size="sm" disabled className="rounded-xl border-slate-200">
             <Plus className="mr-2 size-4 shrink-0" />
-            New form
+            New enquiry form
           </Button>
           <Button type="button" size="sm" className="rounded-xl" onClick={() => openUpgradeModal("form_limit")}>
             Upgrade
@@ -146,7 +148,7 @@ export function FormsClient({
         </Button>
         <Button type="button" size="sm" className="rounded-xl shadow-sm" disabled={loading} onClick={() => setOpen(true)}>
           <Plus className="mr-2 size-4 shrink-0" />
-          New form
+          New enquiry form
         </Button>
       </div>
     );
@@ -189,7 +191,7 @@ export function FormsClient({
         <DialogContent className="rounded-2xl border-slate-200 sm:max-w-md">
           <form onSubmit={createForm} aria-busy={loading}>
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">Blank form</DialogTitle>
+              <DialogTitle className="text-lg font-semibold">Blank enquiry form</DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-4">
               <Label htmlFor="form_name">Name</Label>
@@ -243,22 +245,24 @@ export function FormsClient({
           className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-white px-6 py-16 text-center sm:py-20"
         >
           <FormEmptyIllustration className="mb-2 shrink-0" />
-          <h2 className="mt-4 text-xl font-semibold text-slate-900">No forms yet</h2>
+          <h2 className="mt-4 text-xl font-semibold text-slate-900">No enquiry forms yet</h2>
           <p className="mt-2 max-w-md text-pretty text-sm text-slate-600">
-            Create a form to get a shareable link — submissions show up in Leads automatically.
+            Create an enquiry form to get a shareable link — submissions show up in Enquiries
+            automatically.
           </p>
           <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center">
             {usage.atFormLimit ? (
               <>
                 <p className="w-full text-sm text-slate-600">
-                  {formatFormsUsageLine(usage.formCount, usage.maxForms)} — upgrade to unlock more form slots.
+                  {formatFormsUsageLine(usage.formCount, usage.maxForms)} — upgrade to unlock more
+                  enquiry form slots.
                 </p>
                 <Button
                   type="button"
                   className="rounded-xl shadow-sm transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   onClick={() => openUpgradeModal("form_limit")}
                 >
-                  Upgrade for more forms
+                  Upgrade for more enquiry forms
                 </Button>
               </>
             ) : (
@@ -269,7 +273,7 @@ export function FormsClient({
                   disabled={loading}
                 >
                   <Plus className="mr-2 size-4 shrink-0" />
-                  Create form
+                  Create enquiry form
                 </Button>
                 <Button
                   type="button"
@@ -297,7 +301,7 @@ export function FormsClient({
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
                   <TableHead className="text-slate-500">Name</TableHead>
-                  <TableHead className="text-right text-slate-500">Responses</TableHead>
+                  <TableHead className="text-right text-slate-500">Enquiries</TableHead>
                   <TableHead className="text-right text-slate-500">Conversion</TableHead>
                   <TableHead className="text-slate-500">Created</TableHead>
                   <TableHead className="text-right text-slate-500">Actions</TableHead>

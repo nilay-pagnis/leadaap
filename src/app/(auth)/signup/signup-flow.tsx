@@ -179,16 +179,16 @@ export function SignupFlow() {
       <div className="relative z-10">
         <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-90">
           <SiteLogo size="md" />
-          <span className="text-xl font-semibold tracking-tight">LeadAap</span>
+          <span className="text-xl font-semibold tracking-tight">Enquireo</span>
         </Link>
       </div>
 
       <div className="relative z-10 mt-8 max-w-md lg:mt-0">
         <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-          Build forms that turn traffic into pipeline
+          Build enquiry forms that turn traffic into pipeline
         </h1>
         <p className="mt-5 text-base leading-relaxed text-indigo-100/95 sm:text-lg">
-          One account for your team — capture leads, route them cleanly, and keep
+          One account for your team — capture enquiries, route them cleanly, and keep
           data locked to your workspace.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 text-sm text-indigo-100/90">
@@ -208,7 +208,7 @@ export function SignupFlow() {
       </div>
 
       <p className="relative z-10 mt-10 text-xs text-indigo-200/80 lg:mt-0">
-        © {new Date().getFullYear()} LeadAap
+        © {new Date().getFullYear()} Enquireo
       </p>
     </>
   );
@@ -231,7 +231,7 @@ export function SignupFlow() {
           <div className="mb-8 lg:hidden">
             <Link href="/" className="inline-flex items-center gap-2.5 text-slate-900">
               <SiteLogo size="sm" />
-              <span className="text-lg font-semibold">LeadAap</span>
+              <span className="text-lg font-semibold">Enquireo</span>
             </Link>
           </div>
 
@@ -549,8 +549,8 @@ export function SignupFlow() {
                     You&apos;re all set
                   </h2>
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                    Your workspace is ready. Continue to the dashboard to build forms
-                    and capture leads.
+                    Your workspace is ready. Continue to the dashboard to build enquiry forms
+                    and capture enquiries.
                   </p>
                   <Button
                     type="button"
@@ -566,7 +566,7 @@ export function SignupFlow() {
           </div>
 
           <p className="mt-8 text-center text-xs text-slate-500">
-            By continuing you agree to responsible use of LeadAap and your data.
+            By continuing you agree to responsible use of Enquireo and your data.
           </p>
         </motion.div>
       </div>

@@ -1,4 +1,4 @@
--- LeadAap — run in Supabase SQL Editor
+-- Enquireo — run in Supabase SQL Editor
 -- Extensions
 create extension if not exists "uuid-ossp";
 

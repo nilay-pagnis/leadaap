@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const steps = [
   { id: 1, label: "Welcome" },
-  { id: 2, label: "Your form" },
+  { id: 2, label: "Your enquiry form" },
   { id: 3, label: "You’re live" },
 ];
 
@@ -56,7 +56,7 @@ export function OnboardingWizard() {
 
     setCreatedFormId(result.formId);
     setStep(3);
-    toast.success("Your form is ready");
+    toast.success("Your enquiry form is ready");
   }
 
   function copyLink() {
@@ -106,7 +106,7 @@ export function OnboardingWizard() {
               <SiteLogo size="xl" className="shadow-xl shadow-indigo-500/20" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-              Let’s create your first form
+              Let’s create your first enquiry form
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-zinc-600">
               In the next step we’ll add a proven layout: name, email, and a message
@@ -148,14 +148,14 @@ export function OnboardingWizard() {
             className="flex flex-1 flex-col"
           >
             <h1 className="text-center text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
-              Name your form
+              Name your enquiry form
             </h1>
             <p className="mt-3 text-center text-zinc-600">
               We’ll add name, email, and message fields automatically.
             </p>
             <div className="mt-10 space-y-2">
               <Label htmlFor="onb-name" className="text-zinc-700">
-                Form name
+                Enquiry form name
               </Label>
               <Input
                 id="onb-name"
@@ -189,7 +189,7 @@ export function OnboardingWizard() {
                 disabled={loading}
                 onClick={() => void createForm()}
               >
-                {loading ? "Creating…" : "Create my form"}
+                {loading ? "Creating…" : "Create my enquiry form"}
                 <ArrowRight className="ml-2 size-4" />
               </Button>
             </div>
@@ -212,10 +212,10 @@ export function OnboardingWizard() {
               <PartyPopper className="size-10" />
             </motion.div>
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-              Your form is live
+              Your enquiry form is live
             </h1>
             <p className="mt-3 text-lg text-zinc-600">
-              Share this link anywhere — your first lead could arrive in minutes.
+              Share this link anywhere — your first enquiry could arrive in minutes.
             </p>
             <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm">
               <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">

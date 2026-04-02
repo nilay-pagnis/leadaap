@@ -51,21 +51,20 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-4 py-1.5 text-xs font-medium text-zinc-600 shadow-[0_8px_30px_-12px_rgba(79,70,229,0.2)] backdrop-blur-sm"
           >
             <Sparkles className="size-3.5 text-indigo-500" aria-hidden />
-            From clicks to clients - in one link.
+            Capture. Qualify. Convert.
           </motion.p>
           <motion.h1
             id="hero-heading"
             variants={fadeUp}
             className="mt-6 text-balance text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.15rem] lg:leading-[1.08]"
           >
-            Turn Visitors, Followers & Clicks into Real Leads - Instantly.
+            Turn every enquiry into a qualified opportunity
           </motion.h1>
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-5 max-w-xl text-pretty text-lg leading-relaxed text-zinc-600 lg:mx-0"
           >
-            Create smart forms, share anywhere (website, Instagram bio, WhatsApp), and capture
-            high-quality leads in seconds.
+            Capture. Qualify. Convert. — all in one powerful system.
           </motion.p>
           <motion.div
             variants={fadeUp}
@@ -99,7 +98,7 @@ export function HeroSection() {
               <BadgeCheck className="size-3.5 text-emerald-600" /> Trusted checkout
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200">
-              <BadgeCheck className="size-3.5 text-emerald-600" /> Secure form links
+              <BadgeCheck className="size-3.5 text-emerald-600" /> Secure enquiry forms
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200">
               <BadgeCheck className="size-3.5 text-emerald-600" /> Built for mobile

@@ -22,7 +22,7 @@ const bookDemoHref =
   typeof process.env.NEXT_PUBLIC_BOOK_DEMO_URL === "string" &&
   process.env.NEXT_PUBLIC_BOOK_DEMO_URL.length > 0
     ? process.env.NEXT_PUBLIC_BOOK_DEMO_URL
-    : "mailto:hello@leadaap.com?subject=Book%20a%20demo%20%E2%80%94%20LeadAap";
+    : "mailto:hello@enquireo.com?subject=Book%20a%20demo%20%E2%80%94%20Enquireo";
 
 type PlanCard = {
   id: "starter" | "growth" | "premium";
@@ -44,10 +44,10 @@ const planCards: PlanCard[] = [
     priceLabel: `₹${PLAN_PRICING.starter.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.starter.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
-      `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} capture forms`,
+      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} enquiry capture forms`,
       "Embeddable widgets & share links",
-      "Unified lead inbox",
+      "Unified enquiry inbox",
       "Email notifications",
     ],
     cta: { label: "Start free pilot", href: pilotHref, variant: "outline" },
@@ -60,8 +60,8 @@ const planCards: PlanCard[] = [
     priceLabel: `₹${PLAN_PRICING.growth.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.growth.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
-      `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} capture forms`,
+      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} enquiry capture forms`,
       "Everything in Starter",
       "Faster routing & status workflow",
       "Priority email support",
@@ -73,12 +73,12 @@ const planCards: PlanCard[] = [
     id: "premium",
     name: PLAN_PRICING.premium.label,
     description:
-      "Maximum throughput and unlimited forms for teams running serious campaigns.",
+      "Maximum throughput and unlimited enquiry forms for teams running serious campaigns.",
     priceLabel: `₹${PLAN_PRICING.premium.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.premium.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} lead credits / month`,
-      `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} forms`,
+      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} enquiry forms`,
       "Everything in Growth",
       "Higher limits for peak seasons",
       "Priority support",
@@ -91,7 +91,7 @@ type CompareRow = { feature: string; values: [string, string, string] };
 
 const comparisonRows: CompareRow[] = [
   {
-    feature: "Lead credits / month",
+    feature: "Enquiry credits / month",
     values: [
       String(PLAN_LIMITS.starter.creditAllocation),
       String(PLAN_LIMITS.growth.creditAllocation),
@@ -99,7 +99,7 @@ const comparisonRows: CompareRow[] = [
     ],
   },
   {
-    feature: "Active forms",
+    feature: "Active enquiry forms",
     values: [
       formatFormsLabel(PLAN_LIMITS.starter.maxForms),
       formatFormsLabel(PLAN_LIMITS.growth.maxForms),
@@ -107,7 +107,7 @@ const comparisonRows: CompareRow[] = [
     ],
   },
   {
-    feature: "Lead inbox & pipeline",
+    feature: "Enquiry inbox & pipeline",
     values: ["✓", "✓", "✓"],
   },
   {
@@ -333,7 +333,7 @@ export function PricingPage() {
               Why teams upgrade
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              Leads are revenue waiting to happen
+              Enquiries are revenue waiting to happen
             </h2>
             <p className="mt-4 text-lg text-slate-600">
               When capture is fast and follow-up is organized, more conversations
@@ -353,14 +353,14 @@ export function PricingPage() {
                 icon: Zap,
                 title: "Capture without friction",
                 stat: "↑ completion",
-                body: "Branded forms that feel native convert more visitors into qualified leads — fewer drop-offs at the first touch.",
+                body: "Branded enquiry forms that feel native convert more visitors into qualified opportunities — fewer drop-offs at the first touch.",
                 accent: "from-amber-400/20 to-orange-500/10",
               },
               {
                 icon: TrendingUp,
                 title: "Speed to first reply",
                 stat: "↑ win rate",
-                body: "Leads routed instantly beat stale spreadsheets. Teams that respond in minutes win disproportionately more.",
+                body: "Enquiries routed instantly beat stale spreadsheets. Teams that respond in minutes win disproportionately more.",
                 accent: "from-emerald-400/20 to-teal-500/10",
               },
               {
@@ -414,7 +414,7 @@ export function PricingPage() {
           >
             <p className="text-sm font-medium text-slate-500">Illustrative math</p>
             <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-              <span className="text-primary">500</span> extra qualified leads / yr ×{" "}
+              <span className="text-primary">500</span> extra qualified enquiries / yr ×{" "}
               <span className="text-primary">₹8,000</span> avg deal ×{" "}
               <span className="text-primary">12%</span> close rate
             </p>

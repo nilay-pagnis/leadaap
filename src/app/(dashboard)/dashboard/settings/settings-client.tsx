@@ -55,10 +55,10 @@ export function SettingsClient({ email, initial }: Props) {
       <div>
         <p className="text-sm font-medium text-slate-500">Settings</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-          Workspace
+          Account settings
         </h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-          Profile, security, and integrations.
+          Profile, security, and integrations for your Enquireo workspace.
         </p>
       </div>
 
@@ -208,7 +208,7 @@ export function SettingsClient({ email, initial }: Props) {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  We’re building one-click integrations so leads sync where your team already works. Want something
+                  We’re building one-click integrations so enquiries sync where your team already works. Want something
                   specific? Use the public API from{" "}
                   <Link href="/docs" className="font-medium text-primary hover:underline">
                     Developer docs

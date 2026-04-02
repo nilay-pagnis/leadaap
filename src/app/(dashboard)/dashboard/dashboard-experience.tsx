@@ -97,21 +97,21 @@ function InsightCard({
 }) {
   const text = useMemo(() => {
     if (formCount === 0) {
-      return "Create a form to get a shareable link — submissions route straight to this workspace.";
+      return "Create an enquiry form to get a shareable link — submissions route straight to this workspace.";
     }
     if (totalLeads === 0) {
       return "No submissions yet. Share your public link on your site, bio, or campaigns to start filling the chart.";
     }
     if (leadsToday > 0) {
-      return `${leadsToday} new lead${leadsToday === 1 ? "" : "s"} today — prioritize follow-up while intent is fresh.`;
+      return `You received ${leadsToday} new enquir${leadsToday === 1 ? "y" : "ies"} today — prioritize follow-up while intent is fresh.`;
     }
     if (newLeads >= 4) {
-      return `${newLeads} leads are still marked new. Batch a reply session to clear the queue faster.`;
+      return `${newLeads} enquiries are still marked new. Batch a reply session to clear the queue faster.`;
     }
     if (leadsWeek > 0) {
-      return `${leadsWeek} lead${leadsWeek === 1 ? "" : "s"} in the last 7 days. Keep routing responses to “Contacted” as you work them.`;
+      return `${leadsWeek} enquir${leadsWeek === 1 ? "y" : "ies"} in the last 7 days. Keep routing responses to “Contacted” as you work them.`;
     }
-    return "Pipeline is quiet — refresh copy on your form or promote the link in one new channel this week.";
+    return "Pipeline is quiet — refresh copy on your enquiry form or promote the link in one new channel this week.";
   }, [formCount, totalLeads, leadsToday, newLeads, leadsWeek]);
 
   return (
@@ -166,10 +166,10 @@ export function DashboardExperience({
             )}
           >
             <Share2 className="mr-2 size-4 shrink-0 text-slate-600" />
-            <span className="truncate">Public form link</span>
+            <span className="truncate">Public enquiry form link</span>
           </Link>
           <Link href="/forms" className={cn(buttonVariants({ size: "sm" }), "min-w-0 rounded-xl")}>
-            <span className="truncate">Manage forms</span>
+            <span className="truncate">Manage enquiry forms</span>
           </Link>
         </div>
       )}
@@ -184,9 +184,9 @@ export function DashboardExperience({
             <div className="flex min-w-0 gap-4">
               <SiteLogo size="md" className="shrink-0" />
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-slate-900">Create your first form</h2>
+                <h2 className="text-lg font-semibold text-slate-900">Create your first enquiry form</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Publish a capture flow — leads land in your inbox automatically.
+                  Publish a capture flow — enquiries land in your inbox automatically.
                 </p>
               </div>
             </div>
@@ -205,13 +205,13 @@ export function DashboardExperience({
         >
           <Bell className="mt-0.5 size-4 shrink-0" aria-hidden />
           <p className="min-w-0 break-words">
-            <span className="font-medium">Tip:</span> share your form link — most teams see the first lead within a few days.
+            <span className="font-medium">Tip:</span> share your form link — most teams see the first enquiry within a few days.
           </p>
         </motion.div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total leads" value={totalLeads} icon={Inbox} delay={0} />
+        <StatCard label="Total enquiries" value={totalLeads} icon={Inbox} delay={0} />
         <StatCard
           label="New"
           value={newLeads}
@@ -220,7 +220,7 @@ export function DashboardExperience({
           delay={0.03}
         />
         <StatCard
-          label="Active forms"
+          label="Active enquiry forms"
           value={formCount}
           hint="Published flows"
           icon={LayoutGrid}
@@ -230,7 +230,7 @@ export function DashboardExperience({
           label="Conversion"
           value={conversionRatePct != null ? `${conversionRatePct}%` : "—"}
           hint={
-            conversionRatePct != null ? "Moved past “New” vs. all" : "No leads to measure yet"
+            conversionRatePct != null ? "Moved past “New” vs. all" : "No enquiries to measure yet"
           }
           icon={BarChart3}
           delay={0.09}
@@ -240,7 +240,7 @@ export function DashboardExperience({
       <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
         <Card className="border-slate-200/90 lg:col-span-8">
           <CardHeader className="border-b border-slate-100 pb-4">
-            <CardTitle className="text-base font-semibold">Leads over time</CardTitle>
+            <CardTitle className="text-base font-semibold">Enquiries over time</CardTitle>
             <p className="text-sm font-normal text-slate-500">Daily submissions (last 14 days)</p>
           </CardHeader>
           <CardContent className="pt-6">
@@ -282,7 +282,7 @@ export function DashboardExperience({
               <FileText className="size-10 text-slate-200" aria-hidden />
               <p className="mt-4 font-medium text-slate-800">No submissions yet</p>
               <p className="mt-2 max-w-sm text-sm text-slate-500">
-                When someone fills a form, it will show up here instantly.
+                When someone submits your enquiry form, it will show up here instantly.
               </p>
             </div>
           ) : (
@@ -290,7 +290,7 @@ export function DashboardExperience({
               <Table>
                 <TableHeader>
                   <TableRow className="border-slate-100 hover:bg-transparent">
-                    <TableHead className="text-slate-500">Form</TableHead>
+                    <TableHead className="text-slate-500">Enquiry form</TableHead>
                     <TableHead className="text-slate-500">Preview</TableHead>
                     <TableHead className="text-slate-500">Status</TableHead>
                     <TableHead className="text-right text-slate-500">Time</TableHead>

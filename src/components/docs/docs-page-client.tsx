@@ -19,7 +19,7 @@ export function DocsPageClient({ siteOrigin }: Props) {
 
 const EMBED_SCRIPT = "${o}/embed.js";
 
-export function LeadAapForm({ formId }: { formId: string }) {
+export function EnquireoForm({ formId }: { formId: string }) {
   useEffect(() => {
     const exists = document.querySelector(
       \`script[src="\${EMBED_SCRIPT}"]\`
@@ -41,12 +41,12 @@ export function LeadAapForm({ formId }: { formId: string }) {
 import { Component, Input } from "@angular/core";
 
 @Component({
-  selector: "app-leadaap-form",
+  selector: "app-enquireo-form",
   standalone: true,
   template:
-    '<div [attr.data-form-id]="formId" class="leadaap-root"></div>',
+    '<div [attr.data-form-id]="formId" class="enquireo-root"></div>',
 })
-export class LeadAapFormComponent {
+export class EnquireoFormComponent {
   @Input({ required: true }) formId!: string;
 }`;
 
@@ -160,12 +160,12 @@ export class LeadAapFormComponent {
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Analytics-style events from the iframe are mirrored to{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">window</code> as{" "}
-            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">leadaap-embed</code>{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">enquireo-embed</code>{" "}
             custom events (payload in <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">event.detail</code>
             ; use <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">detail.kind === &quot;analytics&quot;</code>
             ). The iframe also uses{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">postMessage</code> with{" "}
-            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">source: &quot;leadaap-embed&quot;</code> for{" "}
+            <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">source: &quot;enquireo-embed&quot;</code> for{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">resize</code>,{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">ready</code>,{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">error</code>, and{" "}
@@ -193,7 +193,7 @@ export class LeadAapFormComponent {
             Inject the script once on mount; render the placeholder with your form id. Safe for SSR: the script only runs in the browser inside{" "}
             <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">useEffect</code>.
           </p>
-          <DocsCodeBlock title="LeadAapForm.tsx" language="tsx" code={reactExample} />
+          <DocsCodeBlock title="EnquireoForm.tsx" language="tsx" code={reactExample} />
         </section>
 
         <section id="angular" className="scroll-mt-24 space-y-4">
@@ -216,7 +216,7 @@ export class LeadAapFormComponent {
             <li>
               Add a <strong>Custom HTML</strong> block (Block Editor) or paste into your theme template / widget area.
             </li>
-            <li>Paste the snippet below. Use your form UUID from the LeadAap dashboard.</li>
+            <li>Paste the snippet below. Use your form UUID from the Enquireo dashboard.</li>
             <li>
               If your host strips <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">&lt;script&gt;</code> tags, add the script via a plugin such as &quot;Insert Headers and Footers&quot; and keep only the{" "}
               <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-xs dark:bg-zinc-800">div</code> in the page body.
@@ -228,7 +228,7 @@ export class LeadAapFormComponent {
         <footer className="border-t border-zinc-200 pt-8 dark:border-zinc-800">
           <p className="text-center text-sm text-zinc-500">
             <Link href="/" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-              Back to LeadAap
+              Back to Enquireo
             </Link>
           </p>
         </footer>

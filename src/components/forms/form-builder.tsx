@@ -446,7 +446,7 @@ export function FormBuilder({ form, initialFields }: { form: FormRow; initialFie
               onChange={(e) => setFormName(e.target.value)}
               onBlur={() => void commitFormName()}
               className="h-11 border-transparent bg-white text-xl font-semibold tracking-tight text-zinc-900 shadow-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 sm:max-w-md"
-              aria-label="Form name"
+              aria-label="Enquiry form name"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">

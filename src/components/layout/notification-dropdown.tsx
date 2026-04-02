@@ -105,7 +105,7 @@ export function NotificationDropdown({
           <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
             <Inbox className="size-10 text-slate-200 dark:text-slate-700" aria-hidden />
             <p className="text-sm font-medium text-slate-800 dark:text-slate-200">You&apos;re all caught up</p>
-            <p className="text-xs text-slate-500">New leads will notify you here in real time.</p>
+            <p className="text-xs text-slate-500">New enquiries will notify you here in real time.</p>
             <Link
               href="/leads"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}

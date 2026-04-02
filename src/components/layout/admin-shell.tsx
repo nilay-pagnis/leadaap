@@ -66,7 +66,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <SiteLogo size="sm" className="shadow-sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold tracking-tight text-slate-900">
-              LeadAap
+              Enquireo
             </p>
             <p className="text-xs font-medium text-slate-500">Admin</p>
           </div>

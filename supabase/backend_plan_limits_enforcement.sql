@@ -1,4 +1,4 @@
--- Backend enforcement for LeadAap plan limits.
+-- Backend enforcement for Enquireo plan limits.
 -- Run in Supabase SQL editor after core schema + profiles are created.
 --
 -- Enforces limits at DB level (cannot be bypassed by client/UI):

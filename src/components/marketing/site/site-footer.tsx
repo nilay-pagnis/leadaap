@@ -19,12 +19,13 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-2.5" aria-label="LeadApp home">
-              <SiteLogo size="sm" />
-              <span className="text-lg font-semibold tracking-tight text-zinc-900">LeadApp</span>
+            <Link href="/" className="inline-flex flex-col gap-1" aria-label="Enquireo home">
+              <SiteLogo variant="full" className="max-w-[min(100%,300px)]" />
+              <span className="text-xs font-medium text-zinc-500">Capture. Qualify. Convert.</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-              Turn visitors into qualified leads — fast forms, shareable links, and a calm inbox.
+              Enquiry capture, qualification, and conversion — shareable enquiry forms and a calm
+              inbox.
             </p>
           </div>
           <nav className="flex flex-wrap gap-x-8 gap-y-3" aria-label="Footer">
@@ -40,7 +41,7 @@ export function SiteFooter() {
           </nav>
         </div>
         <p className="mt-12 border-t border-zinc-100 pt-8 text-center text-sm text-zinc-500 sm:text-left">
-          © {year} LeadApp. All rights reserved.
+          © {year} Enquireo. All rights reserved.
         </p>
       </div>
     </footer>

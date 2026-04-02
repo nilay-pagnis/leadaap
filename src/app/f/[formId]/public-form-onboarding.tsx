@@ -89,7 +89,7 @@ export function PublicFormOnboarding({
           return;
         }
         if (process.env.NODE_ENV === "development") {
-          console.debug("[LeadAap public form onboarding]", {
+          console.debug("[Enquireo public form onboarding]", {
             formId,
             fieldsCount: (json.fields as FieldRow[] | undefined)?.length,
             fields: json.fields,
@@ -330,7 +330,7 @@ export function PublicFormOnboarding({
             <SiteLogo size="md" />
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
-            LeadAap · 5-day pilot
+            Enquireo · 5-day pilot
           </p>
           <h1 className="mt-2 text-balance text-xl font-semibold text-zinc-900 sm:text-2xl">
             {payload.form.form_name}

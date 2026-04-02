@@ -44,7 +44,9 @@ export function PaymentConfirmClient() {
       return;
     }
     try {
-      const stored = localStorage.getItem("leadaap:selectedPlan");
+      const stored =
+        localStorage.getItem("enquireo:selectedPlan") ??
+        localStorage.getItem("leadaap:selectedPlan");
       if (stored === "starter" || stored === "growth" || stored === "premium") {
         setPlan(stored);
       }

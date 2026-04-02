@@ -47,7 +47,7 @@ function headline(reason: UpgradeModalReason | null | undefined): {
       return {
         title: "Scale your pipeline",
         description:
-          "You’ve reached your lead allocation for this plan. Move up a tier to keep every submission flowing into LeadAap.",
+          "You’ve reached your enquiry allocation for this plan. Move up a tier to keep every submission flowing into Enquireo.",
       };
     case "session_nudge":
       return {

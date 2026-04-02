@@ -26,18 +26,18 @@ export function SiteHeader() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/85 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md"
+      className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/85 py-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] backdrop-blur-md"
       role="banner"
     >
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[3.75rem] max-w-[1200px] items-center justify-between gap-4 px-4 sm:min-h-[4.25rem] sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2.5 sm:gap-3"
-          aria-label="LeadApp home"
+          className="flex min-w-0 flex-col gap-0.5 sm:gap-1"
+          aria-label="Enquireo home"
         >
-          <SiteLogo responsive priority />
-          <span className="text-lg font-semibold tracking-tight text-zinc-900 sm:text-xl">
-            LeadApp
+          <SiteLogo variant="full" priority className="min-w-0" />
+          <span className="text-[10px] font-medium tracking-wide text-zinc-500 sm:text-[11px]">
+            Capture. Qualify. Convert.
           </span>
         </Link>
 

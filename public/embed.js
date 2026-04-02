@@ -1,5 +1,5 @@
 /**
- * LeadAap embed — loads public forms in an isolated iframe at /embed/form/[id].
+ * Enquireo embed — loads public forms in an isolated iframe at /embed/form/[id].
  *
  * Usage:
  *   <script src="https://YOUR_DOMAIN/embed.js" async></script>
@@ -16,16 +16,16 @@
  *   data-base-url     Override origin for iframe (e.g. CDN or different subdomain)
  *
  * Parent page can listen for analytics / lifecycle:
- *   window.addEventListener("leadaap-embed", function (e) { console.log(e.detail); });
+ *   window.addEventListener("enquireo-embed", function (e) { console.log(e.detail); });
  *
  * Iframe postMessage protocol (event.data):
- *   { source: "leadaap-embed", kind: "resize", height, formId }
- *   { source: "leadaap-embed", kind: "ready" | "error", formId, message? }
- *   { source: "leadaap-embed", kind: "analytics", formId, name, detail? }
+ *   { source: "enquireo-embed", kind: "resize", height, formId }
+ *   { source: "enquireo-embed", kind: "ready" | "error", formId, message? }
+ *   { source: "enquireo-embed", kind: "analytics", formId, name, detail? }
  */
 (function () {
-  var MSG_SOURCE = "leadaap-embed";
-  var WIN_EVENT = "leadaap-embed";
+  var MSG_SOURCE = "enquireo-embed";
+  var WIN_EVENT = "enquireo-embed";
   var SELECTOR = "[data-form-id]";
 
   var messageBound = false;
@@ -113,7 +113,7 @@
   function createIframe(baseUrl, formId, minH, width) {
     var iframe = document.createElement("iframe");
     iframe.src = buildIframeSrc(baseUrl, formId);
-    iframe.title = "LeadAap form";
+    iframe.title = "Enquireo form";
     iframe.setAttribute("loading", "lazy");
     iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
     iframe.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
@@ -136,11 +136,11 @@
         return;
       }
       if (d.kind === "ready") {
-        wrap.classList.remove("leadaap-embed--loading");
+        wrap.classList.remove("enquireo-embed--loading");
         return;
       }
       if (d.kind === "error") {
-        wrap.classList.remove("leadaap-embed--loading");
+        wrap.classList.remove("enquireo-embed--loading");
         applyIframeSize(iframe, minH, minH);
         return;
       }
@@ -152,18 +152,18 @@
   }
 
   function injectModalStyles() {
-    if (document.getElementById("leadaap-embed-modal-styles")) return;
+    if (document.getElementById("enquireo-embed-modal-styles")) return;
     var css =
-      ".leadaap-embed-modal-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,0.45);opacity:0;transition:opacity 0.25s ease;backdrop-filter:blur(4px);}" +
-      ".leadaap-embed-modal-overlay.leadaap-embed-modal-open{opacity:1;}" +
-      ".leadaap-embed-modal-panel{position:fixed;left:50%;top:50%;z-index:2147483001;transform:translate(-50%,-48%) scale(0.96);opacity:0;transition:opacity 0.25s ease,transform 0.28s cubic-bezier(0.22,1,0.36,1);width:min(100vw - 24px,520px);max-height:min(90vh,720px);border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35);background:#fff;}" +
-      ".leadaap-embed-modal-panel.leadaap-embed-modal-open{opacity:1;transform:translate(-50%,-50%) scale(1);}" +
-      "@media (prefers-color-scheme: dark){.leadaap-embed-modal-panel{background:#18181b;}}" +
-      ".leadaap-embed-modal-close{position:absolute;right:10px;top:10px;z-index:2;width:36px;height:36px;border:0;border-radius:10px;background:rgba(0,0,0,0.06);cursor:pointer;font-size:20px;line-height:1;color:#334155;}" +
-      "@media (prefers-color-scheme: dark){.leadaap-embed-modal-close{background:rgba(255,255,255,0.08);color:#e2e8f0;}}" +
-      ".leadaap-embed-modal-iframe{width:100%;border:0;display:block;min-height:400px;}";
+      ".enquireo-embed-modal-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,0.45);opacity:0;transition:opacity 0.25s ease;backdrop-filter:blur(4px);}" +
+      ".enquireo-embed-modal-overlay.enquireo-embed-modal-open{opacity:1;}" +
+      ".enquireo-embed-modal-panel{position:fixed;left:50%;top:50%;z-index:2147483001;transform:translate(-50%,-48%) scale(0.96);opacity:0;transition:opacity 0.25s ease,transform 0.28s cubic-bezier(0.22,1,0.36,1);width:min(100vw - 24px,520px);max-height:min(90vh,720px);border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35);background:#fff;}" +
+      ".enquireo-embed-modal-panel.enquireo-embed-modal-open{opacity:1;transform:translate(-50%,-50%) scale(1);}" +
+      "@media (prefers-color-scheme: dark){.enquireo-embed-modal-panel{background:#18181b;}}" +
+      ".enquireo-embed-modal-close{position:absolute;right:10px;top:10px;z-index:2;width:36px;height:36px;border:0;border-radius:10px;background:rgba(0,0,0,0.06);cursor:pointer;font-size:20px;line-height:1;color:#334155;}" +
+      "@media (prefers-color-scheme: dark){.enquireo-embed-modal-close{background:rgba(255,255,255,0.08);color:#e2e8f0;}}" +
+      ".enquireo-embed-modal-iframe{width:100%;border:0;display:block;min-height:400px;}";
     var style = document.createElement("style");
-    style.id = "leadaap-embed-modal-styles";
+    style.id = "enquireo-embed-modal-styles";
     style.textContent = css;
     document.head.appendChild(style);
   }
@@ -178,23 +178,23 @@
     });
 
     var overlay = document.createElement("div");
-    overlay.className = "leadaap-embed-modal-overlay";
+    overlay.className = "enquireo-embed-modal-overlay";
     overlay.setAttribute("role", "presentation");
 
     var panel = document.createElement("div");
-    panel.className = "leadaap-embed-modal-panel";
+    panel.className = "enquireo-embed-modal-panel";
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-modal", "true");
     panel.setAttribute("aria-label", buttonLabel || "Form");
 
     var closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "leadaap-embed-modal-close";
+    closeBtn.className = "enquireo-embed-modal-close";
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.innerHTML = "&times;";
 
     var iframe = createIframe(baseUrl, formId, minH, "100%");
-    iframe.className = "leadaap-embed-modal-iframe";
+    iframe.className = "enquireo-embed-modal-iframe";
 
     panel.appendChild(closeBtn);
     panel.appendChild(iframe);
@@ -202,7 +202,7 @@
     document.body.appendChild(overlay);
 
     var unwire = wireIframeMessages(panel, iframe, formId, minH);
-    panel.classList.add("leadaap-embed--loading");
+    panel.classList.add("enquireo-embed--loading");
 
     function close() {
       relayToHost({
@@ -211,8 +211,8 @@
         formId: formId,
         name: "modal_close",
       });
-      overlay.classList.remove("leadaap-embed-modal-open");
-      panel.classList.remove("leadaap-embed-modal-open");
+      overlay.classList.remove("enquireo-embed-modal-open");
+      panel.classList.remove("enquireo-embed-modal-open");
       window.removeEventListener("keydown", onKey);
       setTimeout(function () {
         unwire();
@@ -234,14 +234,14 @@
     window.addEventListener("keydown", onKey);
 
     requestAnimationFrame(function () {
-      overlay.classList.add("leadaap-embed-modal-open");
-      panel.classList.add("leadaap-embed-modal-open");
+      overlay.classList.add("enquireo-embed-modal-open");
+      panel.classList.add("enquireo-embed-modal-open");
     });
   }
 
   function mountInline(el, baseUrl, formId, minH, width) {
     var wrap = document.createElement("div");
-    wrap.className = "leadaap-embed leadaap-embed--loading";
+    wrap.className = "enquireo-embed enquireo-embed--loading";
     wrap.style.width = "100%";
     wrap.style.maxWidth = "100%";
     wrap.style.margin = "0 auto";

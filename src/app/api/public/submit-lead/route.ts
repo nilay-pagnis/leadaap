@@ -165,7 +165,7 @@ export async function POST(request: Request) {
     const { error: notifErr } = await admin.from("notifications").insert({
       user_id: form.user_id,
       type: "lead_received",
-      title: "New lead received",
+      title: "You received a new enquiry",
       body: `Submission on “${formName}”.`,
       link: "/leads",
       metadata: { lead_id: leadRow.id, form_id: form.id },

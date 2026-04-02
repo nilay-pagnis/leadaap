@@ -9,7 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       attribute="class"
       defaultTheme="light"
       enableSystem
-      storageKey="leadaap-theme"
+      storageKey="enquireo-theme"
     >
       {children}
       <Toaster richColors position="top-center" />

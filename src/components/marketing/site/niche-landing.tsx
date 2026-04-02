@@ -273,8 +273,8 @@ export function TestimonialsPlaceholder() {
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {[
             "“We stopped losing inquiries and closed faster this quarter.”",
-            "“Lead quality improved immediately once we added qualification.”",
-            "“The cleanest lead workflow we’ve used so far.”",
+            "“Enquiry quality improved immediately once we added qualification.”",
+            "“The cleanest enquiry workflow we’ve used so far.”",
           ].map((quote) => (
             <div
               key={quote}

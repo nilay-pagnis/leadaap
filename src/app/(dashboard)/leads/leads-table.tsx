@@ -152,7 +152,7 @@ function LeadDetailMetaColumn({
           <dd className="mt-1 text-sm font-medium text-slate-900">{submittedAt}</dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Form</dt>
+          <dt className="text-xs text-slate-500">Enquiry form</dt>
           <dd className="mt-1 break-words text-sm font-medium text-slate-900">{formName}</dd>
         </div>
       </dl>
@@ -261,10 +261,10 @@ export function LeadsTable({
         <div className="min-w-0 space-y-2">
           <p className="text-sm font-medium text-primary">Inbox</p>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-            Leads
+            Enquiries
           </h1>
           <p className="max-w-lg text-sm text-slate-600 sm:text-base">
-            Search, filter, and open a lead in the side panel.
+            Search, filter, and open an enquiry in the side panel.
           </p>
         </div>
         <div className="relative w-full max-w-md lg:max-w-xs">
@@ -272,9 +272,9 @@ export function LeadsTable({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search leads…"
+            placeholder="Search enquiries…"
             className="h-10 rounded-xl border-slate-200 bg-white pl-9 shadow-sm"
-            aria-label="Search leads"
+            aria-label="Search enquiries"
           />
         </div>
       </div>
@@ -360,7 +360,7 @@ export function LeadsTable({
           animate={{ opacity: 1 }}
           className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm sm:py-20"
         >
-          <p className="font-medium text-slate-900">No leads match</p>
+          <p className="font-medium text-slate-900">No enquiries match</p>
           <p className="mt-2 text-sm text-slate-500">Try another search or filter.</p>
         </motion.div>
       ) : (
@@ -369,7 +369,7 @@ export function LeadsTable({
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
-                  <TableHead className="text-slate-500">Form</TableHead>
+                  <TableHead className="text-slate-500">Enquiry form</TableHead>
                   <TableHead className="text-slate-500">Preview</TableHead>
                   <TableHead className="text-slate-500">Status</TableHead>
                   <TableHead className="text-slate-500">Received</TableHead>
@@ -461,7 +461,7 @@ export function LeadsTable({
       <LeadDetailDrawer
         open={!!detail}
         onClose={closeDetail}
-        title="Lead details"
+        title="Enquiry details"
         subtitle="Full submission"
       >
         {detail && (

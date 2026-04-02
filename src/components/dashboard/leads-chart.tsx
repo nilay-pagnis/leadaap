@@ -23,7 +23,7 @@ export function LeadsChart({
         )}
       >
         <BarChart3 className="size-9 text-slate-300" aria-hidden />
-        <p className="mt-3 text-sm font-medium text-slate-700">No lead data yet</p>
+        <p className="mt-3 text-sm font-medium text-slate-700">No enquiry data yet</p>
         <p className="mt-1 max-w-xs text-xs text-slate-500">
           Submissions will populate this chart automatically.
         </p>
@@ -63,7 +63,7 @@ export function LeadsChart({
       <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
         <span>Last {series.length} days</span>
         <span className="tabular-nums text-slate-700">
-          <span className="font-medium">{total}</span> leads
+          <span className="font-medium">{total}</span> enquiries
         </span>
       </div>
     </div>
