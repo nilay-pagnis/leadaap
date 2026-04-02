@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://enquireo.com"
   ),
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {

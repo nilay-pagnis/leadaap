@@ -35,7 +35,7 @@ export function SiteHeader() {
           className="flex min-w-0 flex-col gap-0.5 sm:gap-1"
           aria-label="Enquireo home"
         >
-          <SiteLogo variant="full" priority className="min-w-0" />
+          <SiteLogo variant="full" className="min-w-0" />
           <span className="text-[10px] font-medium tracking-wide text-zinc-500 sm:text-[11px]">
             Capture. Qualify. Convert.
           </span>

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { EnquireoMark, type EnquireoMarkTone } from "@/components/brand/enquireo-mark";
 
 const sizeStyles: Record<
   "xs" | "sm" | "md" | "lg" | "xl",
@@ -19,62 +19,67 @@ type Props = {
   responsive?: boolean;
   size?: SiteLogoSize;
   className?: string;
-  priority?: boolean;
   /**
    * `mark` — gradient icon only (dashboard, auth, compact UI).
-   * `full` — horizontal logo with wordmark (marketing header/footer).
+   * `full` — horizontal lockup: mark + wordmark (marketing header/footer).
    */
   variant?: "mark" | "full";
+  /** Monochrome mark for print / dark surfaces (mark variant). */
+  markTone?: EnquireoMarkTone;
+  /** Indigo glow on the mark (color only). */
+  markGlow?: boolean;
 };
 
 /**
- * Enquireo brand assets: `/images/enquireo-mark.png`, `/images/enquireo-logo-full.png`.
+ * Enquireo brand: vector mark + Inter wordmark. Static SVGs: `/brand/enquireo-*.svg`.
  */
 export function SiteLogo({
   responsive,
   size = "lg",
   className,
-  priority,
   variant = "mark",
+  markTone = "color",
+  markGlow = true,
 }: Props) {
   if (variant === "full") {
     return (
       <div
         className={cn(
-          "relative flex shrink-0 items-center",
+          "relative flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3",
           className
         )}
       >
-        <Image
-          src="/images/enquireo-logo-full.png"
-          alt="Enquireo"
-          width={280}
-          height={68}
-          className="h-10 w-auto sm:h-11 md:h-12"
-          priority={priority}
-          sizes="(max-width: 640px) 220px, 280px"
+        <EnquireoMark
+          tone={markTone}
+          glow={markTone === "color" && markGlow}
+          className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
+          title="Enquireo"
         />
+        <span
+          className={cn(
+            "truncate font-semibold tracking-tight text-slate-900",
+            "text-[1.125rem] leading-none sm:text-xl"
+          )}
+        >
+          Enquireo
+        </span>
       </div>
     );
   }
 
-  const dim = responsive ? 72 : sizeStyles[size].dim;
-
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70",
+        "flex shrink-0 items-center justify-center",
         responsive ? "size-16 sm:size-[4.5rem]" : sizeStyles[size].box,
         className
       )}
     >
-      <Image
-        src="/images/enquireo-mark.png"
-        alt="Enquireo"
-        width={dim}
-        height={dim}
-        className="h-full w-full object-contain p-[10%]"
-        priority={priority}
+      <EnquireoMark
+        tone={markTone}
+        glow={markTone === "color" && markGlow}
+        className="h-full w-full"
+        title="Enquireo"
       />
     </div>
   );
