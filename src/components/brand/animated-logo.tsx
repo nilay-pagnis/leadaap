@@ -44,6 +44,7 @@ export function AnimatedLogo({
   animate = true,
   hover = true,
   "aria-label": ariaLabel = "Enquireo",
+  decorative = false,
 }: Props) {
   const reducedMotion = useReducedMotion();
   const shouldAnimate = animate && !reducedMotion;

@@ -1,13 +1,19 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Loader2, RotateCcw } from "lucide-react";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EmbedBridgeEvent } from "@/lib/embed/post-message";
+import {
+  buildLeadFormDefaults,
+  buildLeadFormSchema,
+} from "@/lib/form/lead-form-schema";
 import { cn } from "@/lib/utils";
 import type { FieldRow } from "@/types";
 
@@ -25,8 +31,18 @@ type StepGroup = {
   fields: FieldRow[];
 };
 
-const inputClass =
-  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 transition-all duration-200 outline-none hover:border-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:focus:scale-[1.01] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:hover:border-zinc-500";
+const inputBase =
+  "w-full rounded-xl border bg-white px-4 py-3 text-base transition-all duration-200 outline-none md:focus:scale-[1.01] dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500";
+
+const inputOk =
+  "border-gray-300 text-gray-900 placeholder:text-gray-400 hover:border-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-zinc-600 dark:placeholder:text-zinc-500 dark:hover:border-zinc-500";
+
+const inputErr =
+  "border-red-500 text-red-500 placeholder:text-red-400/80 ring-1 ring-red-500/20 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 md:focus:scale-100 dark:border-red-500 dark:text-red-400";
+
+function inputClassName(error?: string) {
+  return cn(inputBase, error ? inputErr : inputOk);
+}
 
 function showFormError(message: string) {
   toast.custom(
@@ -56,47 +72,6 @@ function generateSteps(fields: FieldRow[]): FieldRow[][] {
     steps.push(fields.slice(i, i + chunkSize));
   }
   return steps;
-}
-
-function validateFields(
-  fields: FieldRow[],
-  vals: Record<string, string | boolean>,
-  onRequiredError: (message: string) => void
-): boolean {
-  for (const f of fields) {
-    if (!f.required) continue;
-    const v = vals[f.id];
-    if (f.type === "checkbox") {
-      if (!v) {
-        onRequiredError(`Please confirm: ${f.label}`);
-        return false;
-      }
-      continue;
-    }
-    if (v === undefined || v === null || String(v).trim() === "") {
-      onRequiredError(`Please fill: ${f.label}`);
-      return false;
-    }
-  }
-  return true;
-}
-
-function validateStep(
-  fields: FieldRow[],
-  vals: Record<string, string | boolean>
-): string | null {
-  for (const field of fields) {
-    if (!field.required) continue;
-    const value = vals[field.id];
-    if (field.type === "checkbox") {
-      if (!value) return `Please confirm: ${field.label}`;
-      continue;
-    }
-    if (value === undefined || value === null || String(value).trim() === "") {
-      return `Please fill: ${field.label}`;
-    }
-  }
-  return null;
 }
 
 export function StepFormLoading({
@@ -155,9 +130,7 @@ export function StepForm({
   const [payload, setPayload] = useState<PublicPayload | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [values, setValues] = useState<Record<string, string | boolean>>({});
   const [stepIndex, setStepIndex] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const submitLock = useRef(false);
   const isEmbed = variant === "embed";
@@ -184,9 +157,6 @@ export function StepForm({
           return;
         }
         setPayload(json);
-        const initial: Record<string, string | boolean> = {};
-        for (const f of json.fields) initial[f.id] = f.type === "checkbox" ? false : "";
-        setValues(initial);
         setLoading(false);
         if (isEmbed && onEmbedEvent) {
           onEmbedEvent({ kind: "ready" });
@@ -229,6 +199,60 @@ export function StepForm({
     () => (payload ? sortFields(payload.fields) : []),
     [payload]
   );
+
+  const schema = useMemo(
+    () => buildLeadFormSchema(orderedFields),
+    [orderedFields]
+  );
+
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    watch,
+    formState: { isValid, isSubmitting, errors },
+    reset,
+    trigger,
+  } = useForm<Record<string, string | boolean>>({
+    resolver: zodResolver(schema) as Resolver<Record<string, string | boolean>>,
+    mode: "onChange",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
+    defaultValues: {},
+  });
+
+  /** Same Zod rules as resolver — avoids RHF `isValid` / resolver desync (submit stuck disabled). */
+  const watchedValues = watch();
+  const canSubmit =
+    orderedFields.length > 0 && schema.safeParse(watchedValues).success;
+
+  useEffect(() => {
+    if (!payload || orderedFields.length === 0) return;
+    reset(buildLeadFormDefaults(orderedFields));
+    // #region agent log
+    queueMicrotask(() => {
+      fetch("http://127.0.0.1:7681/ingest/39fd932c-adba-4dee-ae64-a07027ce3e53", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0231de",
+        },
+        body: JSON.stringify({
+          sessionId: "0231de",
+          location: "StepForm.tsx:reset",
+          message: "post-reset microtask",
+          data: {
+            hypothesisId: "H2",
+            fieldCount: orderedFields.length,
+            formId: payload.form.id,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+    });
+    // #endregion
+  }, [payload, orderedFields, reset]);
+
   const steps = useMemo<StepGroup[]>(
     () =>
       generateSteps(orderedFields).map((group, i) => ({
@@ -246,95 +270,126 @@ export function StepForm({
   );
   const progress = (stepIndex + 1) / totalSteps;
 
-  const goNext = useCallback(() => {
-    const error = validateStep(currentFields, values);
-    if (error) {
-      showFormError(error);
+  // #region agent log
+  useEffect(() => {
+    const errorKeys = Object.keys(errors);
+    const valueKeys = Object.keys(getValues());
+    fetch("http://127.0.0.1:7681/ingest/39fd932c-adba-4dee-ae64-a07027ce3e53", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0231de",
+      },
+      body: JSON.stringify({
+        sessionId: "0231de",
+        location: "StepForm.tsx:formState",
+        message: "isValid/errors snapshot",
+        data: {
+          hypothesisId: "H1",
+          isValid,
+          canSubmit,
+          errorKeys,
+          errorCount: errorKeys.length,
+          valueKeyCount: valueKeys.length,
+          stepIndex,
+          isLast,
+          runId: "post-fix",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  }, [isValid, canSubmit, errors, stepIndex, isLast, getValues]);
+  // #endregion
+
+  const goNext = useCallback(async () => {
+    const ids = currentFields.map((f) => f.id);
+    const ok = await trigger(ids as never);
+    // #region agent log
+    fetch("http://127.0.0.1:7681/ingest/39fd932c-adba-4dee-ae64-a07027ce3e53", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0231de",
+      },
+      body: JSON.stringify({
+        sessionId: "0231de",
+        location: "StepForm.tsx:goNext",
+        message: "trigger step fields",
+        data: { hypothesisId: "H5", triggerOk: ok, fieldIds: ids, stepIndex },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    if (!ok) {
       if (isEmbed && onEmbedEvent) {
         onEmbedEvent({
           kind: "analytics",
           name: "validation_error",
-          detail: { message: error },
+          detail: { step: stepIndex },
         });
       }
       return;
     }
     setStepIndex((i) => Math.min(i + 1, Math.max(steps.length - 1, 0)));
-  }, [currentFields, isEmbed, onEmbedEvent, steps.length, values]);
+  }, [currentFields, isEmbed, onEmbedEvent, steps.length, stepIndex, trigger]);
 
   const goBack = useCallback(() => {
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!payload || submitLock.current || submitting) return;
-    const all = sortFields(payload.fields);
-    if (
-      !validateFields(all, values, (msg) => {
-        showFormError(msg);
-        if (isEmbed && onEmbedEvent) {
-          onEmbedEvent({
-            kind: "analytics",
-            name: "validation_error",
-            detail: { message: msg },
-          });
+  const onValidSubmit = useCallback(
+    async (data: Record<string, string | boolean>) => {
+      if (!payload || submitLock.current) return;
+      submitLock.current = true;
+      if (isEmbed && onEmbedEvent) {
+        onEmbedEvent({ kind: "analytics", name: "submit_start" });
+      }
+      try {
+        const res = await fetch("/api/public/submit-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ form_id: payload.form.id, data }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          if (isEmbed && onEmbedEvent) {
+            onEmbedEvent({
+              kind: "analytics",
+              name: "submit_error",
+              detail: { code: json?.code, status: res.status },
+            });
+          }
+          if (json?.code === "LEAD_LIMIT") {
+            showFormError("You've reached your limit. Upgrade to continue.");
+          } else {
+            showFormError(json.error ?? "Submission failed");
+          }
+          return;
         }
-      })
-    )
-      return;
-    submitLock.current = true;
-    setSubmitting(true);
-    if (isEmbed && onEmbedEvent) {
-      onEmbedEvent({ kind: "analytics", name: "submit_start" });
-    }
-    try {
-      const res = await fetch("/api/public/submit-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ form_id: payload.form.id, data: values }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
+        if (isEmbed && onEmbedEvent) {
+          onEmbedEvent({ kind: "analytics", name: "submit_success" });
+        }
+        setDone(true);
+      } catch {
         if (isEmbed && onEmbedEvent) {
           onEmbedEvent({
             kind: "analytics",
             name: "submit_error",
-            detail: { code: json?.code, status: res.status },
+            detail: { reason: "network" },
           });
         }
-        if (json?.code === "LEAD_LIMIT") {
-          showFormError("You've reached your limit. Upgrade to continue.");
-        } else {
-          showFormError(json.error ?? "Submission failed");
-        }
-        return;
+        showFormError("Something went wrong");
+      } finally {
+        submitLock.current = false;
       }
-      if (isEmbed && onEmbedEvent) {
-        onEmbedEvent({ kind: "analytics", name: "submit_success" });
-      }
-      setDone(true);
-    } catch {
-      if (isEmbed && onEmbedEvent) {
-        onEmbedEvent({
-          kind: "analytics",
-          name: "submit_error",
-          detail: { reason: "network" },
-        });
-      }
-      showFormError("Something went wrong");
-    } finally {
-      submitLock.current = false;
-      setSubmitting(false);
-    }
-  }
+    },
+    [isEmbed, onEmbedEvent, payload]
+  );
 
   function resetForAnother() {
     if (!payload) return;
-    const initial: Record<string, string | boolean> = {};
-    for (const f of payload.fields) initial[f.id] = f.type === "checkbox" ? false : "";
-    setValues(initial);
+    reset(buildLeadFormDefaults(sortFields(payload.fields)));
     setDone(false);
     setStepIndex(0);
     submitLock.current = false;
@@ -539,7 +594,11 @@ export function StepForm({
               : "A few quick details"}
           </h2>
 
-          <form onSubmit={onSubmit} className="flex flex-col">
+          <form
+            onSubmit={handleSubmit(onValidSubmit)}
+            className="flex flex-col"
+            noValidate
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={stepIndex}
@@ -550,23 +609,34 @@ export function StepForm({
                 className="space-y-6"
               >
                 {currentFields.map((field) => (
-                  <div key={field.id} className="space-y-2">
-                    {field.type !== "checkbox" && currentFields.length > 1 ? (
-                      <label
-                        htmlFor={`field-${field.id}`}
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        {field.label}
-                        {field.required ? <span className="text-red-500"> *</span> : null}
-                      </label>
-                    ) : null}
-                    <EnterpriseFieldInput
-                      field={field}
-                      value={values[field.id]}
-                      onChange={(v) => setValues((prev) => ({ ...prev, [field.id]: v }))}
-                      hideLabel={currentFields.length === 1}
-                    />
-                  </div>
+                  <Controller
+                    key={field.id}
+                    name={field.id}
+                    control={control}
+                    render={({ field: ctl, fieldState }) => (
+                      <div className="space-y-2">
+                        {field.type !== "checkbox" && currentFields.length > 1 ? (
+                          <label
+                            htmlFor={`field-${field.id}`}
+                            className="block text-sm font-medium text-gray-700 dark:text-zinc-300"
+                          >
+                            {field.label}
+                            {field.required ? <span className="text-red-500"> *</span> : null}
+                          </label>
+                        ) : null}
+                        <EnterpriseFieldInput
+                          field={field}
+                          value={ctl.value}
+                          onChange={ctl.onChange}
+                          onBlur={ctl.onBlur}
+                          name={ctl.name}
+                          inputRef={field.type === "checkbox" ? undefined : ctl.ref}
+                          hideLabel={currentFields.length === 1}
+                          error={fieldState.error?.message}
+                        />
+                      </div>
+                    )}
+                  />
                 ))}
               </motion.div>
             </AnimatePresence>
@@ -588,29 +658,29 @@ export function StepForm({
                 {!showStepUi || isLast ? (
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={isSubmitting || !canSubmit}
                     className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-md transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 sm:w-auto md:hover:scale-[1.02] md:disabled:hover:scale-100"
                   >
-                    {submitting ? (
+                    {isSubmitting ? (
                       <>
-                        <Loader2 className="size-4 animate-spin" />
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
                         Sending…
                       </>
                     ) : (
                       <>
                         Submit
-                        <ArrowRight className="size-4" />
+                        <ArrowRight className="size-4" aria-hidden />
                       </>
                     )}
                   </button>
                 ) : (
                   <button
                     type="button"
-                    onClick={goNext}
+                    onClick={() => void goNext()}
                     className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-md transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98] sm:w-auto md:hover:scale-[1.02]"
                   >
                     Continue
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-4" aria-hidden />
                   </button>
                 )}
 
@@ -632,35 +702,66 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
   field,
   value,
   onChange,
+  onBlur,
+  name,
+  inputRef,
   hideLabel,
+  error,
 }: {
   field: FieldRow;
   value: string | boolean | undefined;
   onChange: (v: string | boolean) => void;
+  onBlur: () => void;
+  name: string;
+  inputRef?:
+    | React.RefCallback<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    | null;
   hideLabel?: boolean;
+  error?: string;
 }) {
   const id = `field-${field.id}`;
   const opts = Array.isArray(field.options) ? field.options.map(String) : [];
 
+  const errMsg = (
+    <p
+      className="mt-1.5 text-sm text-red-500 transition-opacity duration-200 dark:text-red-400"
+      role="alert"
+    >
+      {error}
+    </p>
+  );
+
   switch (field.type) {
     case "checkbox":
       return (
-        <div className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:border-zinc-500">
-          <Checkbox
-            id={id}
-            checked={Boolean(value)}
-            onCheckedChange={(c) => onChange(Boolean(c))}
-            className="mt-0.5 border-gray-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:text-white"
-          />
-          <Label htmlFor={id} className="cursor-pointer text-sm font-medium text-gray-700">
-            {field.label}
-            {field.required ? <span className="text-red-500"> *</span> : null}
-          </Label>
+        <div>
+          <div
+            className={cn(
+              "flex cursor-pointer items-start gap-3 rounded-xl border bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-400 dark:bg-zinc-900 dark:hover:border-zinc-500",
+              error
+                ? "border-red-500 ring-1 ring-red-500/20 dark:border-red-500"
+                : "border-gray-300 dark:border-zinc-600"
+            )}
+          >
+            <Checkbox
+              id={id}
+              name={name}
+              checked={Boolean(value)}
+              onCheckedChange={(c) => onChange(Boolean(c))}
+              onBlur={onBlur}
+              className="mt-0.5 border-gray-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:text-white"
+            />
+            <Label htmlFor={id} className="cursor-pointer text-sm font-medium text-gray-700 dark:text-zinc-300">
+              {field.label}
+              {field.required ? <span className="text-red-500"> *</span> : null}
+            </Label>
+          </div>
+          {error ? errMsg : null}
         </div>
       );
     case "textarea":
       return (
-        <>
+        <div>
           {hideLabel ? (
             <label htmlFor={id} className="sr-only">
               {field.label}
@@ -668,19 +769,28 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
           ) : null}
           <textarea
             id={id}
-            required={field.required}
+            name={name}
+            ref={inputRef as React.Ref<HTMLTextAreaElement>}
             value={String(value ?? "")}
             onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
             placeholder={hideLabel ? "Type your answer…" : undefined}
             rows={5}
-            className={cn(inputClass, "min-h-[140px] resize-y")}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className={cn(inputClassName(error), "min-h-[140px] resize-y")}
           />
-        </>
+          {error ? (
+            <p id={`${id}-error`} className="mt-1.5 text-sm text-red-500 dark:text-red-400" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </div>
       );
     case "select":
       if (opts.length === 0) {
         return (
-          <>
+          <div>
             {hideLabel ? (
               <label htmlFor={id} className="sr-only">
                 {field.label}
@@ -688,11 +798,14 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
             ) : null}
             <select
               id={id}
-              required={field.required}
+              name={name}
+              ref={inputRef as React.Ref<HTMLSelectElement>}
               value={String(value ?? "")}
               onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              aria-invalid={error ? true : undefined}
               className={cn(
-                inputClass,
+                inputClassName(error),
                 "h-[50px] cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
               )}
               style={{
@@ -703,11 +816,12 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
                 {field.required ? "Select an option" : "Optional"}
               </option>
             </select>
-          </>
+            {error ? errMsg : null}
+          </div>
         );
       }
       return (
-        <>
+        <div>
           {hideLabel ? (
             <label htmlFor={id} className="sr-only">
               {field.label}
@@ -716,11 +830,14 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
           ) : null}
           <select
             id={id}
-            required={field.required}
+            name={name}
+            ref={inputRef as React.Ref<HTMLSelectElement>}
             value={String(value ?? "")}
             onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
+            aria-invalid={error ? true : undefined}
             className={cn(
-              inputClass,
+              inputClassName(error),
               "h-[50px] cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
             )}
             style={{
@@ -736,7 +853,8 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
               </option>
             ))}
           </select>
-        </>
+          {error ? errMsg : null}
+        </div>
       );
     default: {
       const inputType =
@@ -754,7 +872,7 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
             ? "+1 (555) 000-0000"
             : "Your answer";
       return (
-        <>
+        <div>
           {hideLabel ? (
             <label htmlFor={id} className="sr-only">
               {field.label}
@@ -762,17 +880,21 @@ const EnterpriseFieldInput = memo(function EnterpriseFieldInput({
           ) : null}
           <input
             id={id}
+            name={name}
+            ref={inputRef as React.Ref<HTMLInputElement>}
             type={inputType}
-            required={field.required}
             value={String(value ?? "")}
             onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
             placeholder={hideLabel ? placeholderSingle : placeholderMulti}
-            className={inputClass}
+            className={inputClassName(error)}
             autoComplete={
               field.type === "email" ? "email" : field.type === "phone" ? "tel" : undefined
             }
+            aria-invalid={error ? true : undefined}
           />
-        </>
+          {error ? errMsg : null}
+        </div>
       );
     }
   }
