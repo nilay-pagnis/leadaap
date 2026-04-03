@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -26,10 +25,10 @@ import { Eye, LayoutGrid, LayoutList } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EnquiryFilters } from "@/components/leads/enquiry-filters";
-import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
 import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 import { KanbanBoard } from "@/components/leads/kanban-board";
-import { ActivityTimeline } from "@/components/leads/activity-timeline";
+import { EnquiryDetailPanel } from "@/components/leads/enquiry-detail-panel";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
@@ -39,128 +38,6 @@ function formatLeadValue(v: string | boolean | string[] | undefined): string {
   if (Array.isArray(v)) return v.join(", ");
   const s = String(v).trim();
   return s || "—";
-}
-
-function FieldValueBlock({
-  raw,
-  isSelect,
-}: {
-  raw: string | boolean | string[];
-  isSelect: boolean;
-}) {
-  const display = formatLeadValue(raw);
-  if (isSelect && typeof raw === "string" && raw) {
-    return (
-      <span className="inline-flex max-w-full items-center rounded-md bg-primary/10 px-2 py-1 text-base font-medium text-primary">
-        <span className="truncate">{raw}</span>
-      </span>
-    );
-  }
-  return (
-    <p className="break-words text-base font-medium leading-snug text-slate-900">
-      {display}
-    </p>
-  );
-}
-
-function LeadDetailMainColumn({
-  data,
-  fieldById,
-}: {
-  data: Record<string, string | boolean | string[]>;
-  fieldById: Record<string, LeadFieldDef>;
-}) {
-  const entries = Object.entries(data).sort(([a], [b]) => a.localeCompare(b));
-  const textareaEntries = entries.filter(
-    ([id]) => fieldById[id]?.type === "textarea"
-  );
-  const otherEntries = entries.filter(
-    ([id]) => fieldById[id]?.type !== "textarea"
-  );
-
-  if (entries.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-8 text-center">
-        <p className="text-sm text-slate-500">No submission data</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      {textareaEntries.map(([fieldId, raw]) => {
-        const meta = fieldById[fieldId];
-        const label = meta?.label ?? fieldId;
-        const text = typeof raw === "string" ? raw : formatLeadValue(raw);
-        return (
-          <div key={fieldId} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-            <div className="mt-3 rounded-xl bg-slate-50 p-4 text-base font-medium leading-relaxed whitespace-pre-wrap text-slate-900">
-              {text || "—"}
-            </div>
-          </div>
-        );
-      })}
-
-      {otherEntries.length > 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-900">Details</h3>
-          <div className="mt-5 flex flex-col gap-5">
-            {otherEntries.map(([fieldId, raw]) => {
-              const meta = fieldById[fieldId];
-              const label = meta?.label ?? fieldId;
-              const isSelect = meta?.type === "select";
-              return (
-                <div
-                  key={fieldId}
-                  className="min-w-0 border-b border-slate-100 pb-5 last:border-0 last:pb-0"
-                >
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    {label}
-                  </p>
-                  <div className="mt-2 min-w-0">
-                    <FieldValueBlock raw={raw} isSelect={isSelect} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LeadDetailMetaColumn({
-  status,
-  submittedAt,
-  formName,
-}: {
-  status: LeadStatus;
-  submittedAt: string;
-  formName: string;
-}) {
-  return (
-    <aside className="h-fit rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Record</p>
-      <dl className="mt-4 space-y-4">
-        <div>
-          <dt className="text-xs text-slate-500">Status</dt>
-          <dd className="mt-1.5">
-            <LeadStatusBadge status={status} size="md" />
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs text-slate-500">Submitted</dt>
-          <dd className="mt-1 text-sm font-medium text-slate-900">{submittedAt}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-slate-500">Enquiry form</dt>
-          <dd className="mt-1 break-words text-sm font-medium text-slate-900">{formName}</dd>
-        </div>
-      </dl>
-    </aside>
-  );
 }
 
 export function EnquiriesView({
@@ -184,6 +61,10 @@ export function EnquiriesView({
   const [detail, setDetail] = useState<LeadRow | null>(null);
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
+
+  const isLg = useMediaQuery("(min-width: 1024px)");
+  const showSplitDetail = !!detail && view === "list" && isLg;
+  const showOverlayDetail = !!detail && (view === "board" || !isLg);
 
   const formsList = useMemo(
     () =>
@@ -309,7 +190,7 @@ export function EnquiriesView({
           </h1>
           <p className="max-w-lg text-sm text-slate-600 sm:text-base">
             {view === "list"
-              ? "Search, filter, and open an enquiry in the side panel."
+              ? "Search, filter, and read the enquiry beside the list on large screens."
               : "Drag cards between columns to update status. Use the grip handle to drag."}
           </p>
         </div>
@@ -373,8 +254,20 @@ export function EnquiriesView({
             <p className="mt-2 text-sm text-slate-500">Try another search or filter.</p>
           </motion.div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)]">
-            <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+          <div
+            className={cn(
+              "overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)]",
+              showSplitDetail &&
+                "flex min-h-[min(680px,calc(100dvh-11rem))] flex-row items-stretch"
+            )}
+          >
+            <div
+              className={cn(
+                "min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]",
+                showSplitDetail &&
+                  "w-[60%] max-h-full min-h-0 flex-shrink-0 overflow-y-auto"
+              )}
+            >
               <Table>
                 <TableHeader>
                   <TableRow className="border-slate-100 hover:bg-transparent">
@@ -398,7 +291,10 @@ export function EnquiriesView({
                     return (
                       <TableRow
                         key={row.id}
-                        className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50/90"
+                        className={cn(
+                          "cursor-pointer border-slate-100 transition-colors hover:bg-slate-50/90",
+                          detail?.id === row.id && "bg-primary/[0.05]"
+                        )}
                         onClick={() => setDetail(row)}
                       >
                         <TableCell className="max-w-[min(200px,40vw)] font-medium text-slate-900">
@@ -464,6 +360,21 @@ export function EnquiriesView({
                 </TableBody>
               </Table>
             </div>
+            {showSplitDetail ? (
+              <div className="flex h-full min-h-0 w-[40%] flex-shrink-0 flex-col border-l border-slate-200/90">
+                <EnquiryDetailPanel
+                  variant="embedded"
+                  open={!!detail}
+                  onClose={closeDetail}
+                  lead={detail}
+                  formNames={formNames}
+                  fieldDefs={fieldDefs}
+                  activityRefreshKey={activityRefreshKey}
+                  onStatusChange={updateStatus}
+                  updatingLeadId={updatingLeadId}
+                />
+              </div>
+            ) : null}
           </div>
         )
       ) : boardEmpty ? (
@@ -486,48 +397,19 @@ export function EnquiriesView({
         />
       )}
 
-      <LeadDetailDrawer
-        open={!!detail}
-        onClose={closeDetail}
-        title="Enquiry details"
-        subtitle="Full submission"
-      >
-        {detail && (
-          <motion.div
-            key={detail.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22 }}
-            className="flex flex-col gap-8"
-          >
-            <div className="flex flex-wrap items-center gap-3">
-              <LeadStatusBadge status={detail.status} size="md" />
-            </div>
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-10">
-              <section className="min-w-0 lg:col-span-7">
-                <LeadDetailMainColumn data={detail.data ?? {}} fieldById={fieldById} />
-              </section>
-              <section className="min-w-0 lg:col-span-3">
-                <LeadDetailMetaColumn
-                  status={detail.status}
-                  submittedAt={new Date(detail.created_at).toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                  formName={formNames[detail.form_id] ?? detail.form_id}
-                />
-              </section>
-            </div>
-            <div className="border-t border-slate-100 pt-8">
-              <ActivityTimeline
-                leadId={detail.id}
-                leadCreatedAt={detail.created_at}
-                refreshKey={activityRefreshKey}
-              />
-            </div>
-          </motion.div>
-        )}
-      </LeadDetailDrawer>
+      {showOverlayDetail ? (
+        <EnquiryDetailPanel
+          variant="overlay"
+          open={!!detail}
+          onClose={closeDetail}
+          lead={detail}
+          formNames={formNames}
+          fieldDefs={fieldDefs}
+          activityRefreshKey={activityRefreshKey}
+          onStatusChange={updateStatus}
+          updatingLeadId={updatingLeadId}
+        />
+      ) : null}
     </div>
   );
 }

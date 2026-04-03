@@ -28,13 +28,17 @@ function isStatusPayload(
   );
 }
 
-function isNotePayload(p: LeadActivity["payload"]): p is { body: string } {
+export function isNotePayload(p: LeadActivity["payload"]): p is { body: string } {
   return (
     typeof p === "object" &&
     p !== null &&
     "body" in p &&
     typeof (p as { body: unknown }).body === "string"
   );
+}
+
+export function getNoteBody(p: LeadActivity["payload"]): string {
+  return isNotePayload(p) ? p.body.trim() : "";
 }
 
 /** Single-line preview for note body in timeline */
