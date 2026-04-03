@@ -31,6 +31,8 @@ function statusLabel(s: LeadStatus): string {
 }
 
 export type EnquiryFiltersProps = {
+  /** `pipeline` hides status (Kanban); columns represent status. */
+  variant?: "full" | "pipeline";
   status: LeadStatus | "all";
   onStatusChange: (v: LeadStatus | "all") => void;
   formId: "all" | string;
@@ -42,6 +44,7 @@ export type EnquiryFiltersProps = {
 };
 
 export function EnquiryFilters({
+  variant = "full",
   status,
   onStatusChange,
   formId,
@@ -51,8 +54,9 @@ export function EnquiryFilters({
   forms,
   className,
 }: EnquiryFiltersProps) {
+  const isPipeline = variant === "pipeline";
   const activeCount =
-    (status !== "all" ? 1 : 0) +
+    (isPipeline ? 0 : status !== "all" ? 1 : 0) +
     (formId !== "all" ? 1 : 0) +
     (search.trim() !== "" ? 1 : 0);
 
@@ -82,33 +86,35 @@ export function EnquiryFilters({
       </div>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:max-w-[200px]">
-          <label className="text-xs font-medium text-slate-600" htmlFor="enquiry-filter-status">
-            Status
-          </label>
-          <Select
-            value={status}
-            onValueChange={(v) => onStatusChange(v as LeadStatus | "all")}
-          >
-            <SelectTrigger
-              id="enquiry-filter-status"
-              className={cn(
-                "h-10 w-full rounded-xl",
-                status !== "all" ? triggerActive : "border-slate-200"
-              )}
+        {!isPipeline && (
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:max-w-[200px]">
+            <label className="text-xs font-medium text-slate-600" htmlFor="enquiry-filter-status">
+              Status
+            </label>
+            <Select
+              value={status}
+              onValueChange={(v) => onStatusChange(v as LeadStatus | "all")}
             >
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {statusLabel(s)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              <SelectTrigger
+                id="enquiry-filter-status"
+                className={cn(
+                  "h-10 w-full rounded-xl",
+                  status !== "all" ? triggerActive : "border-slate-200"
+                )}
+              >
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {statusLabel(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:max-w-[240px]">
           <label className="text-xs font-medium text-slate-600" htmlFor="enquiry-filter-form">

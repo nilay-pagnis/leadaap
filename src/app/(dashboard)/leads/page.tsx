@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LeadsTable } from "./leads-table";
+import { EnquiriesView } from "./enquiries-view";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
 function LeadsTableFallback() {
@@ -70,7 +70,7 @@ export default async function LeadsPage() {
 
   return (
     <Suspense fallback={<LeadsTableFallback />}>
-      <LeadsTable
+      <EnquiriesView
         initialLeads={(leads ?? []) as LeadRow[]}
         formNames={formNames}
         fieldDefs={fieldDefs}
