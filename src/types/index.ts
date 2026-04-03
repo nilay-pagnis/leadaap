@@ -41,3 +41,18 @@ export interface LeadFieldDef {
   label: string;
   type: FieldType;
 }
+
+export type LeadActivityType = "created" | "status_change" | "note";
+
+export type LeadActivityPayload =
+  | Record<string, never>
+  | { from: LeadStatus; to: LeadStatus }
+  | { body: string };
+
+export interface LeadActivity {
+  id: string;
+  lead_id: string;
+  type: LeadActivityType;
+  payload: LeadActivityPayload;
+  created_at: string;
+}

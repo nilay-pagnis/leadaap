@@ -161,6 +161,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const { error: activityErr } = await admin.from("lead_activities").insert({
+      lead_id: leadRow.id,
+      type: "created",
+      payload: {},
+    });
+    if (activityErr) {
+      logError("lead_activities insert", activityErr);
+    }
+
     const formName = (form as { form_name?: string }).form_name ?? "Your form";
     const { error: notifErr } = await admin.from("notifications").insert({
       user_id: form.user_id,

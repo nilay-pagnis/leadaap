@@ -1,6 +1,5 @@
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { UsageBanner } from "@/components/billing/usage-banner";
 import { UpgradeModalHost } from "@/components/billing/upgrade-modal-host";
 import { getUsageForUser } from "@/lib/monetization/get-usage";
 import { ensureProfile } from "@/lib/monetization/profile";
@@ -49,7 +48,6 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell showAdminNav={false} user={dashboardUser}>
-      {usage && <UsageBanner usage={usage} />}
       {usage && <UpgradeModalHost usage={usage} />}
       {children}
     </DashboardShell>

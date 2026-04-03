@@ -57,7 +57,7 @@ export function LeadDetailDrawer({ open, onClose, title, subtitle, children }: P
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-lg flex-col rounded-l-2xl border-l border-slate-200/90 bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.04)]"
+            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-xl flex-col rounded-l-2xl border-l border-slate-200/90 bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.04)]"
           >
             <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
               <div className="min-w-0">

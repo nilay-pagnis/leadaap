@@ -29,6 +29,7 @@ import { EnquiryFilters } from "@/components/leads/enquiry-filters";
 import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
 import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 import { KanbanBoard } from "@/components/leads/kanban-board";
+import { ActivityTimeline } from "@/components/leads/activity-timeline";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
@@ -182,6 +183,7 @@ export function EnquiriesView({
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<LeadRow | null>(null);
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
+  const [activityRefreshKey, setActivityRefreshKey] = useState(0);
 
   const formsList = useMemo(
     () =>
@@ -256,8 +258,8 @@ export function EnquiriesView({
 
   const updateStatus = useCallback(async (id: string, status: LeadStatus) => {
     const prevLead = leads.find((l) => l.id === id);
-    const prevStatus = prevLead?.status;
-    if (!prevLead || prevStatus === status) return;
+    if (!prevLead || prevLead.status === status) return;
+    const prevStatus = prevLead.status;
 
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
     setDetail((d) => (d?.id === id ? { ...d, status } : d));
@@ -270,13 +272,27 @@ export function EnquiriesView({
     if (error) {
       toast.error(error.message);
       setLeads((prev) =>
-        prev.map((l) => (l.id === id && prevStatus ? { ...l, status: prevStatus } : l))
+        prev.map((l) => (l.id === id ? { ...l, status: prevStatus } : l))
       );
       setDetail((d) =>
-        d?.id === id && prevStatus ? { ...d, status: prevStatus } : d
+        d?.id === id ? { ...d, status: prevStatus } : d
       );
       return;
     }
+
+    const { error: activityError } = await supabase.from("lead_activities").insert({
+      lead_id: id,
+      type: "status_change",
+      payload: { from: prevStatus, to: status },
+    });
+    if (activityError) {
+      toast.message("Activity log update skipped", {
+        description: activityError.message,
+      });
+    } else {
+      setActivityRefreshKey((k) => k + 1);
+    }
+
     toast.success("Status updated");
   }, [leads]);
 
@@ -501,6 +517,13 @@ export function EnquiriesView({
                   formName={formNames[detail.form_id] ?? detail.form_id}
                 />
               </section>
+            </div>
+            <div className="border-t border-slate-100 pt-8">
+              <ActivityTimeline
+                leadId={detail.id}
+                leadCreatedAt={detail.created_at}
+                refreshKey={activityRefreshKey}
+              />
             </div>
           </motion.div>
         )}

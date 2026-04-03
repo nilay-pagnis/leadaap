@@ -1,24 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, StickyNote } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
 import { formatRelativeTime } from "@/lib/format-relative";
 import type { LeadFieldDef, LeadRow } from "@/types";
-
-const NOTE_KEY = (leadId: string) => `enquireo:lead-note:${leadId}`;
 
 export type EnquiryCardProps = {
   lead: LeadRow;
@@ -47,28 +35,6 @@ export function EnquiryCard({
   const style = transform
     ? { transform: CSS.Translate.toString(transform) }
     : undefined;
-
-  const [noteOpen, setNoteOpen] = useState(false);
-  const [noteDraft, setNoteDraft] = useState("");
-
-  const openNoteDialog = useCallback(() => {
-    if (typeof window === "undefined") return;
-    try {
-      setNoteDraft(localStorage.getItem(NOTE_KEY(lead.id)) ?? "");
-    } catch {
-      setNoteDraft("");
-    }
-    setNoteOpen(true);
-  }, [lead.id]);
-
-  const saveNote = useCallback(() => {
-    try {
-      localStorage.setItem(NOTE_KEY(lead.id), noteDraft);
-    } catch {
-      /* ignore quota */
-    }
-    setNoteOpen(false);
-  }, [lead.id, noteDraft]);
 
   return (
     <div
@@ -104,43 +70,8 @@ export function EnquiryCard({
           <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
           <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
           <p className="mt-1.5 text-xs text-slate-400">{when}</p>
+          <p className="mt-2 text-xs text-slate-400">Open for notes and activity</p>
         </button>
-      </div>
-      <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1 rounded-lg px-2 text-xs text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-          onClick={(e) => {
-            e.preventDefault();
-            openNoteDialog();
-          }}
-        >
-          <StickyNote className="size-3.5" />
-          Add note
-        </Button>
-        <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-          <DialogContent className="sm:max-w-md" showCloseButton>
-            <DialogHeader>
-              <DialogTitle>Note</DialogTitle>
-            </DialogHeader>
-            <Textarea
-              value={noteDraft}
-              onChange={(e) => setNoteDraft(e.target.value)}
-              placeholder="Private note (saved on this device only)…"
-              className="min-h-28 rounded-xl"
-            />
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" onClick={() => setNoteOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="button" onClick={saveNote}>
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
