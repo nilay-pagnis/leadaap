@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { ScrollToTop } from "@/components/layout/scroll-to-top";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       storageKey="enquireo-theme"
     >
       {children}
+      <ScrollToTop />
       <Toaster richColors position="top-center" />
     </ThemeProvider>
   );
