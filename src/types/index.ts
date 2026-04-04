@@ -27,7 +27,8 @@ export interface FieldRow {
 
 export interface LeadRow {
   id: string;
-  form_id: string;
+  /** Null when created as standalone manual entry (no linked form). */
+  form_id: string | null;
   user_id: string;
   data: Record<string, string | boolean | string[]>;
   status: LeadStatus;

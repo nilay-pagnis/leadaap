@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildManualLeadData,
+  buildStandaloneManualLeadData,
   manualSourceLabel,
   type ManualEnquirySource,
 } from "@/lib/leads/build-manual-lead-data";
-import { normalizePlanId, PLAN_LIMITS } from "@/lib/monetization/plans";
+import { MANUAL_VIRTUAL_FORM_ID } from "@/lib/leads/manual-enquiry-filter";
+import {
+  isUnlimitedCredits,
+  normalizePlanId,
+  PLAN_LIMITS,
+} from "@/lib/monetization/plans";
 import type { FieldRowForManual } from "@/lib/leads/build-manual-lead-data";
 import type { LeadRow, LeadStatus } from "@/types";
 
@@ -132,7 +138,10 @@ export async function POST(request: Request) {
       { status: 500, headers: NO_STORE }
     );
   }
-  if ((monthLeadCount ?? 0) >= monthlyLeadCap) {
+  if (
+    !isUnlimitedCredits(monthlyLeadCap) &&
+    (monthLeadCount ?? 0) >= monthlyLeadCap
+  ) {
     return NextResponse.json(
       {
         error:
@@ -143,12 +152,56 @@ export async function POST(request: Request) {
     );
   }
 
-  let formId: string;
-
   const requestedForm =
     typeof body.form_id === "string" && body.form_id.trim()
       ? body.form_id.trim()
       : null;
+
+  if (requestedForm === MANUAL_VIRTUAL_FORM_ID) {
+    const data = buildStandaloneManualLeadData({
+      name: body.name.trim(),
+      email: emailRaw,
+      phone: phoneRaw,
+      message: body.message.trim(),
+      source: source as ManualEnquirySource,
+    });
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from("leads")
+      .insert({
+        form_id: null,
+        user_id: user.id,
+        data,
+        status,
+      })
+      .select("*")
+      .single();
+
+    if (insertErr || !inserted) {
+      return NextResponse.json(
+        { error: insertErr?.message ?? "Could not save enquiry" },
+        { status: 500, headers: NO_STORE }
+      );
+    }
+
+    const noteBody = `Enquiry added manually\n\nSource: ${manualSourceLabel(source as ManualEnquirySource)}`;
+    const { error: actErr } = await supabase.from("lead_activities").insert({
+      lead_id: inserted.id,
+      type: "note",
+      payload: { body: noteBody },
+      created_at: new Date().toISOString(),
+    });
+    if (actErr) {
+      console.error("[manual lead] activity insert:", actErr);
+    }
+
+    return NextResponse.json(
+      { lead: inserted as LeadRow },
+      { status: 201, headers: NO_STORE }
+    );
+  }
+
+  let formId: string;
 
   if (!requestedForm) {
     const { data: forms, error: formsErr } = await supabase
@@ -159,7 +212,7 @@ export async function POST(request: Request) {
       .limit(1);
     if (formsErr || !forms?.[0]?.id) {
       return NextResponse.json(
-        { error: "Create an enquiry form first, or pick a form below." },
+        { error: "Create an enquiry form first, pick Manual Entry, or choose a form below." },
         { status: 400, headers: NO_STORE }
       );
     }

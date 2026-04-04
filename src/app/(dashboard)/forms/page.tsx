@@ -38,8 +38,8 @@ export default async function FormsPage() {
       byForm[f.id] = { total: 0, worked: 0 };
     }
     for (const row of leadRows ?? []) {
-      const fid = row.form_id as string;
-      if (!byForm[fid]) continue;
+      const fid = row.form_id as string | null;
+      if (fid == null || !byForm[fid]) continue;
       byForm[fid].total += 1;
       if (row.status !== "new") byForm[fid].worked += 1;
     }

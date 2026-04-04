@@ -17,9 +17,9 @@ as $$
       p.id as user_id,
       case lower(trim(coalesce(p.plan, 'free')))
         when 'free' then 10
-        when 'starter' then 300
+        when 'starter' then 100
         when 'growth' then 2000
-        when 'premium' then 5000
+        when 'premium' then 1000000
         else 10
       end as monthly_lead_limit
     from public.profiles p

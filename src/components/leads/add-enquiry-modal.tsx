@@ -27,6 +27,10 @@ import {
   MANUAL_SOURCE_OPTIONS,
   type ManualEnquirySource,
 } from "@/lib/leads/build-manual-lead-data";
+import {
+  MANUAL_VIRTUAL_FORM_ID,
+  VIRTUAL_MANUAL_FORM,
+} from "@/lib/leads/manual-enquiry-filter";
 import type { LeadRow, LeadStatus } from "@/types";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
@@ -64,7 +68,7 @@ export function AddEnquiryModal({
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [source, setSource] = useState<ManualEnquirySource>("manual");
-  const [formId, setFormId] = useState<string>("");
+  const [formId, setFormId] = useState<string>(MANUAL_VIRTUAL_FORM_ID);
   const [status, setStatus] = useState<LeadStatus>("new");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
@@ -92,7 +96,7 @@ export function AddEnquiryModal({
     setPhone("");
     setMessage("");
     setSource("manual");
-    setFormId("");
+    setFormId(MANUAL_VIRTUAL_FORM_ID);
     setStatus("new");
     setErrors({});
   }, []);
@@ -119,8 +123,9 @@ export function AddEnquiryModal({
 
   const submit = useCallback(async () => {
     if (!validate()) return;
-    if (forms.length === 0) {
-      toast.error("Create an enquiry form first");
+    const useManualEntry = formId === MANUAL_VIRTUAL_FORM_ID;
+    if (!useManualEntry && forms.length === 0) {
+      toast.error("Create an enquiry form first or choose Manual Entry");
       return;
     }
 
@@ -135,7 +140,7 @@ export function AddEnquiryModal({
           phone: phone.trim() || undefined,
           message: message.trim(),
           source,
-          form_id: formId || undefined,
+          form_id: useManualEntry ? MANUAL_VIRTUAL_FORM_ID : formId || undefined,
           status,
         }),
       });
@@ -177,6 +182,8 @@ export function AddEnquiryModal({
   ]);
 
   const noForms = forms.length === 0;
+  const canSubmit =
+    !submitting && (formId === MANUAL_VIRTUAL_FORM_ID || forms.length > 0);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -197,12 +204,15 @@ export function AddEnquiryModal({
 
         <div className="space-y-4 px-6 py-5">
           {noForms ? (
-            <p className="rounded-xl border border-dashed border-amber-200/90 bg-amber-50/80 px-4 py-3 text-sm text-amber-950">
-              You need at least one enquiry form.{" "}
-              <a href="/forms" className="font-semibold text-primary underline-offset-2 hover:underline">
-                Create a form
+            <p className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-4 py-3 text-sm text-slate-700">
+              <strong>Manual Entry</strong> works without a form. Optionally{" "}
+              <a
+                href="/forms"
+                className="font-semibold text-primary underline-offset-2 hover:underline"
+              >
+                create a form
               </a>{" "}
-              first.
+              to map fields from a template.
             </p>
           ) : null}
 
@@ -216,7 +226,7 @@ export function AddEnquiryModal({
               onChange={(e) => setName(e.target.value)}
               placeholder="Contact name"
               className="rounded-xl"
-              disabled={submitting || noForms}
+              disabled={submitting}
               aria-invalid={!!errors.name}
             />
             {errors.name ? (
@@ -236,7 +246,7 @@ export function AddEnquiryModal({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@company.com"
               className="rounded-xl"
-              disabled={submitting || noForms}
+              disabled={submitting}
               aria-invalid={!!errors.email}
             />
             {errors.email ? (
@@ -255,7 +265,7 @@ export function AddEnquiryModal({
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 …"
               className="rounded-xl"
-              disabled={submitting || noForms}
+              disabled={submitting}
             />
           </div>
 
@@ -270,7 +280,7 @@ export function AddEnquiryModal({
               placeholder="What they said or what to remember…"
               rows={4}
               className="min-h-[100px] resize-none rounded-xl"
-              disabled={submitting || noForms}
+              disabled={submitting}
               aria-invalid={!!errors.message}
             />
             {errors.message ? (
@@ -284,7 +294,7 @@ export function AddEnquiryModal({
               <Select
                 value={source}
                 onValueChange={(v) => setSource(v as ManualEnquirySource)}
-                disabled={submitting || noForms}
+                disabled={submitting}
               >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue />
@@ -304,7 +314,7 @@ export function AddEnquiryModal({
               <Select
                 value={status}
                 onValueChange={(v) => setStatus(v as LeadStatus)}
-                disabled={submitting || noForms}
+                disabled={submitting}
               >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue />
@@ -323,17 +333,17 @@ export function AddEnquiryModal({
           <div className="space-y-2">
             <Label className="text-slate-700">Form</Label>
             <Select
-              value={formId || "__default__"}
-              onValueChange={(v) =>
-                setFormId(!v || v === "__default__" ? "" : v)
-              }
-              disabled={submitting || noForms}
+              value={formId}
+              onValueChange={(v) => setFormId(v ?? MANUAL_VIRTUAL_FORM_ID)}
+              disabled={submitting}
             >
               <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="Default (first form)" />
+                <SelectValue placeholder="Form" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__default__">Default (first form A–Z)</SelectItem>
+                <SelectItem value={MANUAL_VIRTUAL_FORM_ID}>
+                  {VIRTUAL_MANUAL_FORM.name}
+                </SelectItem>
                 {forms.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name}
@@ -342,7 +352,9 @@ export function AddEnquiryModal({
               </SelectContent>
             </Select>
             <p className="text-xs text-slate-500">
-              Fields map to this form&apos;s name, email, phone, and message inputs.
+              {formId === MANUAL_VIRTUAL_FORM_ID
+                ? "Stored without a linked form — same inbox experience as templated forms."
+                : "Fields map to this form’s name, email, phone, and message inputs."}
             </p>
           </div>
         </div>
@@ -360,7 +372,7 @@ export function AddEnquiryModal({
           <Button
             type="button"
             className="rounded-xl font-semibold"
-            disabled={submitting || noForms}
+            disabled={!canSubmit}
             onClick={() => void submit()}
           >
             {submitting ? (

@@ -1,6 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitizePublicLeadData } from "@/lib/leads/sanitize-public-submission";
-import { normalizePlanId, PLAN_LIMITS } from "@/lib/monetization/plans";
+import {
+  isUnlimitedCredits,
+  normalizePlanId,
+  PLAN_LIMITS,
+} from "@/lib/monetization/plans";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -119,7 +123,10 @@ export async function POST(request: Request) {
         { status: 500, headers: NO_STORE_HEADERS }
       );
     }
-    if ((monthLeadCount ?? 0) >= monthlyLeadCap) {
+    if (
+      !isUnlimitedCredits(monthlyLeadCap) &&
+      (monthLeadCount ?? 0) >= monthlyLeadCap
+    ) {
       return NextResponse.json(
         {
           error: "Lead limit reached. You've reached your limit. Upgrade to continue.",

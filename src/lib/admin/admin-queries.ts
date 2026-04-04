@@ -1,24 +1,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveAndSyncProfile } from "@/lib/monetization/profile";
-import { PLAN_LIMITS } from "@/lib/monetization/plans";
+import { isUnlimitedCredits, PLAN_LIMITS } from "@/lib/monetization/plans";
 import type { PlanId, ProfileRow } from "@/types/billing";
 
 export type AdminUserRow = ProfileRow & {
   email: string | null;
-  /** All-time leads tied to this user's forms (same scope as billing `getUsageForUser`). */
+  /** Calendar-month (UTC) leads on this user’s forms — same as billing / enforcement. */
   leads_used: number;
-  monthly_leads_used: number;
-  monthly_lead_limit: number;
   /** Plan monthly enquiry allocation (same as billing lead cap). */
   lead_cap: number;
-  /** Same formula as billing: max(0, lead_cap - leads_used). */
+  /** Same formula as billing: max(0, lead_cap - leads_used), or N/A when cap is unlimited. */
   credits_remaining: number;
-};
-
-type MonthlyUsageRow = {
-  user_id: string;
-  monthly_leads_used: number;
-  monthly_lead_limit: number;
 };
 
 async function loadAuthEmailsByUserId(
@@ -47,32 +39,39 @@ async function loadAuthEmailsByUserId(
   return emailById;
 }
 
+function monthStartUtcIso(): string {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)
+  ).toISOString();
+}
+
 /**
- * Count leads across all of a user's forms — matches `getUsageForUser` / billing page.
+ * Count leads per workspace owner for the optional UTC month window.
+ * Includes form submissions and standalone manual rows (`form_id` null).
  */
 function buildBillingLeadsUsedByUserId(
   forms: { id: string; user_id: string }[],
-  leads: { form_id: string }[]
+  leads: { form_id: string | null; user_id: string; created_at: string }[],
+  sinceIso?: string
 ): Map<string, number> {
-  const formIdsByUser = new Map<string, string[]>();
+  const formOwnerById = new Map<string, string>();
   for (const f of forms) {
-    const list = formIdsByUser.get(f.user_id) ?? [];
-    list.push(f.id);
-    formIdsByUser.set(f.user_id, list);
+    formOwnerById.set(f.id, f.user_id);
   }
-  const countByForm = new Map<string, number>();
-  for (const l of leads) {
-    const fid = l.form_id;
-    countByForm.set(fid, (countByForm.get(fid) ?? 0) + 1);
-  }
+
   const byUser = new Map<string, number>();
-  formIdsByUser.forEach((ids, userId) => {
-    let n = 0;
-    for (let i = 0; i < ids.length; i++) {
-      n += countByForm.get(ids[i]!) ?? 0;
+  for (const l of leads) {
+    if (sinceIso && l.created_at < sinceIso) continue;
+    let owner: string | undefined;
+    if (l.form_id) {
+      owner = formOwnerById.get(l.form_id);
+    } else {
+      owner = l.user_id;
     }
-    byUser.set(userId, n);
-  });
+    if (!owner) continue;
+    byUser.set(owner, (byUser.get(owner) ?? 0) + 1);
+  }
   return byUser;
 }
 
@@ -100,28 +99,22 @@ export async function fetchAdminUsersList(): Promise<AdminUserRow[]> {
 
   if (error || !profiles?.length) return [];
 
+  const monthStart = monthStartUtcIso();
+
   const [{ data: formRows }, { data: leadRows }] = await Promise.all([
     admin.from("forms").select("id, user_id"),
-    admin.from("leads").select("form_id"),
+    admin.from("leads").select("form_id, user_id, created_at"),
   ]);
 
   const billingLeadsByUser = buildBillingLeadsUsedByUserId(
     (formRows ?? []) as { id: string; user_id: string }[],
-    (leadRows ?? []) as { form_id: string }[]
+    (leadRows ?? []) as {
+      form_id: string | null;
+      user_id: string;
+      created_at: string;
+    }[],
+    monthStart
   );
-
-  const monthlyByUser = new Map<string, { used: number; limit: number }>();
-  const { data: monthlyRows, error: monthlyErr } = await admin.rpc(
-    "admin_monthly_lead_usage"
-  );
-  if (!monthlyErr && Array.isArray(monthlyRows)) {
-    for (const row of monthlyRows as MonthlyUsageRow[]) {
-      monthlyByUser.set(row.user_id, {
-        used: Number(row.monthly_leads_used) || 0,
-        limit: Number(row.monthly_lead_limit) || 0,
-      });
-    }
-  }
 
   const rows = await Promise.all(
     (profiles as Record<string, unknown>[]).map(async (row) => {
@@ -134,7 +127,9 @@ export async function fetchAdminUsersList(): Promise<AdminUserRow[]> {
 
       const leadCap = PLAN_LIMITS[effective.plan].creditAllocation;
       const leadsUsed = billingLeadsByUser.get(p.id) ?? 0;
-      const creditsRemaining = Math.max(0, leadCap - leadsUsed);
+      const creditsRemaining = isUnlimitedCredits(leadCap)
+        ? 0
+        : Math.max(0, leadCap - leadsUsed);
 
       const profileRow: ProfileRow = {
         id: p.id,
@@ -157,8 +152,6 @@ export async function fetchAdminUsersList(): Promise<AdminUserRow[]> {
         ...profileRow,
         email: emailById.get(p.id) ?? profileEmail,
         leads_used: leadsUsed,
-        monthly_leads_used: monthlyByUser.get(p.id)?.used ?? 0,
-        monthly_lead_limit: PLAN_LIMITS[effective.plan].creditAllocation,
         lead_cap: leadCap,
         credits_remaining: creditsRemaining,
       } satisfies AdminUserRow;

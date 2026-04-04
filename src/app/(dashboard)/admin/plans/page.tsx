@@ -2,8 +2,9 @@ import Link from "next/link";
 import {
   PLAN_LIMITS,
   PLAN_PRICING,
-  planLabel,
+  formatCreditsAllocationLabel,
   formatFormsLabel,
+  planLabel,
 } from "@/lib/monetization/plans";
 import type { PlanId } from "@/types/billing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +97,7 @@ export default function AdminPlansPage() {
                     <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                     Lead credits / period:{" "}
                     <span className="text-foreground">
-                      {limits.creditAllocation.toLocaleString("en-IN")}
+                      {formatCreditsAllocationLabel(limits.creditAllocation)}
                     </span>
                   </li>
                 </ul>

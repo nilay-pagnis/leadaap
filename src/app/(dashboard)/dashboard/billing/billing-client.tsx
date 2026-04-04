@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
+  formatCreditsAllocationLabel,
   formatFormsLabel,
   formatFormsUsageLine,
   formatLeadsUsageLine,
   isFreeTier,
+  isUnlimitedCredits,
   isUnlimitedForms,
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -62,7 +64,7 @@ const SELECTABLE_PAID: {
     priceInr: PLAN_PRICING.starter.priceInr,
     highlights: [
       `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} enquiry forms`,
-      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.starter.creditAllocation)} enquiry credits / month`,
     ],
   },
   {
@@ -72,7 +74,7 @@ const SELECTABLE_PAID: {
     popular: true,
     highlights: [
       `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} enquiry forms`,
-      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.growth.creditAllocation)} enquiry credits / month`,
       "Best for growing teams",
     ],
   },
@@ -82,7 +84,7 @@ const SELECTABLE_PAID: {
     priceInr: PLAN_PRICING.premium.priceInr,
     highlights: [
       `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} enquiry forms`,
-      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.premium.creditAllocation)} enquiry credits / month`,
     ],
   },
 ];
@@ -117,7 +119,7 @@ export function BillingClient({
   const warn =
     usage.nearLeadLimit ||
     usage.nearFormLimit ||
-    usage.creditsRemaining <= 2;
+    (!usage.leadCreditsUnlimited && usage.creditsRemaining <= 2);
   const critical = usage.atLeadLimit || usage.atFormLimit;
 
   return (
@@ -203,21 +205,31 @@ export function BillingClient({
               <p className="text-sm font-medium text-slate-700">
                 {formatLeadsUsageLine(usage.leadsUsed, usage.leadCap)}
               </p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-500",
-                    progressBarClassForBand(usage.leadBand)
-                  )}
-                  style={{ width: `${leadPct}%` }}
-                />
-              </div>
+              {!isUnlimitedCredits(usage.leadCap) && (
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-500",
+                      progressBarClassForBand(usage.leadBand)
+                    )}
+                    style={{ width: `${leadPct}%` }}
+                  />
+                </div>
+              )}
             </div>
             <p className="text-sm text-slate-500">
-              <span className="font-medium tabular-nums text-gray-800 dark:text-gray-200">
-                {usage.creditsRemaining}
-              </span>{" "}
-              credits remaining
+              {usage.leadCreditsUnlimited ? (
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  Unlimited enquiry credits this month
+                </span>
+              ) : (
+                <>
+                  <span className="font-medium tabular-nums text-gray-800 dark:text-gray-200">
+                    {usage.creditsRemaining.toLocaleString("en-IN")}
+                  </span>{" "}
+                  credits remaining this month
+                </>
+              )}
             </p>
             {critical && (
               <p className="text-sm font-medium text-red-600 dark:text-red-400">

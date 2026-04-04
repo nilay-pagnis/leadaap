@@ -9,6 +9,7 @@ import { MarketingShell } from "@/components/marketing/site/marketing-shell";
 import {
   PLAN_LIMITS,
   PLAN_PRICING,
+  formatCreditsAllocationLabel,
   formatFormsLabel,
 } from "@/lib/monetization/plans";
 
@@ -44,7 +45,7 @@ const planCards: PlanCard[] = [
     priceLabel: `₹${PLAN_PRICING.starter.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.starter.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.starter.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.starter.creditAllocation)} enquiry credits / month`,
       `${formatFormsLabel(PLAN_LIMITS.starter.maxForms)} enquiry capture forms`,
       "Embeddable widgets & share links",
       "Unified enquiry inbox",
@@ -60,7 +61,7 @@ const planCards: PlanCard[] = [
     priceLabel: `₹${PLAN_PRICING.growth.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.growth.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.growth.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.growth.creditAllocation)} enquiry credits / month`,
       `${formatFormsLabel(PLAN_LIMITS.growth.maxForms)} enquiry capture forms`,
       "Everything in Starter",
       "Faster routing & status workflow",
@@ -77,7 +78,7 @@ const planCards: PlanCard[] = [
     priceLabel: `₹${PLAN_PRICING.premium.priceInr.toLocaleString("en-IN")}`,
     priceSub: `per ${PLAN_PRICING.premium.period}, billed monthly`,
     features: [
-      `${PLAN_LIMITS.premium.creditAllocation.toLocaleString("en-IN")} enquiry credits / month`,
+      `${formatCreditsAllocationLabel(PLAN_LIMITS.premium.creditAllocation)} enquiry credits / month`,
       `${formatFormsLabel(PLAN_LIMITS.premium.maxForms)} enquiry forms`,
       "Everything in Growth",
       "Higher limits for peak seasons",
@@ -93,9 +94,9 @@ const comparisonRows: CompareRow[] = [
   {
     feature: "Enquiry credits / month",
     values: [
-      String(PLAN_LIMITS.starter.creditAllocation),
-      String(PLAN_LIMITS.growth.creditAllocation),
-      String(PLAN_LIMITS.premium.creditAllocation),
+      formatCreditsAllocationLabel(PLAN_LIMITS.starter.creditAllocation),
+      formatCreditsAllocationLabel(PLAN_LIMITS.growth.creditAllocation),
+      formatCreditsAllocationLabel(PLAN_LIMITS.premium.creditAllocation),
     ],
   },
   {

@@ -12,8 +12,8 @@ immutable
 as $$
   select case coalesce(lower(trim(p_plan)), 'free')
     when 'free' then 1
-    when 'starter' then 5
-    when 'growth' then 1000000
+    when 'starter' then 2
+    when 'growth' then 10
     when 'premium' then 1000000
     else 1
   end
@@ -26,9 +26,9 @@ immutable
 as $$
   select case coalesce(lower(trim(p_plan)), 'free')
     when 'free' then 10
-    when 'starter' then 300
+    when 'starter' then 100
     when 'growth' then 2000
-    when 'premium' then 5000
+    when 'premium' then 1000000
     else 10
   end
 $$;

@@ -26,7 +26,7 @@ create index if not exists fields_form_id_idx on public.fields (form_id);
 -- leads
 create table if not exists public.leads (
   id uuid primary key default gen_random_uuid(),
-  form_id uuid not null references public.forms (id) on delete cascade,
+  form_id uuid references public.forms (id) on delete cascade,
   user_id uuid not null references auth.users (id) on delete cascade,
   data jsonb not null default '{}'::jsonb,
   status text not null default 'new' check (status in ('new', 'contacted', 'qualified', 'closed')),

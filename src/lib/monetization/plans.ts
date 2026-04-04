@@ -1,22 +1,25 @@
 import type { PlanId } from "@/types/billing";
 
-/** Growth tier: treat as unlimited forms for limits & UI */
+/** Treat at or above this as unlimited forms for limits & UI */
 export const UNLIMITED_FORMS_SENTINEL = 1_000_000;
+
+/** Treat at or above this as unlimited monthly enquiry credits */
+export const UNLIMITED_CREDITS_SENTINEL = 1_000_000;
 
 /** Display / allocation — Indian market (INR) */
 export const PLAN_PRICING = {
-  starter: { label: "Starter", priceInr: 499, period: "month" },
-  growth: { label: "Growth", priceInr: 1499, period: "month" },
-  premium: { label: "Premium", priceInr: 3499, period: "month" },
+  starter: { label: "Starter", priceInr: 999, period: "month" },
+  growth: { label: "Growth", priceInr: 1999, period: "month" },
+  premium: { label: "Premium", priceInr: 4999, period: "month" },
 } as const;
 
 export type PaidPlanKey = keyof typeof PLAN_PRICING;
 
 export const PLAN_CREDITS = {
   free: 10,
-  starter: 300,
+  starter: 100,
   growth: 2000,
-  premium: 5000,
+  premium: UNLIMITED_CREDITS_SENTINEL,
 } as const;
 
 export const PLAN_LIMITS: Record<
@@ -24,12 +27,12 @@ export const PLAN_LIMITS: Record<
   { maxForms: number; creditAllocation: number }
 > = {
   free: { maxForms: 1, creditAllocation: PLAN_CREDITS.free },
-  starter: { maxForms: 5, creditAllocation: PLAN_CREDITS.starter },
-  growth: {
+  starter: { maxForms: 2, creditAllocation: PLAN_CREDITS.starter },
+  growth: { maxForms: 10, creditAllocation: PLAN_CREDITS.growth },
+  premium: {
     maxForms: UNLIMITED_FORMS_SENTINEL,
-    creditAllocation: PLAN_CREDITS.growth,
+    creditAllocation: PLAN_CREDITS.premium,
   },
-  premium: { maxForms: UNLIMITED_FORMS_SENTINEL, creditAllocation: PLAN_CREDITS.premium },
 };
 
 export function normalizePlanId(raw: unknown): PlanId {
@@ -42,6 +45,10 @@ export function normalizePlanId(raw: unknown): PlanId {
 
 export function isUnlimitedForms(maxForms: number): boolean {
   return maxForms >= UNLIMITED_FORMS_SENTINEL;
+}
+
+export function isUnlimitedCredits(creditAllocation: number): boolean {
+  return creditAllocation >= UNLIMITED_CREDITS_SENTINEL;
 }
 
 /** True when user cannot create another form */
@@ -62,8 +69,16 @@ export function formatFormsUsageLine(formCount: number, maxForms: number): strin
   return `${formCount} / ${maxForms} enquiry forms used`;
 }
 
+export function formatCreditsAllocationLabel(creditAllocation: number): string {
+  if (isUnlimitedCredits(creditAllocation)) return "Unlimited";
+  return creditAllocation.toLocaleString("en-IN");
+}
+
 export function formatLeadsUsageLine(leadsUsed: number, leadCap: number): string {
-  return `${leadsUsed} / ${leadCap} enquiries used`;
+  if (isUnlimitedCredits(leadCap)) {
+    return `${leadsUsed.toLocaleString("en-IN")} enquiries this month (unlimited)`;
+  }
+  return `${leadsUsed.toLocaleString("en-IN")} / ${leadCap.toLocaleString("en-IN")} enquiries this month`;
 }
 
 export function isFreeTier(plan: PlanId): boolean {
@@ -113,11 +128,13 @@ export const USAGE_SOFT_PCT = 70;
 export const USAGE_STRONG_PCT = 90;
 
 export function usagePercent(used: number, cap: number): number {
+  if (isUnlimitedCredits(cap)) return 0;
   if (cap <= 0) return 0;
   return Math.min(100, Math.round((used / cap) * 100));
 }
 
 export function usageBand(used: number, cap: number): UsageBand {
+  if (isUnlimitedCredits(cap)) return "na";
   if (cap <= 0) return "na";
   const r = used / cap;
   if (r >= 1) return "limit";
@@ -169,12 +186,14 @@ export function progressBarClassForBand(band: UsageBand): string {
 
 /** @deprecated prefer usageBand — kept for callers using 80% threshold */
 export function usageWarningRatio(used: number, cap: number): boolean {
+  if (isUnlimitedCredits(cap)) return false;
   if (cap <= 0) return false;
   return used / cap >= 0.7;
 }
 
 /** Critical when at or over cap (should upgrade) */
 export function usageCriticalRatio(used: number, cap: number): boolean {
+  if (isUnlimitedCredits(cap)) return false;
   if (cap <= 0) return false;
   return used / cap >= 1;
 }

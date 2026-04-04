@@ -81,6 +81,10 @@ function formatLeadValue(v: string | boolean | string[] | undefined): string {
 }
 
 function getLeadPhone(lead: LeadRow, fieldDefs: LeadFieldDef[]): string {
+  if (lead.form_id == null || lead.form_id === "") {
+    const v = lead.data?.phone;
+    return typeof v === "string" && v.trim() ? v.trim() : "—";
+  }
   const defs = fieldDefs.filter(
     (f) => f.form_id === lead.form_id && f.type === "phone"
   );
@@ -194,10 +198,12 @@ export function EnquiryDetailPanel({
   const [editDraft, setEditDraft] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
-  const defsForForm = useMemo(
-    () => fieldDefs.filter((f) => f.form_id === lead?.form_id).sort((a, b) => a.id.localeCompare(b.id)),
-    [fieldDefs, lead?.form_id]
-  );
+  const defsForForm = useMemo(() => {
+    if (!lead?.form_id) return [];
+    return fieldDefs
+      .filter((f) => f.form_id === lead.form_id)
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }, [fieldDefs, lead?.form_id]);
 
   const textareas = useMemo(
     () => defsForForm.filter((f) => f.type === "textarea"),
@@ -206,8 +212,22 @@ export function EnquiryDetailPanel({
 
   const quickFieldRows = useMemo(() => {
     if (!lead) return [];
-    const rows: { key: string; label: string; value: string }[] = [];
     const data = lead.data ?? {};
+    if (lead.form_id == null || lead.form_id === "") {
+      const rows: { key: string; label: string; value: string }[] = [];
+      const order: [string, string][] = [
+        ["name", "Name"],
+        ["email", "Email"],
+        ["phone", "Phone"],
+        ["source", "Source"],
+      ];
+      for (const [key, label] of order) {
+        if (!(key in data)) continue;
+        rows.push({ key, label, value: formatLeadValue(data[key]) });
+      }
+      return rows;
+    }
+    const rows: { key: string; label: string; value: string }[] = [];
     for (const f of defsForForm) {
       if (f.type === "textarea") continue;
       if (!(f.id in data)) continue;
@@ -226,7 +246,11 @@ export function EnquiryDetailPanel({
   const phone = lead ? getLeadPhone(lead, fieldDefs) : "—";
   const initials = lead ? getInitials(name, email) : "?";
 
-  const formName = lead ? formNames[lead.form_id] ?? lead.form_id : "—";
+  const formName = lead
+    ? lead.form_id
+      ? (formNames[lead.form_id] ?? lead.form_id)
+      : "Manual Entry"
+    : "—";
 
   const scoreResult: LeadScoreResult = useMemo(
     () =>
@@ -423,10 +447,12 @@ export function EnquiryDetailPanel({
               Copy email
             </DropdownMenuItem>
           ) : null}
-          <DropdownMenuItem onClick={() => setFormDetailsOpen(true)}>
-            <FileText className="size-4 opacity-70" />
-            Form structure
-          </DropdownMenuItem>
+          {lead.form_id ? (
+            <DropdownMenuItem onClick={() => setFormDetailsOpen(true)}>
+              <FileText className="size-4 opacity-70" />
+              Form structure
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onClose}>Close panel</DropdownMenuItem>
         </DropdownMenuContent>
@@ -533,6 +559,19 @@ export function EnquiryDetailPanel({
                   </div>
                 );
               })}
+            </DetailSection>
+          ) : lead.form_id == null &&
+            typeof lead.data?.message === "string" ? (
+            <DetailSection title="Message">
+              <div
+                className={cn(
+                  "rounded-2xl bg-slate-50 px-5 py-5 text-[15px] leading-relaxed text-slate-900 dark:bg-zinc-900/60 dark:text-slate-100",
+                  "shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]",
+                  "ring-1 ring-slate-900/[0.04] whitespace-pre-wrap"
+                )}
+              >
+                {lead.data.message.trim() || "—"}
+              </div>
             </DetailSection>
           ) : (
             <DetailSection title="Message">
@@ -721,7 +760,7 @@ export function EnquiryDetailPanel({
         </motion.div>
       )}
     </LeadDetailDrawer>
-    {lead ? (
+    {lead?.form_id ? (
       <FormDetailsDialog
         open={formDetailsOpen}
         onOpenChange={setFormDetailsOpen}

@@ -25,8 +25,9 @@ export function normalizeLeadDataSource(raw: unknown): LeadSourceBadgeKind {
 
 function resolvedFormTitle(
   formNames: Record<string, string>,
-  formId: string
+  formId: string | null
 ): string {
+  if (formId == null || formId === "") return "";
   const raw = formNames[formId];
   return typeof raw === "string" && raw.trim() ? raw.trim() : "";
 }
@@ -43,6 +44,17 @@ export function getEnquiryFormSourceDisplay(
 ): { title: string; source: LeadSourceBadgeKind } {
   const slug = normalizeLeadDataSource(lead.data?.source);
   const formTitle = resolvedFormTitle(formNames, lead.form_id);
+  const noLinkedForm = lead.form_id == null || lead.form_id === "";
+
+  if (noLinkedForm) {
+    if (slug === "manual") {
+      return { title: "Manual Entry", source: "manual" };
+    }
+    if (MANUAL_SLUGS.has(String(lead.data?.source ?? "").trim().toLowerCase())) {
+      return { title: "Manual Entry", source: slug };
+    }
+    return { title: "Unknown", source: "other" };
+  }
 
   if (slug === "manual") {
     if (!formTitle) {

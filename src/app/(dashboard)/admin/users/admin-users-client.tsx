@@ -31,7 +31,11 @@ import {
 import { adminIncrementCreditsAction, adminSetPlanAction } from "@/app/actions/admin";
 import type { AdminUserRow } from "@/lib/admin/admin-queries";
 import type { PlanId } from "@/types/billing";
-import { normalizePlanId, planLabel } from "@/lib/monetization/plans";
+import {
+  isUnlimitedCredits,
+  normalizePlanId,
+  planLabel,
+} from "@/lib/monetization/plans";
 import { cn } from "@/lib/utils";
 import { Loader2, Pencil, Coins, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -150,9 +154,9 @@ export function AdminUsersClient({ initialUsers }: Props) {
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
           Plan comes from each user&apos;s profile (same source as billing).
-          Monthly cap, leads used, and remaining match the billing page; “This
-          month” is calendar-month usage vs that cap. Use Up / Down for one tier
-          at a time, or Plan to set a tier. Admin role is still set in Supabase (
+          Monthly cap, used (month), and remaining match the billing page (UTC
+          calendar month). Use Up / Down for one tier at a time, or Plan to set a
+          tier. Admin role is still set in Supabase (
           <code className="text-xs">role</code>).
         </p>
       </div>
@@ -200,17 +204,16 @@ export function AdminUsersClient({ initialUsers }: Props) {
               </TableHead>
               <TableHead
                 className="tabular-nums"
-                title="All-time enquiries on this user’s forms (same as billing)"
+                title="Enquiries this calendar month (UTC) on this user’s forms — same as billing"
               >
-                Leads used
+                Used (month)
               </TableHead>
               <TableHead
                 className="tabular-nums"
-                title="Capacity left vs plan cap — matches billing “credits remaining”"
+                title="Capacity left vs monthly cap — matches billing"
               >
                 Remaining
               </TableHead>
-              <TableHead className="tabular-nums">This month</TableHead>
               <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -219,7 +222,7 @@ export function AdminUsersClient({ initialUsers }: Props) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={7}
                   className="py-10 text-center text-sm text-gray-500"
                 >
                   No users match your filters.
@@ -241,19 +244,17 @@ export function AdminUsersClient({ initialUsers }: Props) {
                       </span>
                     </TableCell>
                     <TableCell className="tabular-nums text-sm">
-                      {u.lead_cap.toLocaleString()}
+                      {isUnlimitedCredits(u.lead_cap)
+                        ? "Unlimited"
+                        : u.lead_cap.toLocaleString("en-IN")}
                     </TableCell>
                     <TableCell className="tabular-nums text-sm">
-                      {u.leads_used.toLocaleString()}
+                      {u.leads_used.toLocaleString("en-IN")}
                     </TableCell>
                     <TableCell className="tabular-nums text-sm font-medium text-slate-800 dark:text-slate-200">
-                      {u.credits_remaining.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="tabular-nums text-sm">
-                      <span className="font-medium text-slate-800 dark:text-slate-200">
-                        {u.monthly_leads_used.toLocaleString()} /{" "}
-                        {u.monthly_lead_limit.toLocaleString()}
-                      </span>
+                      {isUnlimitedCredits(u.lead_cap)
+                        ? "Unlimited"
+                        : u.credits_remaining.toLocaleString("en-IN")}
                     </TableCell>
                     <TableCell>
                       <span

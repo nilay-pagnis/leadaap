@@ -68,6 +68,10 @@ function emailScoreAndLine(email: string): { points: number; line?: LeadScoreLin
 }
 
 function hasPhone(lead: LeadRow, fieldDefs: LeadFieldDef[]): boolean {
+  if (lead.form_id == null || lead.form_id === "") {
+    const v = lead.data?.phone;
+    return typeof v === "string" && !!v.trim();
+  }
   const defs = fieldDefs.filter(
     (f) => f.form_id === lead.form_id && f.type === "phone"
   );
@@ -79,6 +83,10 @@ function hasPhone(lead: LeadRow, fieldDefs: LeadFieldDef[]): boolean {
 }
 
 function getLeadEmail(lead: LeadRow, fieldDefs: LeadFieldDef[]): string {
+  if (lead.form_id == null || lead.form_id === "") {
+    const v = lead.data?.email;
+    return typeof v === "string" && v.trim() ? v.trim() : "";
+  }
   const defs = fieldDefs.filter((f) => f.form_id === lead.form_id);
   const emailFields = defs.filter((f) => f.type === "email");
   for (const f of emailFields) {
@@ -92,6 +100,10 @@ function getLeadEmail(lead: LeadRow, fieldDefs: LeadFieldDef[]): string {
 }
 
 function getMessageText(lead: LeadRow, fieldDefs: LeadFieldDef[]): string {
+  if (lead.form_id == null || lead.form_id === "") {
+    const v = lead.data?.message;
+    return typeof v === "string" && v.trim() ? v.trim() : "";
+  }
   const defs = fieldDefs.filter(
     (f) => f.form_id === lead.form_id && f.type === "textarea"
   );
@@ -195,7 +207,10 @@ export function calculateLeadScore({
   score += msgPart.points;
   lines.push(msgPart.line);
 
-  const formName = formNames[lead.form_id] ?? "";
+  const formName =
+    lead.form_id != null && lead.form_id !== ""
+      ? (formNames[lead.form_id] ?? "")
+      : "";
   const formPart = formNameScoreAndLine(formName);
   score += formPart.points;
   if (formPart.line) lines.push(formPart.line);

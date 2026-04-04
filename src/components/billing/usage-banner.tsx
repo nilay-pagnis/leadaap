@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   formatFormsUsageLine,
   formatLeadsUsageLine,
+  isUnlimitedCredits,
   isUnlimitedForms,
   planLabel,
   progressBarClassForBand,
@@ -86,8 +87,16 @@ export function UsageBanner({ usage, className }: Props) {
             <p className="mt-0.5 text-xs text-muted-foreground">
               {formatFormsUsageLine(usage.formCount, usage.maxForms)}
               {" · "}
-              <span className="tabular-nums">{usage.creditsRemaining}</span>{" "}
-              credits remaining
+              {usage.leadCreditsUnlimited ? (
+                <span>Unlimited credits this month</span>
+              ) : (
+                <>
+                  <span className="tabular-nums">
+                    {usage.creditsRemaining.toLocaleString("en-IN")}
+                  </span>{" "}
+                  credits remaining this month
+                </>
+              )}
             </p>
             {usage.usedFallback && (
               <p className="mt-2 text-xs text-amber-800 dark:text-amber-200/90">
@@ -109,6 +118,7 @@ export function UsageBanner({ usage, className }: Props) {
             )}
             {!atLimit &&
               worst === "ok" &&
+              !usage.leadCreditsUnlimited &&
               usage.creditsRemaining <= 2 &&
               usage.leadCap > 0 && (
                 <p className="mt-2 text-xs text-slate-600">
@@ -140,19 +150,23 @@ export function UsageBanner({ usage, className }: Props) {
         </Link>
       </div>
       <div className="mt-4 space-y-2">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Enquiry usage</span>
-          <span className="tabular-nums">{leadPct}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              progressBarClassForBand(usage.leadBand)
-            )}
-            style={{ width: `${leadPct}%` }}
-          />
-        </div>
+        {!isUnlimitedCredits(usage.leadCap) && (
+          <>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Enquiry usage</span>
+              <span className="tabular-nums">{leadPct}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-300",
+                  progressBarClassForBand(usage.leadBand)
+                )}
+                style={{ width: `${leadPct}%` }}
+              />
+            </div>
+          </>
+        )}
         {!isUnlimitedForms(usage.maxForms) && (
           <>
             <div className="flex justify-between text-xs text-muted-foreground">

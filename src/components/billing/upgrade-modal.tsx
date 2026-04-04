@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
+  formatCreditsAllocationLabel,
   formatFormsLabel,
   formatFormsUsageLine,
   formatLeadsUsageLine,
+  isUnlimitedCredits,
   isUnlimitedForms,
   PLAN_LIMITS,
   PLAN_PRICING,
@@ -80,7 +82,7 @@ const PLAN_CARDS: {
   },
   {
     key: "premium",
-    blurb: "Maximum headroom with unlimited forms and top-tier credits.",
+    blurb: "Unlimited enquiry forms and unlimited monthly credits for peak volume.",
   },
 ];
 
@@ -116,21 +118,29 @@ export function UpgradeModal({
               {planLabel(usage.plan)} plan
             </p>
             <p className="mt-2 text-sm text-slate-600">
-              {formatLeadsUsageLine(usage.leadsUsed, usage.leadCap)} (
-              <span className="tabular-nums font-medium text-slate-800">
-                {usage.leadUsagePct}%
-              </span>
-              )
+              {formatLeadsUsageLine(usage.leadsUsed, usage.leadCap)}
+              {!isUnlimitedCredits(usage.leadCap) && (
+                <>
+                  {" "}
+                  (
+                  <span className="tabular-nums font-medium text-slate-800">
+                    {usage.leadUsagePct}%
+                  </span>
+                  )
+                </>
+              )}
             </p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  progressBarClassForBand(usage.leadBand)
-                )}
-                style={{ width: `${Math.min(100, usage.leadUsagePct)}%` }}
-              />
-            </div>
+            {!isUnlimitedCredits(usage.leadCap) && (
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    progressBarClassForBand(usage.leadBand)
+                  )}
+                  style={{ width: `${Math.min(100, usage.leadUsagePct)}%` }}
+                />
+              </div>
+            )}
             {!isUnlimitedForms(usage.maxForms) && (
               <>
                 <p className="mt-3 text-sm text-slate-600">
@@ -193,8 +203,8 @@ export function UpgradeModal({
                     </li>
                     <li className="flex gap-2">
                       <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-                      {limits.creditAllocation.toLocaleString("en-IN")} lead
-                      credits / month
+                      {formatCreditsAllocationLabel(limits.creditAllocation)}{" "}
+                      lead credits / month
                     </li>
                     <li className="flex gap-2 text-slate-500">
                       <Check className="mt-0.5 size-4 shrink-0 text-slate-400" />

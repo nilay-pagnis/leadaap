@@ -12,6 +12,26 @@ export const MANUAL_SOURCE_OPTIONS: {
   { value: "referral", label: "Referral" },
 ];
 
+/**
+ * JSON shape for leads with `form_id` null — same keys for display, search, and scoring.
+ */
+export function buildStandaloneManualLeadData(values: {
+  name: string;
+  email?: string;
+  phone?: string;
+  message: string;
+  source: ManualEnquirySource;
+}): Record<string, string | boolean> {
+  const data: Record<string, string | boolean> = {
+    name: values.name.trim(),
+    message: values.message.trim(),
+    source: values.source,
+  };
+  if (values.email?.trim()) data.email = values.email.trim();
+  if (values.phone?.trim()) data.phone = values.phone.trim();
+  return data;
+}
+
 export function manualSourceLabel(value: ManualEnquirySource): string {
   return MANUAL_SOURCE_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }

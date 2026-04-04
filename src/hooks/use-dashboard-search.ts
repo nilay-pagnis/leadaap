@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 export type FormSearchHit = { id: string; form_name: string };
 export type LeadSearchHit = {
   id: string;
-  form_id: string;
+  form_id: string | null;
   data: Record<string, unknown>;
   created_at: string;
 };

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   formUsageCritical,
+  isUnlimitedCredits,
   isUnlimitedForms,
   leadCapForPlan,
   mergeUsageBands,
@@ -18,7 +19,10 @@ import type { PlanId } from "@/types/billing";
 export type UsageSnapshot = {
   plan: PlanId;
   creditsRemaining: number;
+  /** True when plan has unlimited monthly enquiry credits (Premium). */
+  leadCreditsUnlimited: boolean;
   leadCap: number;
+  /** Calendar-month (UTC) enquiries on this user’s forms — same scope as public submit & manual add limits. */
   leadsUsed: number;
   formCount: number;
   maxForms: number;
@@ -53,27 +57,18 @@ async function countFormsForUser(
 }
 
 /**
- * Count all leads in the DB for this user's forms (exact count; not derived from credits).
- * Optional calendar-month scope — set to false for all-time totals.
+ * Count leads for this workspace owner (`user_id`), including standalone manual rows
+ * (`form_id` null). Matches public submit + manual API enforcement.
  */
-async function countLeadsForUserForms(
+async function countLeadsForUser(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   options: { sinceStartOfMonthUtc?: boolean } = {}
 ): Promise<number> {
-  const { data: forms, error: formsError } = await supabase
-    .from("forms")
-    .select("id")
-    .eq("user_id", userId);
-
-  if (formsError || !forms?.length) return 0;
-
-  const formIds = forms.map((f) => f.id);
-
   let q = supabase
     .from("leads")
     .select("*", { count: "exact", head: true })
-    .in("form_id", formIds);
+    .eq("user_id", userId);
 
   if (options.sinceStartOfMonthUtc) {
     const now = new Date();
@@ -127,8 +122,10 @@ export async function getUsageForUser(userId: string): Promise<UsageSnapshot> {
 
   const [fc, leadsUsed] = await Promise.all([
     countFormsForUser(supabase, userId),
-    countLeadsForUserForms(supabase, userId, { sinceStartOfMonthUtc: false }),
+    countLeadsForUser(supabase, userId, { sinceStartOfMonthUtc: true }),
   ]);
+
+  const leadCreditsUnlimited = isUnlimitedCredits(leadCap);
 
   const leadBand = usageBand(leadsUsed, leadCap);
   const formBand = isUnlimitedForms(maxForms)
@@ -148,12 +145,14 @@ export async function getUsageForUser(userId: string): Promise<UsageSnapshot> {
   const atLeadLimit = usageCriticalRatio(leadsUsed, leadCap);
   const atFormLimit = formUsageCritical(fc, maxForms);
 
-  /** Remaining lead capacity = plan allocation minus actual leads captured (DB). */
-  const creditsRemaining = Math.max(0, leadCap - leadsUsed);
+  const creditsRemaining = leadCreditsUnlimited
+    ? 0
+    : Math.max(0, leadCap - leadsUsed);
 
   return {
     plan: effective.plan,
     creditsRemaining,
+    leadCreditsUnlimited,
     leadCap,
     leadsUsed,
     formCount: fc,

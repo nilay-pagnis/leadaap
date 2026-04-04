@@ -5,8 +5,9 @@ const NAME_LIKE = /name|full name|first name/i;
 /** Field ids used for name/email search (aligned with leadMatchesNameOrEmail). */
 export function getNameEmailSearchFieldIds(
   fieldDefs: LeadFieldDef[],
-  formId: string
+  formId: string | null
 ): string[] {
+  if (formId == null || formId === "") return [];
   const defs = fieldDefs.filter((f) => f.form_id === formId);
   const emailIds = defs.filter((f) => f.type === "email").map((f) => f.id);
   const nameTextIds = defs
@@ -41,7 +42,20 @@ export function getLeadNameAndEmail(
   lead: LeadRow,
   fieldDefs: LeadFieldDef[]
 ): { name: string; email: string } {
-  const defs = fieldDefs.filter((f) => f.form_id === lead.form_id);
+  const fid = lead.form_id;
+  if (fid == null || fid === "") {
+    const name =
+      typeof lead.data?.name === "string" && lead.data.name.trim()
+        ? lead.data.name.trim()
+        : "—";
+    const email =
+      typeof lead.data?.email === "string" && lead.data.email.trim()
+        ? lead.data.email.trim()
+        : "—";
+    return { name, email };
+  }
+
+  const defs = fieldDefs.filter((f) => f.form_id === fid);
   const emailFields = defs.filter((f) => f.type === "email");
   const nameLikeText = defs.filter(
     (f) => f.type === "text" && NAME_LIKE.test(f.label)

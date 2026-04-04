@@ -69,7 +69,12 @@ function stopRowActivate(e: React.SyntheticEvent) {
 }
 
 function leadMatchesEnquiryFormFilter(lead: LeadRow, formFilter: string) {
-  if (formFilter === MANUAL_ENTRY_FORM_FILTER) return isManualEnquiryLead(lead);
+  if (
+    formFilter === MANUAL_ENTRY_FORM_FILTER ||
+    formFilter === "__manual_entry__"
+  ) {
+    return isManualEnquiryLead(lead);
+  }
   return lead.form_id === formFilter;
 }
 
@@ -418,12 +423,6 @@ export function InboxView({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <AddEnquiryTriggerButton
             onClick={() => setAddEnquiryOpen(true)}
-            disabled={formsList.length === 0}
-            title={
-              formsList.length === 0
-                ? "Create a form first to attach manual leads."
-                : undefined
-            }
           />
           <div
             className="inline-flex shrink-0 rounded-2xl border border-slate-200/80 bg-white/70 p-1 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/50"
@@ -484,7 +483,7 @@ export function InboxView({
             filtersActive={filtersActiveForView}
             onClearFilters={clearAllFilters}
             onAddEnquiry={() => setAddEnquiryOpen(true)}
-            canAddManual={formsList.length > 0}
+            canAddManual
           />
         ) : (
           <div
@@ -681,7 +680,7 @@ export function InboxView({
           filtersActive={filtersActiveForView}
           onClearFilters={clearAllFilters}
           onAddEnquiry={() => setAddEnquiryOpen(true)}
-          canAddManual={formsList.length > 0}
+          canAddManual
         />
       ) : (
         <KanbanBoard
