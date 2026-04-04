@@ -77,7 +77,7 @@ export function EnquiryFilters({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white/80 p-4 shadow-sm sm:p-5",
+        "flex flex-col gap-4 rounded-2xl border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-xl sm:p-5 dark:border-white/10 dark:bg-zinc-950/45",
         className
       )}
     >

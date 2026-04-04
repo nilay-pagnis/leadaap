@@ -34,6 +34,8 @@ export function EnquiryCard({
     formNames,
     fieldDefs,
   });
+  const isHot = scoreResult.label === "Hot";
+  const isWarm = scoreResult.label === "Warm";
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
@@ -49,9 +51,11 @@ export function EnquiryCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-3 shadow-sm transition-[transform,box-shadow,opacity,border-color] duration-200",
-        "hover:-translate-y-0.5 hover:border-slate-300/90 hover:shadow-md",
-        isDragging && "z-10 opacity-50 shadow-lg ring-2 ring-primary/20",
+        "rounded-2xl border border-slate-200/75 bg-white/85 p-3 shadow-sm backdrop-blur-md transition-[transform,box-shadow,opacity,border-color] duration-300",
+        "hover:-translate-y-1 hover:border-indigo-200/60 hover:shadow-premium dark:border-white/10 dark:bg-zinc-950/50 dark:hover:border-indigo-500/35 dark:hover:shadow-soft-lg",
+        isHot && "border-l-[3px] border-l-red-400/80 pl-2.5 dark:border-l-red-500/65",
+        isWarm && !isHot && "border-l-[3px] border-l-amber-400/65 pl-2.5 dark:border-l-amber-500/50",
+        isDragging && "z-10 opacity-50 shadow-lg ring-2 ring-primary/25",
         isUpdating && "pointer-events-none opacity-70"
       )}
       {...attributes}

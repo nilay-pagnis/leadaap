@@ -20,6 +20,28 @@
       radial-gradient(ellipse 70% 50% at 90% 10%, rgba(139, 92, 246, 0.12), transparent 50%),
       radial-gradient(ellipse 60% 45% at 50% 100%, rgba(59, 130, 246, 0.1), transparent 55%);
   }
+
+  /* Dashboard canvas — subtle depth without clutter */
+  .dashboard-canvas {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(ellipse 120% 90% at 50% -40%, rgba(99, 102, 241, 0.11), transparent 58%),
+      radial-gradient(ellipse 55% 45% at 100% 0%, rgba(139, 92, 246, 0.07), transparent 52%),
+      radial-gradient(ellipse 50% 40% at 0% 20%, rgba(59, 130, 246, 0.06), transparent 50%);
+  }
+  .dark .dashboard-canvas {
+    background-color: #0b0f19;
+    background-image:
+      radial-gradient(ellipse 100% 70% at 50% -30%, rgba(99, 102, 241, 0.14), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 95% 5%, rgba(139, 92, 246, 0.08), transparent 50%);
+  }
+
+  .glass-surface {
+    @apply rounded-2xl border border-white/70 bg-white/70 shadow-premium backdrop-blur-xl transition-shadow duration-300 dark:border-white/10 dark:bg-zinc-950/50 dark:shadow-soft;
+  }
+  .glass-surface:hover {
+    @apply shadow-premium-hover dark:shadow-soft-lg;
+  }
 }
 
 @layer base {
@@ -116,6 +138,19 @@
   }
   .glass-card-light {
     @apply rounded-2xl border border-slate-200/70 bg-white/85 shadow-[0_8px_32px_-14px_rgba(79,70,229,0.12)] backdrop-blur-md;
+  }
+
+  .glass-card-dark {
+    @apply rounded-2xl border border-white/[0.08] bg-zinc-950/40 shadow-soft backdrop-blur-xl dark:bg-zinc-950/55;
+  }
+
+  .ai-insight-shimmer {
+    background: linear-gradient(
+      105deg,
+      rgba(99, 102, 241, 0.06) 0%,
+      rgba(139, 92, 246, 0.1) 45%,
+      rgba(99, 102, 241, 0.05) 100%
+    );
   }
 
   .marketing-cta-primary {

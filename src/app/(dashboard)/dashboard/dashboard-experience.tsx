@@ -22,9 +22,11 @@ import {
   FileText,
   Inbox,
   LayoutGrid,
+  MessageSquare,
   Share2,
   Sparkles,
   TrendingUp,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
@@ -60,24 +62,33 @@ const StatCard = memo(function StatCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay }}
+      transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -3 }}
       className="h-full"
     >
-      <div className="group h-full rounded-2xl border border-slate-200/80 bg-white p-5 transition-colors duration-200 hover:border-slate-300/90 hover:bg-slate-50/40">
-        <div className="mb-3 flex items-start justify-between gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+      <div className="glass-card-light group relative h-full overflow-hidden p-5 shadow-premium transition-shadow duration-300 hover:shadow-premium-hover dark:border-white/10 dark:bg-zinc-950/50 dark:shadow-soft dark:hover:shadow-soft-lg">
+        <div
+          className="pointer-events-none absolute -right-8 -top-8 size-28 rounded-full bg-gradient-to-br from-indigo-400/15 via-violet-400/10 to-transparent blur-2xl"
+          aria-hidden
+        />
+        <div className="relative mb-3 flex items-start justify-between gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
             {label}
           </span>
-          <div className="flex size-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition-colors group-hover:bg-slate-200/80">
-            <Icon className="size-[17px]" aria-hidden />
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/12 to-violet-500/10 text-indigo-700 shadow-inner ring-1 ring-indigo-500/10 transition-transform duration-300 group-hover:scale-105 dark:from-indigo-400/20 dark:to-violet-500/15 dark:text-indigo-200">
+            <Icon className="size-[18px]" aria-hidden />
           </div>
         </div>
-        <p className="text-2xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+        <p className="relative text-2xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-3xl dark:text-slate-50">
           {value}
         </p>
-        {hint ? <p className="mt-2 text-xs text-slate-500">{hint}</p> : null}
+        {hint ? (
+          <p className="relative mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            {hint}
+          </p>
+        ) : null}
       </div>
     </motion.div>
   );
@@ -98,45 +109,147 @@ function InsightCard({
 }) {
   const text = useMemo(() => {
     if (formCount === 0) {
-      return "Create an enquiry form to get a shareable link — submissions route straight to this workspace.";
+      return "I don’t see any live forms yet — create one to get a shareable link. Submissions will land in your inbox automatically.";
     }
     if (totalLeads === 0) {
-      return "No submissions yet. Share your public link on your site, bio, or campaigns to start filling the chart.";
+      return "Your pipeline is ready. Share the public link on your site, email footer, or social bio — most teams see the first enquiry within a few days.";
     }
     if (leadsToday > 0) {
-      return `You received ${leadsToday} new enquir${leadsToday === 1 ? "y" : "ies"} today — prioritize follow-up while intent is fresh.`;
+      return `Today you’ve had ${leadsToday} new submission${leadsToday === 1 ? "" : "s"}. Intent decays fast — I’d prioritize a first touch while they still remember you.`;
     }
     if (newLeads >= 4) {
-      return `${newLeads} enquiries are still marked new. Batch a reply session to clear the queue faster.`;
+      return `${newLeads} enquiries are still “New”. A focused reply block (even 20 minutes) usually clears the mental load and improves conversion.`;
     }
     if (leadsWeek > 0) {
-      return `${leadsWeek} enquir${leadsWeek === 1 ? "y" : "ies"} in the last 7 days. Keep routing responses to “Contacted” as you work them.`;
+      return `${leadsWeek} in the last 7 days — healthy flow. Move wins to “Contacted” as you go so your dashboard stays an honest picture of what’s left.`;
     }
-    return "Pipeline is quiet — refresh copy on your enquiry form or promote the link in one new channel this week.";
+    return "Quiet week — try a small experiment: refresh your form headline or promote the link in one new channel.";
   }, [formCount, totalLeads, leadsToday, newLeads, leadsWeek]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+      className="ai-insight-shimmer relative flex h-full flex-col overflow-hidden rounded-2xl border border-indigo-200/40 bg-white/75 p-5 shadow-premium backdrop-blur-xl sm:p-6 dark:border-indigo-500/20 dark:bg-zinc-950/55 dark:shadow-soft"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/[0.04] via-transparent to-violet-500/[0.06]"
+        aria-hidden
+      />
+      <div className="relative flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+        <motion.span
+          animate={{ rotate: [0, 8, -4, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Sparkles className="size-4 shrink-0" aria-hidden />
+        </motion.span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
+          Workspace insight
+        </span>
+      </div>
+      <p className="relative mt-3 flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+        {text}
+      </p>
+      <Link
+        href="/leads"
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "sm" }),
+          "relative mt-4 -ml-2 w-fit gap-1 rounded-xl font-medium text-indigo-700 hover:bg-indigo-500/10 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200"
+        )}
+      >
+        Open smart inbox
+        <ArrowUpRight className="size-4" />
+      </Link>
+    </motion.div>
+  );
+}
+
+function ActionInsightChips({
+  newLeads,
+  formCount,
+  firstFormId,
+  totalLeads,
+}: {
+  newLeads: number;
+  formCount: number;
+  firstFormId: string | null;
+  totalLeads: number;
+}) {
+  const chips = useMemo(() => {
+    const c: {
+      key: string;
+      href: string;
+      label: string;
+      sub: string;
+      icon: LucideIcon;
+    }[] = [];
+    if (newLeads > 0) {
+      c.push({
+        key: "new",
+        href: "/leads",
+        label: "Follow up",
+        sub: `${newLeads} awaiting first touch`,
+        icon: Zap,
+      });
+    } else if (totalLeads > 0) {
+      c.push({
+        key: "inbox",
+        href: "/leads",
+        label: "Review inbox",
+        sub: "Sorted by lead score",
+        icon: MessageSquare,
+      });
+    }
+    if (formCount > 0 && firstFormId) {
+      c.push({
+        key: "share",
+        href: `/f/${firstFormId}`,
+        label: "Share form",
+        sub: "Copy-ready public link",
+        icon: Share2,
+      });
+    }
+    return c.slice(0, 3);
+  }, [newLeads, formCount, firstFormId, totalLeads]);
+
+  if (chips.length === 0) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
-      className="flex h-full flex-col rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-50/80 via-white to-violet-50/40 p-5 sm:p-6"
+      transition={{ duration: 0.4, delay: 0.08 }}
+      className="grid gap-3 sm:grid-cols-3"
     >
-      <div className="flex items-center gap-2 text-indigo-700">
-        <Sparkles className="size-4 shrink-0" aria-hidden />
-        <span className="text-[11px] font-bold uppercase tracking-wider">Insight</span>
-      </div>
-      <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{text}</p>
-      <Link
-        href="/leads"
-        className={cn(
-          buttonVariants({ variant: "ghost", size: "sm" }),
-          "mt-4 -ml-2 w-fit gap-1 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
-        )}
-      >
-        Open inbox
-        <ArrowUpRight className="size-4" />
-      </Link>
+      {chips.map((c, i) => (
+        <motion.div
+          key={c.key}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 + i * 0.05 }}
+        >
+          <Link
+            href={c.href}
+            target={c.key === "share" ? "_blank" : undefined}
+            rel={c.key === "share" ? "noreferrer" : undefined}
+            className="group flex items-start gap-3 rounded-2xl border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-indigo-200/80 hover:bg-white/90 hover:shadow-premium dark:border-white/10 dark:bg-zinc-950/40 dark:hover:border-indigo-500/30 dark:hover:bg-zinc-950/60"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-700 ring-1 ring-slate-200/80 transition-transform duration-300 group-hover:scale-105 group-hover:from-indigo-500/15 group-hover:to-violet-500/10 group-hover:text-indigo-700 dark:from-zinc-800 dark:to-zinc-900 dark:text-slate-200 dark:ring-white/10">
+              <c.icon className="size-[18px]" aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {c.label}
+              </span>
+              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                {c.sub}
+              </span>
+            </span>
+            <ArrowUpRight className="ml-auto size-4 shrink-0 text-slate-300 transition-colors group-hover:text-indigo-500 dark:text-slate-600" />
+          </Link>
+        </motion.div>
+      ))}
     </motion.div>
   );
 }
@@ -154,7 +267,7 @@ export function DashboardExperience({
   chartSeries,
 }: Props) {
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-6 lg:space-y-8">
       {formCount > 0 && firstFormId && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Link
@@ -179,7 +292,7 @@ export function DashboardExperience({
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8"
+          className="rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-premium backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-zinc-950/50"
         >
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 gap-4">
@@ -211,6 +324,13 @@ export function DashboardExperience({
         </motion.div>
       )}
 
+      <ActionInsightChips
+        newLeads={newLeads}
+        formCount={formCount}
+        firstFormId={firstFormId}
+        totalLeads={totalLeads}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total enquiries" value={totalLeads} icon={Inbox} delay={0} />
         <StatCard
@@ -239,10 +359,14 @@ export function DashboardExperience({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
-        <Card className="border-slate-200/90 lg:col-span-8">
-          <CardHeader className="border-b border-slate-100 pb-4">
-            <CardTitle className="text-base font-semibold">Enquiries over time</CardTitle>
-            <p className="text-sm font-normal text-slate-500">Daily submissions (last 14 days)</p>
+        <Card className="border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45 lg:col-span-8">
+          <CardHeader className="border-b border-slate-100/80 pb-4 dark:border-white/10">
+            <CardTitle className="text-base font-semibold tracking-tight">
+              Enquiries over time
+            </CardTitle>
+            <p className="text-sm font-normal text-slate-500 dark:text-slate-400">
+              Daily submissions (last 14 days)
+            </p>
           </CardHeader>
           <CardContent className="pt-6">
             <LeadsChart series={chartSeries} />
@@ -260,11 +384,13 @@ export function DashboardExperience({
         </div>
       </div>
 
-      <Card className="border-slate-200/90">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+      <Card className="border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45">
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b border-slate-100/80 pb-4 dark:border-white/10">
           <div className="min-w-0 space-y-1">
-            <CardTitle className="text-base font-semibold">Recent activity</CardTitle>
-            <p className="text-sm text-slate-500">Latest submissions</p>
+            <CardTitle className="text-base font-semibold tracking-tight">
+              Recent activity
+            </CardTitle>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Latest submissions</p>
           </div>
           <Link
             href="/leads"

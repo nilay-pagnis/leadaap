@@ -23,6 +23,85 @@ function scoreTooltipLabel(detail: LeadScoreResult, interactive: boolean): strin
   return `${score}/100 (${label}). ${factors}. ${explanation.slice(0, 120)}${explanation.length > 120 ? "…" : ""}${open}`;
 }
 
+function ScoreIntensityMeter({
+  score,
+  label,
+}: {
+  score: number;
+  label: LeadScoreLabel;
+}) {
+  const filled = Math.min(5, Math.max(0, Math.ceil(score / 20)));
+  const barGradient =
+    label === "Hot"
+      ? "from-red-500 to-orange-400"
+      : label === "Warm"
+        ? "from-amber-500 to-yellow-400"
+        : "from-sky-500 to-indigo-400";
+
+  return (
+    <div className="mt-1.5 flex w-full max-w-[4.5rem] flex-col gap-1">
+      <div className="flex gap-0.5">
+        {Array.from({ length: 5 }, (_, i) => (
+          <motion.span
+            key={i}
+            initial={{ scaleY: 0.4, opacity: 0.5 }}
+            animate={{
+              scaleY: i < filled ? 1 : 0.45,
+              opacity: i < filled ? 1 : 0.28,
+            }}
+            transition={{ delay: i * 0.04, duration: 0.25 }}
+            className={cn(
+              "h-1.5 min-w-0 flex-1 origin-bottom rounded-sm",
+              i < filled
+                ? `bg-gradient-to-t ${barGradient}`
+                : "bg-slate-200/90 dark:bg-slate-600/50"
+            )}
+          />
+        ))}
+      </div>
+      <motion.div
+        className={cn(
+          "h-0.5 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700/80"
+        )}
+        layout
+      >
+        <motion.div
+          className={cn("h-full rounded-full bg-gradient-to-r", barGradient)}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
+function ScoreMiniBar({
+  score,
+  label,
+}: {
+  score: number;
+  label: LeadScoreLabel;
+}) {
+  const barGradient =
+    label === "Hot"
+      ? "from-red-500 to-orange-400"
+      : label === "Warm"
+        ? "from-amber-500 to-yellow-400"
+        : "from-sky-500 to-indigo-400";
+
+  return (
+    <div className="mt-1 h-0.5 max-w-[2.75rem] overflow-hidden rounded-full bg-slate-200/85 dark:bg-slate-600/60">
+      <motion.div
+        className={cn("h-full rounded-full bg-gradient-to-r", barGradient)}
+        initial={{ width: 0 }}
+        animate={{ width: `${score}%` }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </div>
+  );
+}
+
 const toneClass: Record<
   LeadScoreLabel,
   { wrap: string; text: string }
@@ -124,7 +203,14 @@ export function ScoreBadge({
         className="max-w-full"
         tooltipClassName="whitespace-normal max-w-[min(100vw-2rem,280px)] text-left"
       >
-        {inner}
+        <span className="inline-flex flex-col items-stretch">
+          {inner}
+          {size === "md" ? (
+            <ScoreIntensityMeter score={score} label={label} />
+          ) : (
+            <ScoreMiniBar score={score} label={label} />
+          )}
+        </span>
       </DashboardTooltip>
       {interactive ? (
         <ScoreBreakdown open={open} onOpenChange={setOpen} detail={detail} />

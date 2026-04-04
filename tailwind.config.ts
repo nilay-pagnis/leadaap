@@ -57,6 +57,10 @@ const config: Config = {
         soft: "0 8px 32px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.06)",
         "soft-lg":
           "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.05)",
+        premium:
+          "0 1px 0 rgba(255,255,255,0.7) inset, 0 12px 40px -16px rgba(79, 70, 229, 0.18), 0 4px 16px -8px rgba(15, 23, 42, 0.08)",
+        "premium-hover":
+          "0 1px 0 rgba(255,255,255,0.85) inset, 0 20px 48px -16px rgba(79, 70, 229, 0.22), 0 8px 24px -8px rgba(15, 23, 42, 0.1)",
       },
     },
   },

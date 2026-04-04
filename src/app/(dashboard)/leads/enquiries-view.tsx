@@ -22,7 +22,16 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
-import { Eye, FilterX, Inbox, LayoutGrid, LayoutList } from "lucide-react";
+import {
+  Eye,
+  FilterX,
+  Flame,
+  Inbox,
+  LayoutGrid,
+  LayoutList,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
@@ -49,6 +58,26 @@ import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
 import { parseTimestamptz } from "@/lib/timestamptz";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
+
+function compareLeadsByScoreThenRecency(
+  a: LeadRow,
+  b: LeadRow,
+  formNames: Record<string, string>,
+  fieldDefs: LeadFieldDef[]
+): number {
+  const da = calculateLeadScore({ lead: a, formNames, fieldDefs });
+  const db = calculateLeadScore({ lead: b, formNames, fieldDefs });
+  const rank = (l: (typeof da)["label"]) =>
+    l === "Hot" ? 0 : l === "Warm" ? 1 : 2;
+  const ra = rank(da.label);
+  const rb = rank(db.label);
+  if (ra !== rb) return ra - rb;
+  if (db.score !== da.score) return db.score - da.score;
+  return (
+    parseTimestamptz(b.created_at).getTime() -
+    parseTimestamptz(a.created_at).getTime()
+  );
+}
 
 function stopRowActivate(e: React.SyntheticEvent) {
   e.stopPropagation();
@@ -79,7 +108,7 @@ function EnquiriesEmptyState({
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl border border-dashed border-slate-200/90 bg-gradient-to-b from-white to-slate-50/90 py-14 text-center shadow-sm sm:py-20"
+      className="rounded-2xl border border-dashed border-slate-200/80 bg-gradient-to-b from-white/90 to-slate-50/80 py-14 text-center shadow-premium backdrop-blur-md sm:py-20 dark:border-white/15 dark:from-zinc-950/50 dark:to-zinc-950/30"
     >
       <div className="mx-auto flex max-w-md flex-col items-center px-4">
         <span className="flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 shadow-inner ring-1 ring-slate-200/80">
@@ -256,6 +285,33 @@ export function EnquiriesView({
     return filtered.filter((row) => leadMatchesNameOrEmail(row, fieldDefs, q));
   }, [filtered, search, fieldDefs]);
 
+  const prioritySortedLeads = useMemo(() => {
+    const copy = [...searchFiltered];
+    copy.sort((a, b) =>
+      compareLeadsByScoreThenRecency(a, b, formNames, fieldDefs)
+    );
+    return copy;
+  }, [searchFiltered, formNames, fieldDefs]);
+
+  const smartInboxStats = useMemo(() => {
+    let hot = 0;
+    let warm = 0;
+    let newCount = 0;
+    let weekCount = 0;
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    for (const lead of leads) {
+      if (lead.status === "new") newCount += 1;
+      if (now - parseTimestamptz(lead.created_at).getTime() <= weekMs) {
+        weekCount += 1;
+      }
+      const d = calculateLeadScore({ lead, formNames, fieldDefs });
+      if (d.label === "Hot") hot += 1;
+      else if (d.label === "Warm") warm += 1;
+    }
+    return { hot, warm, newCount, weekCount };
+  }, [leads, formNames, fieldDefs]);
+
   const pipelineFiltered = useMemo(() => {
     let list = leads;
     if (formFilter !== "all") {
@@ -277,14 +333,12 @@ export function EnquiriesView({
       g[lead.status].push(lead);
     }
     for (const s of STATUSES) {
-      g[s].sort(
-        (a, b) =>
-          parseTimestamptz(b.created_at).getTime() -
-          parseTimestamptz(a.created_at).getTime()
+      g[s].sort((a, b) =>
+        compareLeadsByScoreThenRecency(a, b, formNames, fieldDefs)
       );
     }
     return g;
-  }, [pipelineFiltered]);
+  }, [pipelineFiltered, formNames, fieldDefs]);
 
   const updateStatus = useCallback(async (id: string, status: LeadStatus) => {
     const prevLead = leads.find((l) => l.id === id);
@@ -338,17 +392,20 @@ export function EnquiriesView({
   const boardEmpty = pipelineFiltered.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-primary">Inbox</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+          <p className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+            <Sparkles className="size-3.5 opacity-80" aria-hidden />
+            Smart inbox
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
             Enquiries
           </h1>
-          <p className="max-w-lg text-sm text-slate-600 sm:text-base">
+          <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">
             {view === "list"
-              ? "Search, filter, and read the enquiry beside the list on large screens."
-              : "Drag cards between columns to update status. Use the grip handle to drag."}
+              ? "High-intent leads surface first. Filter, search, and open details beside the list on large screens."
+              : "Columns mirror your pipeline — drag cards to update status. Hot leads stay easy to spot at the top of each column."}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -362,41 +419,41 @@ export function EnquiriesView({
             }
           />
           <div
-            className="inline-flex shrink-0 rounded-xl border border-slate-200/90 bg-slate-50/90 p-1 shadow-sm"
+            className="inline-flex shrink-0 rounded-2xl border border-slate-200/80 bg-white/70 p-1 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/50"
             role="tablist"
             aria-label="View mode"
           >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "list"}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
-              view === "list"
-                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80"
-                : "text-slate-600 hover:bg-white/60 hover:text-slate-900"
-            )}
-            onClick={() => setView("list")}
-          >
-            <LayoutList className="size-4" />
-            List
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "board"}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
-              view === "board"
-                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80"
-                : "text-slate-600 hover:bg-white/60 hover:text-slate-900"
-            )}
-            onClick={() => setView("board")}
-          >
-            <LayoutGrid className="size-4" />
-            Board
-          </button>
-        </div>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "list"}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
+                view === "list"
+                  ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-200/70 dark:bg-zinc-800 dark:text-slate-100 dark:ring-white/10"
+                  : "text-slate-600 hover:bg-white/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
+              )}
+              onClick={() => setView("list")}
+            >
+              <LayoutList className="size-4" />
+              List
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "board"}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
+                view === "board"
+                  ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-200/70 dark:bg-zinc-800 dark:text-slate-100 dark:ring-white/10"
+                  : "text-slate-600 hover:bg-white/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
+              )}
+              onClick={() => setView("board")}
+            >
+              <LayoutGrid className="size-4" />
+              Board
+            </button>
+          </div>
         </div>
       </div>
 
@@ -412,6 +469,45 @@ export function EnquiriesView({
         onClearAllFilters={clearAllFilters}
       />
 
+      {view === "list" && !listEmpty ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-5 dark:border-white/10 dark:bg-zinc-950/45"
+        >
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+              Signals
+            </span>
+            {smartInboxStats.hot > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200/80 bg-red-50/90 px-3 py-1 text-xs font-semibold text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+                <Flame className="size-3.5" aria-hidden />
+                {smartInboxStats.hot} hot
+              </span>
+            ) : null}
+            {smartInboxStats.warm > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/90 px-3 py-1 text-xs font-semibold text-amber-950 dark:border-amber-900/45 dark:bg-amber-950/35 dark:text-amber-100">
+                <Zap className="size-3.5" aria-hidden />
+                {smartInboxStats.warm} warm
+              </span>
+            ) : null}
+            <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-50/90 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-zinc-800/80 dark:text-slate-200">
+              {smartInboxStats.newCount} new
+            </span>
+            <span className="inline-flex items-center rounded-full border border-indigo-200/60 bg-indigo-50/80 px-3 py-1 text-xs font-medium text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-950/40 dark:text-indigo-200">
+              {smartInboxStats.weekCount} this week
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:max-w-[280px] sm:text-right">
+            <span className="font-medium text-slate-600 dark:text-slate-300">
+              Priority order:
+            </span>{" "}
+            Hot → warm → cold, then newest first — so you always see what deserves attention.
+          </p>
+        </motion.div>
+      ) : null}
+
       {view === "list" ? (
         listEmpty ? (
           <EnquiriesEmptyState
@@ -425,7 +521,7 @@ export function EnquiriesView({
         ) : (
           <div
             className={cn(
-              "overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)]",
+              "overflow-hidden rounded-2xl border border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45",
               showSplitDetail &&
                 "flex min-h-[min(680px,calc(100dvh-11rem))] flex-row items-stretch"
             )}
@@ -451,7 +547,7 @@ export function EnquiriesView({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {searchFiltered.map((row) => {
+                  {prioritySortedLeads.map((row) => {
                     const preview = Object.entries(row.data ?? {})
                       .map(([k, v]) => {
                         const label = fieldById[k]?.label ?? k;
@@ -472,10 +568,14 @@ export function EnquiriesView({
                         aria-selected={detail?.id === row.id}
                         data-state={detail?.id === row.id ? "selected" : undefined}
                         className={cn(
-                          "cursor-pointer border-slate-100 outline-none transition-[background-color,transform,box-shadow] duration-150 hover:bg-slate-50/90 active:scale-[0.998]",
-                          "focus-visible:bg-slate-50/90 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                          "cursor-pointer border-slate-100 outline-none transition-[background-color,transform,box-shadow,border-color] duration-200 hover:bg-slate-50/90 active:scale-[0.998] dark:border-white/5 dark:hover:bg-white/[0.04]",
+                          "focus-visible:bg-slate-50/90 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 dark:focus-visible:bg-white/[0.06]",
+                          scoreResult.label === "Hot" &&
+                            "border-l-[3px] border-l-red-400/85 dark:border-l-red-500/70",
+                          scoreResult.label === "Warm" &&
+                            "border-l-[3px] border-l-amber-400/70 dark:border-l-amber-500/55",
                           detail?.id === row.id &&
-                            "bg-primary/[0.06] ring-1 ring-inset ring-primary/10"
+                            "bg-primary/[0.06] ring-1 ring-inset ring-primary/10 dark:bg-primary/10"
                         )}
                         onClick={() => setDetail(row)}
                         onKeyDown={(e) => {

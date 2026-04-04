@@ -78,11 +78,11 @@ export function DashboardShell({
 
   return (
     <CommandPaletteProvider userId={user?.id ?? null}>
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-foreground dark:bg-background">
+    <div className="relative min-h-dvh overflow-x-hidden text-foreground dashboard-canvas">
       <LightCanvas />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[min(260px,85vw)] flex-col border-r border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md transition-transform duration-300 ease-out lg:w-[260px] lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[min(260px,85vw)] flex-col border-r border-white/50 bg-white/75 pb-[env(safe-area-inset-bottom,0px)] shadow-[4px_0_24px_-12px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-transform duration-300 ease-out dark:border-white/10 dark:bg-zinc-950/55 dark:shadow-none lg:w-[260px] lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -160,7 +160,7 @@ export function DashboardShell({
       )}
 
       <div className="relative z-10 min-w-0 lg:pl-[260px]">
-        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/75 dark:border-slate-800/80 dark:bg-background/90 dark:supports-[backdrop-filter]:bg-background/75">
+        <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] backdrop-blur-xl supports-[backdrop-filter]:bg-white/65 dark:border-white/10 dark:bg-zinc-950/70 dark:shadow-none dark:supports-[backdrop-filter]:bg-zinc-950/55">
           <div className="pt-[env(safe-area-inset-top,0px)]">
             <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-4 lg:h-[3.75rem] lg:gap-3 lg:px-6">
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -183,7 +183,7 @@ export function DashboardShell({
         </header>
         <main className="relative z-10 min-w-0 overflow-x-hidden pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] pt-6 lg:pb-12 lg:pt-8">
           <DashboardPageMotion>
-            <PageContainer className="space-y-8">{children}</PageContainer>
+            <PageContainer className="space-y-6">{children}</PageContainer>
           </DashboardPageMotion>
         </main>
       </div>

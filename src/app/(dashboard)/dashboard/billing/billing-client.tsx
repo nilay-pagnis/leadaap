@@ -121,7 +121,7 @@ export function BillingClient({
   const critical = usage.atLeadLimit || usage.atFormLimit;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10 lg:space-y-12">
+    <div className="mx-auto max-w-5xl space-y-6 lg:space-y-8">
       {usage.usedFallback && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
           We couldn’t sync your billing profile from the server — showing defaults.
@@ -143,9 +143,9 @@ export function BillingClient({
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Plans &amp; usage
         </h1>
-        <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
-          Pay with a Razorpay payment link, then submit your Payment ID for approval.
-          Free is your always-on tier — upgrade when you need more capacity.
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Transparent limits, no surprises. Pay via Razorpay link, submit your Payment ID, and we
+          align your workspace — free stays on until you choose to grow.
         </p>
       </div>
 
@@ -163,9 +163,9 @@ export function BillingClient({
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-slate-200/90 shadow-none">
+        <Card className="border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45">
           <CardHeader>
-            <CardTitle className="text-xl font-semibold text-slate-900">
+            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-slate-50">
               Current plan
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -243,11 +243,11 @@ export function BillingClient({
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/90 shadow-none">
+        <Card className="border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45">
           <CardHeader>
-            <CardTitle className="text-xl font-semibold">Quick actions</CardTitle>
-            <p className="text-sm text-slate-500">
-              Open a payment link for the tier you want, then confirm your Payment ID.
+            <CardTitle className="text-xl font-semibold dark:text-slate-50">Quick actions</CardTitle>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Jump to checkout for any tier — you’ll confirm with your Payment ID after paying.
             </p>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -255,6 +255,7 @@ export function BillingClient({
               <Button
                 key={p.id}
                 variant="outline"
+                className="rounded-xl border-slate-200/80 transition-all duration-200 hover:border-primary/35 hover:bg-primary/[0.04] hover:shadow-md dark:border-white/10"
                 disabled={pending || usage.plan === p.id}
                 onClick={() => upgradeViaPaymentLink(p.id)}
               >
@@ -277,10 +278,12 @@ export function BillingClient({
         </Card>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white">
-        <div className="border-b border-slate-100 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Billing history</h2>
-          <p className="mt-1 text-sm text-slate-500">Payment link submissions tied to your account.</p>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45">
+        <div className="border-b border-slate-100/80 px-6 py-4 dark:border-white/10">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">Billing history</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Payment link submissions tied to your account.
+          </p>
         </div>
         {payments.length === 0 ? (
           <div className="px-6 py-14 text-center text-sm text-slate-500">
@@ -420,11 +423,11 @@ function PlanCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "relative flex flex-col rounded-2xl border p-6 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] transition-all duration-300",
+        "relative flex flex-col rounded-2xl border p-6 shadow-premium backdrop-blur-xl transition-all duration-300 hover:shadow-premium-hover dark:shadow-soft dark:hover:shadow-soft-lg",
         featured
-          ? "border-primary/35 bg-gradient-to-b from-primary/[0.07] to-white ring-2 ring-primary/25 md:scale-[1.02]"
-          : "border-slate-200 bg-white",
-        current && "ring-2 ring-primary/40"
+          ? "border-primary/40 bg-gradient-to-b from-primary/[0.1] via-white/90 to-violet-50/50 ring-2 ring-primary/20 dark:from-primary/15 dark:via-zinc-950/60 dark:to-zinc-950/40 dark:ring-primary/35 md:scale-[1.02]"
+          : "border-slate-200/75 bg-white/80 dark:border-white/10 dark:bg-zinc-950/50",
+        current && "ring-2 ring-primary/45 dark:ring-primary/50"
       )}
     >
       {(badge || featured) && (
