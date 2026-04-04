@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, formatDistanceToNow, isValid } from "date-fns";
+import { dayjs } from "@/lib/dayjs-config";
 import { parseTimestamptz } from "@/lib/timestamptz";
 
 type Props = {
@@ -11,17 +11,22 @@ type Props = {
   tick?: number;
   /** If true, sets `title` to a full local date/time after mount (for hover). */
   absoluteTitle?: boolean;
+  /**
+   * `combined` → "2 minutes ago • 5:10 PM" (local). `relative` → fromNow() only.
+   */
+  variant?: "relative" | "combined";
 };
 
 /**
- * Relative "time ago" in the browser's locale/timezone. Defers formatting until
- * after mount so SSR does not freeze UTC-relative labels.
+ * Relative time via dayjs (local timezone). Defers formatting until after mount
+ * so SSR does not freeze labels.
  */
 export function ClientRelativeTime({
   iso,
   className,
   tick = 0,
   absoluteTitle,
+  variant = "combined",
 }: Props) {
   const [mounted, setMounted] = useState(false);
 
@@ -34,12 +39,17 @@ export function ClientRelativeTime({
   let text: string | null = null;
   let title: string | undefined;
   if (mounted) {
-    const d = parseTimestamptz(iso);
-    if (!isValid(d)) {
+    const d = dayjs(parseTimestamptz(iso));
+    if (!d.isValid()) {
       text = "—";
     } else {
-      text = formatDistanceToNow(d, { addSuffix: true });
-      title = absoluteTitle ? format(d, "PPp") : undefined;
+      const rel = d.fromNow();
+      const clock = d.format("h:mm A");
+      text =
+        variant === "combined" ? `${rel} • ${clock}` : rel;
+      title = absoluteTitle
+        ? d.format("dddd, MMMM D, YYYY [at] h:mm A")
+        : undefined;
     }
   }
 

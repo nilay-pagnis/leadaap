@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { LeadRow } from "@/types";
 import { DashboardExperience } from "./dashboard-experience";
-import { buildDailyLeadSeries } from "@/lib/dashboard-series";
+import { buildDailyLeadSeries, chartCreatedAtGteIso } from "@/lib/dashboard-series";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -18,9 +18,7 @@ export default async function DashboardPage() {
   weekAgo.setDate(weekAgo.getDate() - 7);
   weekAgo.setHours(0, 0, 0, 0);
 
-  const chartFrom = new Date();
-  chartFrom.setDate(chartFrom.getDate() - 13);
-  chartFrom.setHours(0, 0, 0, 0);
+  const chartFromIso = chartCreatedAtGteIso(14);
 
   const { count: totalLeads } = await supabase
     .from("leads")
@@ -49,7 +47,8 @@ export default async function DashboardPage() {
   const { data: chartRows } = await supabase
     .from("leads")
     .select("created_at")
-    .gte("created_at", chartFrom.toISOString());
+    .eq("user_id", user.id)
+    .gte("created_at", chartFromIso);
 
   const chartSeries = buildDailyLeadSeries(chartRows ?? [], 14);
 
@@ -80,6 +79,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardExperience
+      userId={user.id}
       totalLeads={totalLeads ?? 0}
       newLeads={newLeads ?? 0}
       leadsToday={leadsToday ?? 0}

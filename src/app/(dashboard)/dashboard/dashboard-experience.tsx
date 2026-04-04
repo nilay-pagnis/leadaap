@@ -32,9 +32,12 @@ import {
 import { SiteLogo } from "@/components/brand/site-logo";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
-import { LeadsChart } from "@/components/dashboard/leads-chart";
+import { DashboardInboxVolume } from "@/components/dashboard/dashboard-inbox-volume";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
+import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
 
 type Props = {
+  userId: string;
   totalLeads: number;
   newLeads: number;
   leadsToday: number;
@@ -255,6 +258,7 @@ function ActionInsightChips({
 }
 
 export function DashboardExperience({
+  userId,
   totalLeads,
   newLeads,
   leadsToday,
@@ -266,6 +270,8 @@ export function DashboardExperience({
   formNames,
   chartSeries,
 }: Props) {
+  const timeTick = useRelativeTimeTicker(true, 30_000);
+
   return (
     <div className="space-y-6 lg:space-y-8">
       {formCount > 0 && firstFormId && (
@@ -389,11 +395,12 @@ export function DashboardExperience({
               Inbox volume
             </CardTitle>
             <p className="text-sm font-normal text-slate-500 dark:text-slate-400">
-              Daily submissions to your workspace (last 14 days)
+              Daily submissions to your workspace (last 14 days, UTC days). Updates live when new
+              enquiries arrive.
             </p>
           </CardHeader>
           <CardContent className="pt-6">
-            <LeadsChart series={chartSeries} />
+            <DashboardInboxVolume userId={userId} initialSeries={chartSeries} />
           </CardContent>
         </Card>
 
@@ -468,13 +475,13 @@ export function DashboardExperience({
                         <TableCell>
                           <LeadStatusBadge status={row.status} />
                         </TableCell>
-                        <TableCell className="text-right text-sm tabular-nums text-slate-500">
-                          {new Date(row.created_at).toLocaleString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
+                        <TableCell className="text-right text-sm text-slate-500">
+                          <ClientRelativeTime
+                            iso={row.created_at}
+                            tick={timeTick}
+                            absoluteTitle
+                            className="tabular-nums"
+                          />
                         </TableCell>
                       </TableRow>
                     );
