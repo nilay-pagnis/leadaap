@@ -27,6 +27,7 @@ function LeadsTableFallback() {
             >
               <Skeleton className="h-4 flex-1 max-w-[200px] rounded" />
               <Skeleton className="h-4 flex-1 max-w-[240px] rounded" />
+              <Skeleton className="h-6 w-24 shrink-0 rounded-full" />
               <Skeleton className="h-9 w-[158px] rounded-full" />
               <Skeleton className="h-4 w-28 rounded" />
               <Skeleton className="h-8 w-16 rounded-xl" />

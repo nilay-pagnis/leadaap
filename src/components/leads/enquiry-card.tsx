@@ -5,6 +5,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
+import { calculateLeadScore } from "@/lib/leads/lead-score";
+import { ScoreBadge } from "@/components/leads/score-badge";
 import { formatRelativeTime } from "@/lib/format-relative";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
@@ -26,6 +28,11 @@ export function EnquiryCard({
   const { name, email } = getLeadNameAndEmail(lead, fieldDefs);
   const formName = formNames[lead.form_id] ?? "—";
   const when = formatRelativeTime(lead.created_at);
+  const scoreResult = calculateLeadScore({
+    lead,
+    formNames,
+    fieldDefs,
+  });
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
@@ -61,17 +68,22 @@ export function EnquiryCard({
         >
           <GripVertical className="size-4" />
         </button>
-        <button
-          type="button"
-          className="min-w-0 flex-1 text-left"
-          onClick={onOpen}
-        >
-          <p className="line-clamp-2 text-sm font-semibold text-slate-900">{name}</p>
-          <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
-          <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
-          <p className="mt-1.5 text-xs text-slate-400">{when}</p>
-          <p className="mt-2 text-xs text-slate-400">Open for notes and activity</p>
-        </button>
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            className="w-full text-left"
+            onClick={onOpen}
+          >
+            <p className="line-clamp-2 text-sm font-semibold text-slate-900">{name}</p>
+            <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
+            <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
+            <p className="mt-1.5 text-xs text-slate-400">{when}</p>
+            <p className="mt-2 text-xs text-slate-400">Open for notes and activity</p>
+          </button>
+          <div className="mt-2">
+            <ScoreBadge detail={scoreResult} size="sm" className="max-w-full" />
+          </div>
+        </div>
       </div>
     </div>
   );

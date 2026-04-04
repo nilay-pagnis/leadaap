@@ -36,6 +36,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useLeadActivities } from "@/hooks/use-lead-activities";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
+import { calculateLeadScore, type LeadScoreResult } from "@/lib/leads/lead-score";
+import { ScoreBadge } from "@/components/leads/score-badge";
 import { formatRelativeTime } from "@/lib/format-relative";
 import { getNoteBody, isNotePayload } from "@/lib/leads/activity-messages";
 import type { LeadActivity, LeadFieldDef, LeadRow, LeadStatus } from "@/types";
@@ -213,6 +215,20 @@ export function EnquiryDetailPanel({
 
   const formName = lead ? formNames[lead.form_id] ?? lead.form_id : "—";
 
+  const scoreResult: LeadScoreResult = useMemo(
+    () =>
+      lead
+        ? calculateLeadScore({ lead, formNames, fieldDefs })
+        : {
+            score: 0,
+            label: "Cold",
+            lines: [],
+            explanation:
+              "Fewer urgency signals from this submission. Qualify further or add to nurture.",
+          },
+    [lead, formNames, fieldDefs]
+  );
+
   const detailRows = useMemo(
     () => [
       { key: "form", label: "Form", value: formName },
@@ -291,8 +307,16 @@ export function EnquiryDetailPanel({
 
   const statusBusy = !!(lead && updatingLeadId === lead.id);
 
+  const stopToolbarBubble = useCallback((e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  }, []);
+
   const toolbar = lead ? (
-    <div className="flex flex-wrap items-center gap-2">
+    <div
+      className="flex flex-wrap items-center gap-2"
+      onClick={stopToolbarBubble}
+      onPointerDown={stopToolbarBubble}
+    >
       {onStatusChange ? (
         <Select
           value={lead.status}
@@ -403,6 +427,10 @@ export function EnquiryDetailPanel({
           <p className="text-sm text-slate-500">{phone}</p>
         ) : null}
         <div className="flex flex-wrap items-center gap-2 pt-1">
+          <ScoreBadge detail={scoreResult} size="md" />
+          <span className="text-slate-300" aria-hidden>
+            ·
+          </span>
           <LeadStatusBadge status={lead.status} size="md" />
           <span className="text-slate-300" aria-hidden>
             ·

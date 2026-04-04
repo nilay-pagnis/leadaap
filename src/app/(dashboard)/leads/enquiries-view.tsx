@@ -29,8 +29,14 @@ import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 import { KanbanBoard } from "@/components/leads/kanban-board";
 import { EnquiryDetailPanel } from "@/components/leads/enquiry-detail-panel";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { calculateLeadScore } from "@/lib/leads/lead-score";
+import { ScoreBadge } from "@/components/leads/score-badge";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
+
+function stopRowActivate(e: React.SyntheticEvent) {
+  e.stopPropagation();
+}
 
 function formatLeadValue(v: string | boolean | string[] | undefined): string {
   if (v === undefined || v === null) return "—";
@@ -273,6 +279,9 @@ export function EnquiriesView({
                   <TableRow className="border-slate-100 hover:bg-transparent">
                     <TableHead className="text-slate-500">Enquiry form</TableHead>
                     <TableHead className="text-slate-500">Preview</TableHead>
+                    <TableHead className="w-[1%] whitespace-nowrap text-slate-500">
+                      Score
+                    </TableHead>
                     <TableHead className="text-slate-500">Status</TableHead>
                     <TableHead className="text-slate-500">Received</TableHead>
                     <TableHead className="text-right text-slate-500">Actions</TableHead>
@@ -288,6 +297,11 @@ export function EnquiriesView({
                       })
                       .slice(0, 2)
                       .join(" · ");
+                    const scoreResult = calculateLeadScore({
+                      lead: row,
+                      formNames,
+                      fieldDefs,
+                    });
                     return (
                       <TableRow
                         key={row.id}
@@ -305,7 +319,17 @@ export function EnquiriesView({
                         <TableCell className="max-w-[min(240px,50vw)] truncate text-slate-500">
                           {preview || "—"}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell
+                          className="whitespace-nowrap"
+                          onClick={stopRowActivate}
+                          onPointerDown={stopRowActivate}
+                        >
+                          <ScoreBadge detail={scoreResult} size="sm" />
+                        </TableCell>
+                        <TableCell
+                          onClick={stopRowActivate}
+                          onPointerDown={stopRowActivate}
+                        >
                           <Select
                             value={row.status}
                             onValueChange={(v) => updateStatus(row.id, v as LeadStatus)}
@@ -343,12 +367,19 @@ export function EnquiriesView({
                         <TableCell className="text-sm text-slate-500">
                           {new Date(row.created_at).toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <TableCell
+                          className="text-right"
+                          onClick={stopRowActivate}
+                          onPointerDown={stopRowActivate}
+                        >
                           <Button
                             variant="ghost"
                             size="sm"
                             className="rounded-xl text-primary hover:bg-primary/10"
-                            onClick={() => setDetail(row)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetail(row);
+                            }}
                           >
                             <Eye className="mr-1 size-4" />
                             View

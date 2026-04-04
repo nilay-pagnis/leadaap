@@ -17,6 +17,8 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { KanbanColumn } from "@/components/leads/kanban-column";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
+import { calculateLeadScore } from "@/lib/leads/lead-score";
+import { ScoreBadge } from "@/components/leads/score-badge";
 import { formatRelativeTime } from "@/lib/format-relative";
 import { cn } from "@/lib/utils";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
@@ -57,6 +59,11 @@ function KanbanDragPreview({
   const { name, email } = getLeadNameAndEmail(lead, fieldDefs);
   const formName = formNames[lead.form_id] ?? "—";
   const when = formatRelativeTime(lead.created_at);
+  const scoreResult = calculateLeadScore({
+    lead,
+    formNames,
+    fieldDefs,
+  });
   return (
     <div
       className={cn(
@@ -66,6 +73,9 @@ function KanbanDragPreview({
       <p className="line-clamp-2 text-sm font-semibold text-slate-900">{name}</p>
       <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
       <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
+      <div className="mt-2">
+        <ScoreBadge detail={scoreResult} size="sm" />
+      </div>
       <p className="mt-1.5 text-xs text-slate-400">{when}</p>
     </div>
   );
