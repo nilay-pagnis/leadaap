@@ -18,6 +18,8 @@ import { PageContainer } from "@/components/layout/page-container";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUiStore } from "@/stores/ui-store";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { SidebarToggleButton } from "@/components/layout/sidebar-toggle-button";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { DashboardPageMotion } from "@/components/layout/dashboard-page-motion";
@@ -42,6 +44,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const mobileOpen = useUiStore((s) => s.mobileNavOpen);
   const setMobileOpen = useUiStore((s) => s.setMobileNavOpen);
+  const sidebarCollapsedDesktop = useUiStore((s) => s.sidebarCollapsedDesktop);
+  const isLg = useMediaQuery("(min-width: 1024px)");
+  const sidebarInert = Boolean(isLg && sidebarCollapsedDesktop);
 
   async function signOut() {
     const supabase = createClient();
@@ -57,9 +62,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-foreground">
       <LightCanvas />
       <aside
+        id="app-sidebar"
+        inert={sidebarInert || undefined}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[min(260px,85vw)] flex-col border-r border-slate-200/90 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] shadow-[1px_0_0_rgba(15,23,42,0.04)] backdrop-blur-xl transition-transform duration-300 ease-out lg:w-[260px] lg:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[min(260px,85vw)] flex-col border-r border-slate-200/90 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] shadow-[1px_0_0_rgba(15,23,42,0.04)] backdrop-blur-xl transition-transform duration-300 ease-out lg:w-[260px]",
+          "-translate-x-full",
+          mobileOpen && "translate-x-0",
+          "lg:translate-x-0",
+          sidebarCollapsedDesktop && "lg:-translate-x-full lg:pointer-events-none"
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-5">
@@ -118,11 +128,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="relative z-10 min-w-0 lg:pl-[260px]">
+      <div
+        className={cn(
+          "relative z-10 min-w-0 transition-[padding] duration-300 ease-out",
+          sidebarCollapsedDesktop ? "lg:pl-0" : "lg:pl-[260px]"
+        )}
+      >
         <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/75 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
           <div className="pt-[env(safe-area-inset-top,0px)]">
             <div className="flex h-14 min-w-0 items-center justify-between px-4 lg:h-16 lg:px-6">
-              <div className="flex min-w-0 items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -132,6 +147,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 >
                   <Menu className="size-5" />
                 </Button>
+                <SidebarToggleButton className="text-slate-700 hover:bg-slate-100" />
                 <p className="truncate text-sm font-medium text-slate-500">{sectionLabel}</p>
               </div>
             </div>
