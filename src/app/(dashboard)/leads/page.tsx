@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EnquiryTableSkeleton } from "@/components/leads/enquiry-table-skeleton";
 import { EnquiriesView } from "./enquiries-view";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
@@ -18,23 +19,7 @@ function LeadsTableFallback() {
         <Skeleton className="h-10 w-40 rounded-xl" />
         <Skeleton className="h-10 w-48 rounded-xl" />
       </div>
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-        <div className="space-y-0">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 border-b border-slate-100 px-4 py-4 last:border-0"
-            >
-              <Skeleton className="h-4 flex-1 max-w-[200px] rounded" />
-              <Skeleton className="h-4 flex-1 max-w-[240px] rounded" />
-              <Skeleton className="h-6 w-24 shrink-0 rounded-full" />
-              <Skeleton className="h-9 w-[158px] rounded-full" />
-              <Skeleton className="h-4 w-28 rounded" />
-              <Skeleton className="h-8 w-16 rounded-xl" />
-            </div>
-          ))}
-        </div>
-      </div>
+      <EnquiryTableSkeleton rows={5} />
     </div>
   );
 }

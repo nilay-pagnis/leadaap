@@ -1,6 +1,7 @@
 "use client";
 
-import { Search } from "lucide-react";
+import type { ReactNode } from "react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +17,7 @@ import type { LeadStatus } from "@/types";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
-function statusLabel(s: LeadStatus): string {
+export function enquiryStatusLabel(s: LeadStatus): string {
   switch (s) {
     case "new":
       return "New";
@@ -42,6 +43,8 @@ export type EnquiryFiltersProps = {
   onSearchChange: (v: string) => void;
   forms: { id: string; name: string }[];
   className?: string;
+  /** Resets status, form, and search in one action (shown with active filter chips). */
+  onClearAllFilters?: () => void;
 };
 
 export function EnquiryFilters({
@@ -54,6 +57,7 @@ export function EnquiryFilters({
   onSearchChange,
   forms,
   className,
+  onClearAllFilters,
 }: EnquiryFiltersProps) {
   const isPipeline = variant === "pipeline";
   const activeCount =
@@ -111,7 +115,7 @@ export function EnquiryFilters({
                 <SelectItem value="all">All</SelectItem>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {statusLabel(s)}
+                    {enquiryStatusLabel(s)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -167,6 +171,7 @@ export function EnquiryFilters({
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by name or email…"
+              title="Tip: press / to focus this field when not typing elsewhere"
               className={cn(
                 "h-10 rounded-xl border-slate-200 bg-white pl-9 shadow-sm transition-[box-shadow,border-color]",
                 search.trim() ? triggerActive : ""
@@ -176,6 +181,82 @@ export function EnquiryFilters({
           </div>
         </div>
       </div>
+
+      {activeCount > 0 ? (
+        <div
+          className="flex flex-col gap-2 border-t border-slate-200/80 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+          role="region"
+          aria-label="Active filters"
+        >
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {!isPipeline && status !== "all" ? (
+              <FilterChip
+                onRemove={() => onStatusChange("all")}
+                removeLabel={`Remove status filter ${enquiryStatusLabel(status)}`}
+              >
+                Status: {enquiryStatusLabel(status)}
+              </FilterChip>
+            ) : null}
+            {formId !== "all" ? (
+              <FilterChip
+                onRemove={() => onFormChange("all")}
+                removeLabel={`Remove form filter ${formDisplayLabel}`}
+              >
+                Form: <span className="max-w-[140px] truncate">{formDisplayLabel}</span>
+              </FilterChip>
+            ) : null}
+            {search.trim() ? (
+              <FilterChip
+                onRemove={() => onSearchChange("")}
+                removeLabel="Remove search filter"
+              >
+                Search:{" "}
+                <span className="max-w-[120px] truncate font-normal">
+                  &ldquo;{search.trim().slice(0, 40)}
+                  {search.trim().length > 40 ? "…" : ""}
+                  &rdquo;
+                </span>
+              </FilterChip>
+            ) : null}
+          </div>
+          {onClearAllFilters ? (
+            <button
+              type="button"
+              className="shrink-0 text-left text-xs font-semibold text-primary underline-offset-2 transition-colors hover:text-primary/80 hover:underline"
+              onClick={onClearAllFilters}
+            >
+              Clear all filters
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function FilterChip({
+  children,
+  onRemove,
+  removeLabel,
+}: {
+  children: ReactNode;
+  onRemove: () => void;
+  removeLabel: string;
+}) {
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-slate-200/90 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm ring-1 ring-slate-900/[0.04] transition-[box-shadow,background-color] hover:bg-slate-50 hover:shadow-md">
+      <span className="flex min-w-0 items-center gap-1">{children}</span>
+      <button
+        type="button"
+        className="shrink-0 rounded-full p-0.5 text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900"
+        onClick={(e) => {
+          e.preventDefault();
+          onRemove();
+        }}
+        aria-label={removeLabel}
+      >
+        <X className="size-3.5" aria-hidden />
+      </button>
+    </span>
   );
 }

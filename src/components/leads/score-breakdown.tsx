@@ -74,19 +74,31 @@ export function ScoreBreakdown({
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
             How we scored this
           </p>
-          <ul className="space-y-2">
-            {lines.map((line, i) => (
-              <li
-                key={`${line.label}-${i}`}
-                className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm ring-1 ring-slate-900/[0.03]"
-              >
-                <span className="min-w-0 text-slate-700">{line.label}</span>
-                <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                  +{line.points}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <p className="mb-4 text-xs leading-relaxed text-slate-500">
+            We combine email domain (work vs personal), phone number, message length and
+            keywords, form context, and a few urgency signals. Points cap at 100 — higher
+            means stronger intent to buy or engage.
+          </p>
+          {lines.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-3 py-4 text-center text-sm text-slate-500">
+              No scoring bonuses yet (e.g. add a work email or richer message to raise the
+              score).
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {lines.map((line, i) => (
+                <li
+                  key={`${line.label}-${i}`}
+                  className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-white px-3 py-2.5 text-sm shadow-sm ring-1 ring-slate-900/[0.03] transition-shadow hover:shadow-md"
+                >
+                  <span className="min-w-0 text-slate-700">{line.label}</span>
+                  <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                    +{line.points}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="border-t border-slate-100 bg-slate-50/90 px-6 py-4">

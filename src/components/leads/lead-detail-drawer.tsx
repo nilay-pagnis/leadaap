@@ -40,13 +40,13 @@ export function LeadDetailDrawer({
   const embedded = variant === "embedded";
 
   useEffect(() => {
-    if (!open || embedded) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, embedded]);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (!open || embedded) return;
@@ -67,7 +67,7 @@ export function LeadDetailDrawer({
         aria-labelledby="lead-drawer-title"
         className="flex h-full min-h-0 w-full min-w-0 flex-col bg-white shadow-[inset_1px_0_0_rgba(15,23,42,0.04)]"
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
+        <header className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white/95 px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85">
           {header ? (
             <div className="min-w-0 flex-1">{header}</div>
           ) : (
@@ -89,15 +89,15 @@ export function LeadDetailDrawer({
             onClick={onClose}
           >
             <X className="size-5" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Close panel (Escape)</span>
           </Button>
         </header>
         {toolbar ? (
-          <div className="shrink-0 border-b border-slate-200/60 bg-slate-50/90 px-6 py-3">
+          <div className="z-10 shrink-0 border-b border-slate-200/60 bg-slate-50/95 px-6 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-slate-50/85">
             {toolbar}
           </div>
         ) : null}
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/80 to-slate-50/40">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-gradient-to-b from-slate-50/80 to-slate-50/40">
           <div className={bodyInnerClass}>{children}</div>
         </div>
       </aside>
@@ -133,7 +133,7 @@ export function LeadDetailDrawer({
               "max-w-[min(100vw,48rem)] border-l border-slate-200/70 bg-white shadow-[0_25px_50px_-12px_rgba(15,23,42,0.15),0_0_0_1px_rgba(15,23,42,0.04)]"
             )}
           >
-            <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
+            <header className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white/95 px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85">
               {header ? (
                 <div className="min-w-0 flex-1">{header}</div>
               ) : (
@@ -155,15 +155,15 @@ export function LeadDetailDrawer({
                 onClick={onClose}
               >
                 <X className="size-5" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">Close panel (Escape)</span>
               </Button>
             </header>
             {toolbar ? (
-              <div className="shrink-0 border-b border-slate-200/60 bg-slate-50/90 px-6 py-3">
+              <div className="z-10 shrink-0 border-b border-slate-200/60 bg-slate-50/95 px-6 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-slate-50/85">
                 {toolbar}
               </div>
             ) : null}
-            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/80 to-slate-50/40">
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-gradient-to-b from-slate-50/80 to-slate-50/40">
               <div className={bodyInnerClass}>{children}</div>
             </div>
           </motion.aside>

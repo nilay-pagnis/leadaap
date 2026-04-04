@@ -49,8 +49,8 @@ export function EnquiryCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-3 shadow-sm transition-[transform,box-shadow,opacity] duration-200",
-        "hover:-translate-y-0.5 hover:shadow-md",
+        "rounded-xl border border-slate-200/90 bg-white p-3 shadow-sm transition-[transform,box-shadow,opacity,border-color] duration-200",
+        "hover:-translate-y-0.5 hover:border-slate-300/90 hover:shadow-md",
         isDragging && "z-10 opacity-50 shadow-lg ring-2 ring-primary/20",
         isUpdating && "pointer-events-none opacity-70"
       )}

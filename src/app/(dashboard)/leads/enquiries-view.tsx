@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -11,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -21,11 +22,14 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
-import { Eye, LayoutGrid, LayoutList } from "lucide-react";
+import { Eye, FilterX, Inbox, LayoutGrid, LayoutList } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
-import { EnquiryFilters } from "@/components/leads/enquiry-filters";
+import {
+  EnquiryFilters,
+  enquiryStatusLabel,
+} from "@/components/leads/enquiry-filters";
 import {
   isManualEnquiryLead,
   MANUAL_ENTRY_FORM_FILTER,
@@ -53,6 +57,94 @@ function stopRowActivate(e: React.SyntheticEvent) {
 function leadMatchesEnquiryFormFilter(lead: LeadRow, formFilter: string) {
   if (formFilter === MANUAL_ENTRY_FORM_FILTER) return isManualEnquiryLead(lead);
   return lead.form_id === formFilter;
+}
+
+function EnquiriesEmptyState({
+  mode,
+  hasWorkspaceLeads,
+  filtersActive,
+  onClearFilters,
+  onAddEnquiry,
+  canAddManual,
+}: {
+  mode: "list" | "board";
+  hasWorkspaceLeads: boolean;
+  filtersActive: boolean;
+  onClearFilters: () => void;
+  onAddEnquiry: () => void;
+  canAddManual: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-dashed border-slate-200/90 bg-gradient-to-b from-white to-slate-50/90 py-14 text-center shadow-sm sm:py-20"
+    >
+      <div className="mx-auto flex max-w-md flex-col items-center px-4">
+        <span className="flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 shadow-inner ring-1 ring-slate-200/80">
+          <Inbox className="size-7" aria-hidden />
+        </span>
+        <h2 className="mt-5 text-lg font-semibold tracking-tight text-slate-900">
+          {!hasWorkspaceLeads
+            ? "No enquiries yet"
+            : filtersActive
+              ? "No enquiries match"
+              : "Nothing to show here"}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+          {!hasWorkspaceLeads
+            ? "Publish a form or add an enquiry manually — new submissions appear here as they arrive."
+            : filtersActive
+              ? "Adjust or clear filters and search to see more results."
+              : mode === "board"
+                ? "When you have leads, drag cards between columns to change status."
+                : "Try another view or check back soon."}
+        </p>
+        <div className="mt-8 flex w-full max-w-sm flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
+          {filtersActive ? (
+            <Button
+              type="button"
+              variant="default"
+              className="rounded-xl font-semibold shadow-md transition-transform active:scale-[0.99]"
+              onClick={onClearFilters}
+            >
+              <FilterX className="mr-2 size-4" aria-hidden />
+              Clear all filters
+            </Button>
+          ) : null}
+          {!hasWorkspaceLeads ? (
+            <>
+              <Link
+                href="/forms"
+                className={buttonVariants({
+                  variant: "outline",
+                  className:
+                    "rounded-xl border-slate-200 font-semibold shadow-sm transition-colors hover:bg-slate-50",
+                })}
+              >
+                Create a form
+              </Link>
+              <Button
+                type="button"
+                variant={canAddManual ? "secondary" : "outline"}
+                className="rounded-xl font-semibold shadow-sm transition-transform active:scale-[0.99] disabled:opacity-60"
+                disabled={!canAddManual}
+                title={
+                  !canAddManual
+                    ? "Create a form first to add manual enquiries"
+                    : undefined
+                }
+                onClick={onAddEnquiry}
+              >
+                Add enquiry
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 function formatLeadValue(v: string | boolean | string[] | undefined): string {
@@ -111,6 +203,36 @@ export function EnquiriesView({
     const row = leads.find((l) => l.id === leadFromQuery);
     if (row) setDetail(row);
   }, [leadFromQuery, leads]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      if (el.closest("input, textarea, select, [contenteditable=true]")) return;
+      e.preventDefault();
+      document.getElementById("enquiry-filter-search")?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setFilter("all");
+    setFormFilter("all");
+    setSearch("");
+  }, []);
+
+  const filtersActiveForView = useMemo(() => {
+    if (view === "board") {
+      return formFilter !== "all" || search.trim() !== "";
+    }
+    return (
+      filter !== "all" ||
+      formFilter !== "all" ||
+      search.trim() !== ""
+    );
+  }, [view, filter, formFilter, search]);
 
   function closeDetail() {
     setDetail(null);
@@ -202,7 +324,9 @@ export function EnquiriesView({
       setActivityRefreshKey((k) => k + 1);
     }
 
-    toast.success("Status updated");
+    toast.success("Status updated", {
+      description: `${enquiryStatusLabel(prevStatus)} → ${enquiryStatusLabel(status)}`,
+    });
   }, [leads]);
 
   const onManualEnquiryAdded = useCallback((lead: LeadRow) => {
@@ -247,10 +371,10 @@ export function EnquiriesView({
             role="tab"
             aria-selected={view === "list"}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
               view === "list"
                 ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-slate-600 hover:bg-white/60 hover:text-slate-900"
             )}
             onClick={() => setView("list")}
           >
@@ -262,10 +386,10 @@ export function EnquiriesView({
             role="tab"
             aria-selected={view === "board"}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
               view === "board"
                 ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-slate-600 hover:bg-white/60 hover:text-slate-900"
             )}
             onClick={() => setView("board")}
           >
@@ -285,18 +409,19 @@ export function EnquiriesView({
         search={search}
         onSearchChange={setSearch}
         forms={formsList}
+        onClearAllFilters={clearAllFilters}
       />
 
       {view === "list" ? (
         listEmpty ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm sm:py-20"
-          >
-            <p className="font-medium text-slate-900">No enquiries match</p>
-            <p className="mt-2 text-sm text-slate-500">Try another search or filter.</p>
-          </motion.div>
+          <EnquiriesEmptyState
+            mode="list"
+            hasWorkspaceLeads={leads.length > 0}
+            filtersActive={filtersActiveForView}
+            onClearFilters={clearAllFilters}
+            onAddEnquiry={() => setAddEnquiryOpen(true)}
+            canAddManual={formsList.length > 0}
+          />
         ) : (
           <div
             className={cn(
@@ -343,11 +468,22 @@ export function EnquiriesView({
                     return (
                       <TableRow
                         key={row.id}
+                        tabIndex={0}
+                        aria-selected={detail?.id === row.id}
+                        data-state={detail?.id === row.id ? "selected" : undefined}
                         className={cn(
-                          "cursor-pointer border-slate-100 transition-colors hover:bg-slate-50/90",
-                          detail?.id === row.id && "bg-primary/[0.05]"
+                          "cursor-pointer border-slate-100 outline-none transition-[background-color,transform,box-shadow] duration-150 hover:bg-slate-50/90 active:scale-[0.998]",
+                          "focus-visible:bg-slate-50/90 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                          detail?.id === row.id &&
+                            "bg-primary/[0.06] ring-1 ring-inset ring-primary/10"
                         )}
                         onClick={() => setDetail(row)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setDetail(row);
+                          }
+                        }}
                       >
                         <TableCell className="max-w-[min(200px,40vw)]">
                           <EnquiryFormSourceLine
@@ -372,6 +508,7 @@ export function EnquiriesView({
                         >
                           <Select
                             value={row.status}
+                            disabled={updatingLeadId === row.id}
                             onValueChange={(v) => updateStatus(row.id, v as LeadStatus)}
                           >
                             <SelectTrigger
@@ -404,7 +541,11 @@ export function EnquiriesView({
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell className="text-sm text-slate-500">
+                        <TableCell
+                          className="text-sm text-slate-500"
+                          onClick={stopRowActivate}
+                          onPointerDown={stopRowActivate}
+                        >
                           <ClientLocalDateTime iso={row.created_at} />
                         </TableCell>
                         <TableCell
@@ -413,15 +554,15 @@ export function EnquiriesView({
                           onPointerDown={stopRowActivate}
                         >
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="rounded-xl text-primary hover:bg-primary/10"
+                            className="rounded-xl border-primary/25 font-semibold text-primary shadow-sm transition-all hover:border-primary/45 hover:bg-primary/[0.06] hover:shadow-md"
                             onClick={(e) => {
                               e.stopPropagation();
                               setDetail(row);
                             }}
                           >
-                            <Eye className="mr-1 size-4" />
+                            <Eye className="mr-1 size-4" aria-hidden />
                             View
                           </Button>
                         </TableCell>
@@ -450,14 +591,14 @@ export function EnquiriesView({
           </div>
         )
       ) : boardEmpty ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm sm:py-20"
-        >
-          <p className="font-medium text-slate-900">No enquiries match</p>
-          <p className="mt-2 text-sm text-slate-500">Try another search or filter.</p>
-        </motion.div>
+        <EnquiriesEmptyState
+          mode="board"
+          hasWorkspaceLeads={leads.length > 0}
+          filtersActive={filtersActiveForView}
+          onClearFilters={clearAllFilters}
+          onAddEnquiry={() => setAddEnquiryOpen(true)}
+          canAddManual={formsList.length > 0}
+        />
       ) : (
         <KanbanBoard
           grouped={grouped}

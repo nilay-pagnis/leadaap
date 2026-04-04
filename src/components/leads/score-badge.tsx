@@ -13,6 +13,16 @@ const LABEL_EMOJI: Record<LeadScoreLabel, string> = {
   Cold: "❄️",
 };
 
+function scoreTooltipLabel(detail: LeadScoreResult, interactive: boolean): string {
+  const { score, label, lines, explanation } = detail;
+  const top = lines.slice(0, 4).map((l) => `${l.label} +${l.points}`);
+  const more =
+    lines.length > 4 ? ` · +${lines.length - 4} more signal${lines.length - 4 === 1 ? "" : "s"}` : "";
+  const factors = top.length ? top.join(" · ") + more : "No positive signals yet";
+  const open = interactive ? " Click for the full breakdown." : "";
+  return `${score}/100 (${label}). ${factors}. ${explanation.slice(0, 120)}${explanation.length > 120 ? "…" : ""}${open}`;
+}
+
 const toneClass: Record<
   LeadScoreLabel,
   { wrap: string; text: string }
@@ -56,7 +66,7 @@ export function ScoreBadge({
   const emoji = LABEL_EMOJI[label];
   const tone = toneClass[label];
 
-  const tooltip = `Score ${score}/100 (${label}) — ${interactive ? "Click for breakdown" : "Signals from email, phone, message, form & keywords"}`;
+  const tooltip = scoreTooltipLabel(detail, interactive);
 
   const stopActivate = useCallback((e: React.SyntheticEvent) => {
     e.stopPropagation();
@@ -108,7 +118,12 @@ export function ScoreBadge({
 
   return (
     <>
-      <DashboardTooltip label={tooltip} side="top" className="max-w-full">
+      <DashboardTooltip
+        label={tooltip}
+        side="top"
+        className="max-w-full"
+        tooltipClassName="whitespace-normal max-w-[min(100vw-2rem,280px)] text-left"
+      >
         {inner}
       </DashboardTooltip>
       {interactive ? (

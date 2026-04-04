@@ -11,11 +11,14 @@ export function DashboardTooltip({
   children,
   side = "bottom",
   className,
+  tooltipClassName,
 }: {
   label: string;
   children: ReactNode;
   side?: "top" | "bottom";
   className?: string;
+  /** e.g. `whitespace-normal max-w-xs` for multi-line tooltips */
+  tooltipClassName?: string;
 }) {
   return (
     <span className={cn("group/tooltip relative inline-flex", className)}>
@@ -23,9 +26,10 @@ export function DashboardTooltip({
       <span
         role="tooltip"
         className={cn(
-          "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-md transition-opacity duration-150",
+          "pointer-events-none absolute left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1.5 text-[11px] font-medium leading-snug text-white opacity-0 shadow-md transition-opacity duration-150",
           "group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100",
-          side === "bottom" ? "top-full mt-2" : "bottom-full mb-2"
+          side === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
+          tooltipClassName
         )}
       >
         {label}
