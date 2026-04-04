@@ -152,7 +152,7 @@ function InsightCard({
         {text}
       </p>
       <Link
-        href="/leads"
+        href="/inbox"
         className={cn(
           buttonVariants({ variant: "ghost", size: "sm" }),
           "relative mt-4 -ml-2 w-fit gap-1 rounded-xl font-medium text-indigo-700 hover:bg-indigo-500/10 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-200"
@@ -187,7 +187,7 @@ function ActionInsightChips({
     if (newLeads > 0) {
       c.push({
         key: "new",
-        href: "/leads",
+        href: "/inbox",
         label: "Follow up",
         sub: `${newLeads} awaiting first touch`,
         icon: Zap,
@@ -195,7 +195,7 @@ function ActionInsightChips({
     } else if (totalLeads > 0) {
       c.push({
         key: "inbox",
-        href: "/leads",
+        href: "/inbox",
         label: "Review inbox",
         sub: "Sorted by lead score",
         icon: MessageSquare,
@@ -331,8 +331,32 @@ export function DashboardExperience({
         totalLeads={totalLeads}
       />
 
+      {newLeads > 0 && formCount > 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col gap-3 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/[0.07] to-violet-500/[0.06] px-4 py-3.5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-primary/35 dark:from-primary/15 dark:to-violet-500/10"
+        >
+          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+            <span className="font-semibold tabular-nums">{newLeads} new</span> in your inbox — a
+            quick triage pass now usually beats chasing cold leads later.
+          </p>
+          <Link
+            href="/inbox"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "shrink-0 rounded-xl font-semibold shadow-sm transition-transform hover:scale-[1.02] active:scale-[0.99]"
+            )}
+          >
+            Triage inbox
+            <ArrowUpRight className="ml-1 size-4 shrink-0" />
+          </Link>
+        </motion.div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total enquiries" value={totalLeads} icon={Inbox} delay={0} />
+        <StatCard label="Inbox total" value={totalLeads} icon={Inbox} delay={0} />
         <StatCard
           label="New"
           value={newLeads}
@@ -362,10 +386,10 @@ export function DashboardExperience({
         <Card className="border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45 lg:col-span-8">
           <CardHeader className="border-b border-slate-100/80 pb-4 dark:border-white/10">
             <CardTitle className="text-base font-semibold tracking-tight">
-              Enquiries over time
+              Inbox volume
             </CardTitle>
             <p className="text-sm font-normal text-slate-500 dark:text-slate-400">
-              Daily submissions (last 14 days)
+              Daily submissions to your workspace (last 14 days)
             </p>
           </CardHeader>
           <CardContent className="pt-6">
@@ -393,7 +417,7 @@ export function DashboardExperience({
             <p className="text-sm text-slate-500 dark:text-slate-400">Latest submissions</p>
           </div>
           <Link
-            href="/leads"
+            href="/inbox"
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
               "shrink-0 rounded-xl text-slate-700 hover:bg-slate-100"

@@ -65,9 +65,9 @@ export function LeadDetailDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="lead-drawer-title"
-        className="flex h-full min-h-0 w-full min-w-0 flex-col bg-white shadow-[inset_1px_0_0_rgba(15,23,42,0.04)]"
+        className="flex h-full min-h-0 w-full min-w-0 flex-col bg-white/90 shadow-[inset_1px_0_0_rgba(15,23,42,0.06)] backdrop-blur-xl dark:bg-zinc-950/85 dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.06)]"
       >
-        <header className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white/95 px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85">
+        <header className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/70 bg-white/90 px-6 py-5 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 dark:border-white/10 dark:bg-zinc-950/90 dark:supports-[backdrop-filter]:bg-zinc-950/80">
           {header ? (
             <div className="min-w-0 flex-1">{header}</div>
           ) : (
@@ -93,11 +93,11 @@ export function LeadDetailDrawer({
           </Button>
         </header>
         {toolbar ? (
-          <div className="z-10 shrink-0 border-b border-slate-200/60 bg-slate-50/95 px-6 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-slate-50/85">
+          <div className="z-10 shrink-0 border-b border-slate-200/60 bg-slate-50/90 px-6 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-50/80 dark:border-white/10 dark:bg-zinc-900/80 dark:supports-[backdrop-filter]:bg-zinc-900/70">
             {toolbar}
           </div>
         ) : null}
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-gradient-to-b from-slate-50/80 to-slate-50/40">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-gradient-to-b from-slate-50/90 to-slate-100/50 dark:from-zinc-950/50 dark:to-zinc-950/80">
           <div className={bodyInnerClass}>{children}</div>
         </div>
       </aside>

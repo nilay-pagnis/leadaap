@@ -17,6 +17,7 @@ async function profileIsAdmin(
 function isUserWorkspacePath(pathname: string): boolean {
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
   if (pathname.startsWith("/forms")) return true;
+  if (pathname.startsWith("/inbox")) return true;
   if (pathname.startsWith("/leads")) return true;
   if (pathname.startsWith("/onboarding")) return true;
   if (pathname.startsWith("/billing")) return true;
@@ -75,6 +76,7 @@ export async function middleware(request: NextRequest) {
   const isProtected =
     path.startsWith("/dashboard") ||
     path.startsWith("/forms") ||
+    path.startsWith("/inbox") ||
     path.startsWith("/leads") ||
     path.startsWith("/onboarding") ||
     path.startsWith("/billing") ||

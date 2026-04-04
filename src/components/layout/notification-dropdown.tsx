@@ -107,7 +107,7 @@ export function NotificationDropdown({
             <p className="text-sm font-medium text-slate-800 dark:text-slate-200">You&apos;re all caught up</p>
             <p className="text-xs text-slate-500">New enquiries will notify you here in real time.</p>
             <Link
-              href="/leads"
+              href="/inbox"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}
             >
               Open leads
@@ -162,7 +162,7 @@ export function NotificationDropdown({
         )}
         <div className="border-t border-slate-100 px-3 py-2 text-center dark:border-slate-800">
           <Link
-            href="/leads"
+            href="/inbox"
             className="text-[11px] font-medium text-indigo-600 hover:underline dark:text-indigo-400"
           >
             View all activity in Leads

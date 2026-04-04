@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
-  Users,
+  Inbox,
   LogOut,
   Menu,
   CreditCard,
@@ -29,7 +29,7 @@ import { CommandPaletteProvider } from "@/components/command-palette/command-pal
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/forms", label: "Enquiry Forms", icon: FileText },
-  { href: "/leads", label: "Enquiries", icon: Users },
+  { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ] as const;
@@ -47,7 +47,7 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   if (pathname.startsWith("/forms/")) return "Enquiry Form";
   if (pathname === "/forms" || pathname.startsWith("/forms?")) return "Enquiry Forms";
-  if (pathname === "/leads" || pathname.startsWith("/leads?")) return "Enquiries";
+  if (pathname === "/inbox" || pathname.startsWith("/inbox?")) return "Inbox";
   if (pathname === "/dashboard" || pathname === "/dashboard/") return "Dashboard";
   return "Workspace";
 }

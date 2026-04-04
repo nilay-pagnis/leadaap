@@ -177,7 +177,7 @@ export async function POST(request: Request) {
       type: "lead_received",
       title: "You received a new enquiry",
       body: `Submission on “${formName}”.`,
-      link: "/leads",
+      link: "/inbox",
       metadata: { lead_id: leadRow.id, form_id: form.id },
     });
     if (notifErr) {

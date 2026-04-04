@@ -250,32 +250,90 @@ export function BillingClient({
               Jump to checkout for any tier — you’ll confirm with your Payment ID after paying.
             </p>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className="flex flex-col gap-2">
             {SELECTABLE_PAID.map((p) => (
-              <Button
+              <button
                 key={p.id}
-                variant="outline"
-                className="rounded-xl border-slate-200/80 transition-all duration-200 hover:border-primary/35 hover:bg-primary/[0.04] hover:shadow-md dark:border-white/10"
+                type="button"
                 disabled={pending || usage.plan === p.id}
                 onClick={() => upgradeViaPaymentLink(p.id)}
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white/50 px-3 py-3 text-left transition-all duration-200",
+                  "hover:border-primary/30 hover:bg-primary/[0.04] hover:shadow-md",
+                  "disabled:pointer-events-none disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900/40 dark:hover:border-primary/35"
+                )}
               >
-                <ExternalLink className="mr-2 size-4 shrink-0" />
-                {usage.plan === p.id
-                  ? `Current — ${p.title}`
-                  : `Pay — ${p.title} (₹${p.priceInr}/mo)`}
-              </Button>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {usage.plan === p.id ? `Current — ${p.title}` : p.title}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                    ₹{p.priceInr.toLocaleString("en-IN")}/mo · Razorpay link
+                  </span>
+                </span>
+                <ExternalLink className="size-4 shrink-0 text-slate-400" aria-hidden />
+              </button>
             ))}
             <Link
               href="/dashboard/billing/confirm"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "justify-start"
+                "justify-start rounded-xl"
               )}
             >
               Submit Payment ID only (already paid)
             </Link>
           </CardContent>
         </Card>
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-50">
+          Compare paid plans
+        </h2>
+        <p className="mb-6 text-sm text-slate-600 dark:text-slate-400">
+          Starter, Growth, and Premium — pick capacity that matches your inbox volume. Free stays
+          your default until you upgrade.
+        </p>
+        <div className="grid gap-6 md:grid-cols-3">
+          {SELECTABLE_PAID.map((p) => {
+            const cardRank = planTierRank(p.id);
+            const isCurrent = usage.plan === p.id;
+            const showUpgrade = userRank < cardRank;
+
+            return (
+              <PlanCard
+                key={p.id}
+                title={p.title}
+                priceInr={p.priceInr}
+                highlights={p.highlights}
+                current={isCurrent}
+                featured={p.popular === true}
+                badge={p.popular ? "Most popular" : undefined}
+                cta={
+                  isCurrent ? (
+                    <span className="text-sm font-medium text-primary">
+                      Current plan
+                    </span>
+                  ) : showUpgrade ? (
+                    <Button
+                      className="w-full"
+                      disabled={pending}
+                      onClick={() => upgradeViaPaymentLink(p.id)}
+                    >
+                      <ExternalLink className="mr-2 size-4 shrink-0" />
+                      Upgrade — ₹{p.priceInr}/mo
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      Manage from Quick checkout
+                    </span>
+                  )
+                }
+              />
+            );
+          })}
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/75 shadow-premium backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/45">
@@ -286,7 +344,7 @@ export function BillingClient({
           </p>
         </div>
         {payments.length === 0 ? (
-          <div className="px-6 py-14 text-center text-sm text-slate-500">
+          <div className="px-6 py-14 text-center text-sm text-slate-500 dark:text-slate-400">
             No payment records yet. When you pay via a plan link, entries appear here.
           </div>
         ) : (
@@ -335,55 +393,6 @@ export function BillingClient({
             </Table>
           </div>
         )}
-      </div>
-
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">
-          Compare paid plans
-        </h2>
-        <p className="mb-6 text-sm text-slate-600">
-          Only Starter, Growth, and Premium are available to buy. Free stays your
-          default until you upgrade.
-        </p>
-        <div className="grid gap-6 md:grid-cols-3">
-          {SELECTABLE_PAID.map((p) => {
-            const cardRank = planTierRank(p.id);
-            const isCurrent = usage.plan === p.id;
-            const showUpgrade = userRank < cardRank;
-
-            return (
-              <PlanCard
-                key={p.id}
-                title={p.title}
-                priceInr={p.priceInr}
-                highlights={p.highlights}
-                current={isCurrent}
-                featured={p.popular === true}
-                badge={p.popular ? "Most popular" : undefined}
-                cta={
-                  isCurrent ? (
-                    <span className="text-sm font-medium text-primary">
-                      Current plan
-                    </span>
-                  ) : showUpgrade ? (
-                    <Button
-                      className="w-full"
-                      disabled={pending}
-                      onClick={() => upgradeViaPaymentLink(p.id)}
-                    >
-                      <ExternalLink className="mr-2 size-4 shrink-0" />
-                      Upgrade — ₹{p.priceInr}/mo
-                    </Button>
-                  ) : (
-                    <span className="text-sm text-slate-500">
-                      Manage from Quick actions
-                    </span>
-                  )
-                }
-              />
-            );
-          })}
-        </div>
       </div>
 
       <div className="space-y-2 text-center">

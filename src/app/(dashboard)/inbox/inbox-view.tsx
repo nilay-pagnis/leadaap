@@ -4,14 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
@@ -22,16 +14,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
-import {
-  Eye,
-  FilterX,
-  Flame,
-  Inbox,
-  LayoutGrid,
-  LayoutList,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { FilterX, Inbox, LayoutGrid, LayoutList, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
@@ -47,15 +30,17 @@ import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 import { KanbanBoard } from "@/components/leads/kanban-board";
 import { EnquiryDetailPanel } from "@/components/leads/enquiry-detail-panel";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { calculateLeadScore } from "@/lib/leads/lead-score";
+import { calculateLeadScore, type LeadScoreResult } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
 import {
   AddEnquiryModal,
   AddEnquiryTriggerButton,
 } from "@/components/leads/add-enquiry-modal";
-import { ClientLocalDateTime } from "@/components/ui/client-local-datetime";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
 import { parseTimestamptz } from "@/lib/timestamptz";
+import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
+import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
@@ -88,7 +73,23 @@ function leadMatchesEnquiryFormFilter(lead: LeadRow, formFilter: string) {
   return lead.form_id === formFilter;
 }
 
-function EnquiriesEmptyState({
+function getInitials(name: string, email: string): string {
+  const n = name.trim();
+  if (n && n !== "—") {
+    const parts = n.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const a = parts[0][0];
+      const b = parts[parts.length - 1][0];
+      if (a && b) return (a + b).toUpperCase();
+    }
+    return n.slice(0, 2).toUpperCase();
+  }
+  const e = email.trim();
+  if (e && e !== "—") return e.slice(0, 2).toUpperCase();
+  return "?";
+}
+
+function InboxEmptyState({
   mode,
   hasWorkspaceLeads,
   filtersActive,
@@ -114,20 +115,20 @@ function EnquiriesEmptyState({
         <span className="flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 shadow-inner ring-1 ring-slate-200/80">
           <Inbox className="size-7" aria-hidden />
         </span>
-        <h2 className="mt-5 text-lg font-semibold tracking-tight text-slate-900">
+        <h2 className="mt-5 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
           {!hasWorkspaceLeads
-            ? "No enquiries yet"
+            ? "Inbox is empty"
             : filtersActive
-              ? "No enquiries match"
+              ? "Nothing matches"
               : "Nothing to show here"}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {!hasWorkspaceLeads
-            ? "Publish a form or add an enquiry manually — new submissions appear here as they arrive."
+            ? "Publish a form or add a lead manually — submissions land here automatically."
             : filtersActive
-              ? "Adjust or clear filters and search to see more results."
+              ? "Adjust or clear filters and search to see more."
               : mode === "board"
-                ? "When you have leads, drag cards between columns to change status."
+                ? "Drag cards between columns to change status."
                 : "Try another view or check back soon."}
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
@@ -161,12 +162,12 @@ function EnquiriesEmptyState({
                 disabled={!canAddManual}
                 title={
                   !canAddManual
-                    ? "Create a form first to add manual enquiries"
+                    ? "Create a form first to add manual leads"
                     : undefined
                 }
                 onClick={onAddEnquiry}
               >
-                Add enquiry
+                Add manually
               </Button>
             </>
           ) : null}
@@ -176,15 +177,13 @@ function EnquiriesEmptyState({
   );
 }
 
-function formatLeadValue(v: string | boolean | string[] | undefined): string {
-  if (v === undefined || v === null) return "—";
-  if (typeof v === "boolean") return v ? "Yes" : "No";
-  if (Array.isArray(v)) return v.join(", ");
-  const s = String(v).trim();
-  return s || "—";
-}
+const BUCKETS = [
+  { key: "hot" as const, label: "Hot", barClass: "bg-red-500/90" },
+  { key: "warm" as const, label: "Warm", barClass: "bg-amber-500/90" },
+  { key: "cold" as const, label: "Cold", barClass: "bg-sky-500/80" },
+];
 
-export function EnquiriesView({
+export function InboxView({
   initialLeads,
   formNames,
   fieldDefs,
@@ -220,12 +219,6 @@ export function EnquiriesView({
         .sort((a, b) => a.name.localeCompare(b.name)),
     [formNames]
   );
-
-  const fieldById = useMemo(() => {
-    const m: Record<string, LeadFieldDef> = {};
-    for (const f of fieldDefs) m[f.id] = f;
-    return m;
-  }, [fieldDefs]);
 
   useEffect(() => {
     if (!leadFromQuery) return;
@@ -266,7 +259,7 @@ export function EnquiriesView({
   function closeDetail() {
     setDetail(null);
     if (searchParams.get("lead")) {
-      router.replace("/leads", { scroll: false });
+      router.replace("/inbox", { scroll: false });
     }
   }
 
@@ -285,32 +278,40 @@ export function EnquiriesView({
     return filtered.filter((row) => leadMatchesNameOrEmail(row, fieldDefs, q));
   }, [filtered, search, fieldDefs]);
 
-  const prioritySortedLeads = useMemo(() => {
-    const copy = [...searchFiltered];
-    copy.sort((a, b) =>
-      compareLeadsByScoreThenRecency(a, b, formNames, fieldDefs)
-    );
-    return copy;
-  }, [searchFiltered, formNames, fieldDefs]);
-
-  const smartInboxStats = useMemo(() => {
-    let hot = 0;
-    let warm = 0;
-    let newCount = 0;
-    let weekCount = 0;
-    const weekMs = 7 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    for (const lead of leads) {
-      if (lead.status === "new") newCount += 1;
-      if (now - parseTimestamptz(lead.created_at).getTime() <= weekMs) {
-        weekCount += 1;
-      }
-      const d = calculateLeadScore({ lead, formNames, fieldDefs });
-      if (d.label === "Hot") hot += 1;
-      else if (d.label === "Warm") warm += 1;
+  const { scoreMap, groupedByTemperature } = useMemo(() => {
+    const map = new Map<string, LeadScoreResult>();
+    for (const lead of searchFiltered) {
+      map.set(
+        lead.id,
+        calculateLeadScore({ lead, formNames, fieldDefs })
+      );
     }
-    return { hot, warm, newCount, weekCount };
-  }, [leads, formNames, fieldDefs]);
+    const hot: LeadRow[] = [];
+    const warm: LeadRow[] = [];
+    const cold: LeadRow[] = [];
+    for (const lead of searchFiltered) {
+      const d = map.get(lead.id)!;
+      if (d.label === "Hot") hot.push(lead);
+      else if (d.label === "Warm") warm.push(lead);
+      else cold.push(lead);
+    }
+    const cmp = (a: LeadRow, b: LeadRow) => {
+      const da = map.get(a.id)!;
+      const db = map.get(b.id)!;
+      if (db.score !== da.score) return db.score - da.score;
+      return (
+        parseTimestamptz(b.created_at).getTime() -
+        parseTimestamptz(a.created_at).getTime()
+      );
+    };
+    hot.sort(cmp);
+    warm.sort(cmp);
+    cold.sort(cmp);
+    return {
+      scoreMap: map,
+      groupedByTemperature: { hot, warm, cold },
+    };
+  }, [searchFiltered, formNames, fieldDefs]);
 
   const pipelineFiltered = useMemo(() => {
     let list = leads;
@@ -391,21 +392,27 @@ export function EnquiriesView({
   const listEmpty = searchFiltered.length === 0;
   const boardEmpty = pipelineFiltered.length === 0;
 
+  const bucketLeads = {
+    hot: groupedByTemperature.hot,
+    warm: groupedByTemperature.warm,
+    cold: groupedByTemperature.cold,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <p className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
             <Sparkles className="size-3.5 opacity-80" aria-hidden />
-            Smart inbox
+            Workspace inbox
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
-            Enquiries
+            Inbox
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">
             {view === "list"
-              ? "High-intent leads surface first. Filter, search, and open details beside the list on large screens."
-              : "Columns mirror your pipeline — drag cards to update status. Hot leads stay easy to spot at the top of each column."}
+              ? "Hot, warm, and cold groups keep priority obvious. Open a thread on the right on large screens."
+              : "Pipeline board — drag cards to update status. High-signal leads float to the top of each column."}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -414,7 +421,7 @@ export function EnquiriesView({
             disabled={formsList.length === 0}
             title={
               formsList.length === 0
-                ? "Create a form first to attach manual enquiries."
+                ? "Create a form first to attach manual leads."
                 : undefined
             }
           />
@@ -469,48 +476,9 @@ export function EnquiriesView({
         onClearAllFilters={clearAllFilters}
       />
 
-      {view === "list" && !listEmpty ? (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-white/65 p-4 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-5 dark:border-white/10 dark:bg-zinc-950/45"
-        >
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-              Signals
-            </span>
-            {smartInboxStats.hot > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200/80 bg-red-50/90 px-3 py-1 text-xs font-semibold text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-                <Flame className="size-3.5" aria-hidden />
-                {smartInboxStats.hot} hot
-              </span>
-            ) : null}
-            {smartInboxStats.warm > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/90 px-3 py-1 text-xs font-semibold text-amber-950 dark:border-amber-900/45 dark:bg-amber-950/35 dark:text-amber-100">
-                <Zap className="size-3.5" aria-hidden />
-                {smartInboxStats.warm} warm
-              </span>
-            ) : null}
-            <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-50/90 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-zinc-800/80 dark:text-slate-200">
-              {smartInboxStats.newCount} new
-            </span>
-            <span className="inline-flex items-center rounded-full border border-indigo-200/60 bg-indigo-50/80 px-3 py-1 text-xs font-medium text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-950/40 dark:text-indigo-200">
-              {smartInboxStats.weekCount} this week
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:max-w-[280px] sm:text-right">
-            <span className="font-medium text-slate-600 dark:text-slate-300">
-              Priority order:
-            </span>{" "}
-            Hot → warm → cold, then newest first — so you always see what deserves attention.
-          </p>
-        </motion.div>
-      ) : null}
-
       {view === "list" ? (
         listEmpty ? (
-          <EnquiriesEmptyState
+          <InboxEmptyState
             mode="list"
             hasWorkspaceLeads={leads.length > 0}
             filtersActive={filtersActiveForView}
@@ -528,152 +496,168 @@ export function EnquiriesView({
           >
             <div
               className={cn(
-                "min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]",
-                showSplitDetail &&
-                  "w-[60%] max-h-full min-h-0 flex-shrink-0 overflow-y-auto"
+                "min-w-0 min-h-0 flex-shrink-0 overflow-y-auto overflow-x-hidden",
+                showSplitDetail ? "w-[40%] max-h-full" : "w-full"
               )}
             >
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-100 hover:bg-transparent">
-                    <TableHead className="text-slate-500">Enquiry form</TableHead>
-                    <TableHead className="text-slate-500">Preview</TableHead>
-                    <TableHead className="w-[1%] whitespace-nowrap text-slate-500">
-                      Score
-                    </TableHead>
-                    <TableHead className="text-slate-500">Status</TableHead>
-                    <TableHead className="text-slate-500">Received</TableHead>
-                    <TableHead className="text-right text-slate-500">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {prioritySortedLeads.map((row) => {
-                    const preview = Object.entries(row.data ?? {})
-                      .map(([k, v]) => {
-                        const label = fieldById[k]?.label ?? k;
-                        const text = formatLeadValue(v);
-                        return `${label}: ${text}`;
-                      })
-                      .slice(0, 2)
-                      .join(" · ");
-                    const scoreResult = calculateLeadScore({
-                      lead: row,
-                      formNames,
-                      fieldDefs,
-                    });
-                    return (
-                      <TableRow
-                        key={row.id}
-                        tabIndex={0}
-                        aria-selected={detail?.id === row.id}
-                        data-state={detail?.id === row.id ? "selected" : undefined}
+              <div className="p-2 sm:p-3">
+                {BUCKETS.map((bucket) => {
+                  const rows = bucketLeads[bucket.key];
+                  if (rows.length === 0) return null;
+                  return (
+                    <section
+                      key={bucket.key}
+                      className="mb-4 last:mb-0"
+                      aria-label={`${bucket.label} leads`}
+                    >
+                      <div
                         className={cn(
-                          "cursor-pointer border-slate-100 outline-none transition-[background-color,transform,box-shadow,border-color] duration-200 hover:bg-slate-50/90 active:scale-[0.998] dark:border-white/5 dark:hover:bg-white/[0.04]",
-                          "focus-visible:bg-slate-50/90 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 dark:focus-visible:bg-white/[0.06]",
-                          scoreResult.label === "Hot" &&
-                            "border-l-[3px] border-l-red-400/85 dark:border-l-red-500/70",
-                          scoreResult.label === "Warm" &&
-                            "border-l-[3px] border-l-amber-400/70 dark:border-l-amber-500/55",
-                          detail?.id === row.id &&
-                            "bg-primary/[0.06] ring-1 ring-inset ring-primary/10 dark:bg-primary/10"
+                          "sticky top-0 z-[1] flex items-center gap-2 rounded-xl px-2 py-2 backdrop-blur-md",
+                          "border-b border-slate-200/60 bg-white/90 dark:border-white/10 dark:bg-zinc-950/90"
                         )}
-                        onClick={() => setDetail(row)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setDetail(row);
-                          }
-                        }}
                       >
-                        <TableCell className="max-w-[min(200px,40vw)]">
-                          <EnquiryFormSourceLine
-                            lead={row}
-                            formNames={formNames}
-                            titleClassName="line-clamp-2 break-words"
-                          />
-                        </TableCell>
-                        <TableCell className="max-w-[min(240px,50vw)] truncate text-slate-500">
-                          {preview || "—"}
-                        </TableCell>
-                        <TableCell
-                          className="whitespace-nowrap"
-                          onClick={stopRowActivate}
-                          onPointerDown={stopRowActivate}
-                        >
-                          <ScoreBadge detail={scoreResult} size="sm" />
-                        </TableCell>
-                        <TableCell
-                          onClick={stopRowActivate}
-                          onPointerDown={stopRowActivate}
-                        >
-                          <Select
-                            value={row.status}
-                            disabled={updatingLeadId === row.id}
-                            onValueChange={(v) => updateStatus(row.id, v as LeadStatus)}
-                          >
-                            <SelectTrigger
+                        <span
+                          className={cn("size-1.5 shrink-0 rounded-full", bucket.barClass)}
+                          aria-hidden
+                        />
+                        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                          {bucket.label}
+                        </span>
+                        <span className="text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                          {rows.length}
+                        </span>
+                      </div>
+                      <ul
+                        className="mt-1 space-y-1"
+                        role="listbox"
+                        aria-label={`${bucket.label} priority leads`}
+                      >
+                        {rows.map((row) => {
+                          const scoreResult = scoreMap.get(row.id)!;
+                          const { name, email } = getLeadNameAndEmail(
+                            row,
+                            fieldDefs
+                          );
+                          const initials = getInitials(name, email);
+                          const selected = detail?.id === row.id;
+                          return (
+                            <motion.li
+                              key={row.id}
+                              layout="position"
+                              initial={false}
+                              role="option"
+                              aria-selected={selected}
+                              tabIndex={0}
+                              data-state={selected ? "selected" : undefined}
                               className={cn(
-                                "h-9 w-[158px] rounded-full border px-3 text-xs font-medium",
-                                row.status === "new" &&
-                                  "border-slate-200/90 bg-slate-50 text-slate-800 hover:bg-slate-100/80",
-                                row.status === "contacted" &&
-                                  "border-amber-200/80 bg-amber-50 text-amber-950 hover:bg-amber-100/80",
-                                row.status === "qualified" &&
-                                  "border-violet-200/80 bg-violet-50 text-violet-900 hover:bg-violet-100/80",
-                                row.status === "closed" &&
-                                  "border-emerald-200/80 bg-emerald-50 text-emerald-900 hover:bg-emerald-100/80"
+                                "list-none flex cursor-pointer gap-3 rounded-xl border border-transparent p-2.5 outline-none transition-all duration-200",
+                                "hover:bg-slate-50/95 dark:hover:bg-white/[0.04]",
+                                "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                                selected &&
+                                  "border-primary/20 bg-primary/[0.07] ring-1 ring-inset ring-primary/15 dark:bg-primary/10",
+                                scoreResult.label === "Hot" &&
+                                  "border-l-[3px] border-l-red-400/85 pl-2 dark:border-l-red-500/70",
+                                scoreResult.label === "Warm" &&
+                                  !selected &&
+                                  "border-l-[3px] border-l-amber-400/70 pl-2 dark:border-l-amber-500/55"
                               )}
+                              onClick={() => setDetail(row)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setDetail(row);
+                                }
+                              }}
                             >
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {STATUSES.map((s) => (
-                                <SelectItem key={s} value={s}>
-                                  {s === "new"
-                                    ? "New"
-                                    : s === "contacted"
-                                      ? "Contacted"
-                                      : s === "qualified"
-                                        ? "Qualified"
-                                        : "Closed"}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell
-                          className="text-sm text-slate-500"
-                          onClick={stopRowActivate}
-                          onPointerDown={stopRowActivate}
-                        >
-                          <ClientLocalDateTime iso={row.created_at} />
-                        </TableCell>
-                        <TableCell
-                          className="text-right"
-                          onClick={stopRowActivate}
-                          onPointerDown={stopRowActivate}
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-xl border-primary/25 font-semibold text-primary shadow-sm transition-all hover:border-primary/45 hover:bg-primary/[0.06] hover:shadow-md"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDetail(row);
-                            }}
-                          >
-                            <Eye className="mr-1 size-4" aria-hidden />
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                                <div
+                                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-white shadow-sm ring-2 ring-white dark:ring-zinc-900"
+                                  aria-hidden
+                                >
+                                  {initials}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                      {name !== "—" ? name : "Unknown"}
+                                    </p>
+                                    <ClientRelativeTime
+                                      iso={row.created_at}
+                                      className="shrink-0 text-[11px] font-medium text-slate-400 dark:text-slate-500"
+                                      tick={timeTick}
+                                    />
+                                  </div>
+                                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {email !== "—" ? email : "No email"}
+                                  </p>
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                    <EnquiryFormSourceLine
+                                      lead={row}
+                                      formNames={formNames}
+                                      titleClassName="max-w-[140px] truncate text-[11px]"
+                                    />
+                                    <LeadStatusBadge
+                                      status={row.status}
+                                      size="sm"
+                                    />
+                                  </div>
+                                  <div
+                                    className="mt-2"
+                                    onClick={stopRowActivate}
+                                    onPointerDown={stopRowActivate}
+                                  >
+                                    <ScoreBadge
+                                      detail={scoreResult}
+                                      size="sm"
+                                    />
+                                  </div>
+                                  <div
+                                    className="mt-2"
+                                    onClick={stopRowActivate}
+                                    onPointerDown={stopRowActivate}
+                                  >
+                                    <Select
+                                      value={row.status}
+                                      disabled={updatingLeadId === row.id}
+                                      onValueChange={(v) =>
+                                        updateStatus(row.id, v as LeadStatus)
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        className={cn(
+                                          "h-8 w-full max-w-[200px] rounded-lg border px-2 text-[11px] font-medium",
+                                          row.status === "new" &&
+                                            "border-slate-200/90 bg-slate-50 dark:border-white/10 dark:bg-zinc-800",
+                                          row.status === "contacted" &&
+                                            "border-amber-200/80 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/30",
+                                          row.status === "qualified" &&
+                                            "border-violet-200/80 bg-violet-50 dark:border-violet-900/40 dark:bg-violet-950/30",
+                                          row.status === "closed" &&
+                                            "border-emerald-200/80 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/30"
+                                        )}
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {STATUSES.map((s) => (
+                                          <SelectItem key={s} value={s}>
+                                            {enquiryStatusLabel(s)}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                            </motion.li>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  );
+                })}
+              </div>
             </div>
             {showSplitDetail ? (
-              <div className="flex h-full min-h-0 w-[40%] flex-shrink-0 flex-col border-l border-slate-200/90">
+              <div className="flex h-full min-h-0 w-[60%] flex-shrink-0 flex-col border-l border-slate-200/90 dark:border-white/10">
                 <EnquiryDetailPanel
                   variant="embedded"
                   open={!!detail}
@@ -691,7 +675,7 @@ export function EnquiriesView({
           </div>
         )
       ) : boardEmpty ? (
-        <EnquiriesEmptyState
+        <InboxEmptyState
           mode="board"
           hasWorkspaceLeads={leads.length > 0}
           filtersActive={filtersActiveForView}

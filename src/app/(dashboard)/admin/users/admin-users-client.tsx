@@ -149,9 +149,11 @@ export function AdminUsersClient({ initialUsers }: Props) {
           Users
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Email, plan, credits, and lead usage. Use upgrade / downgrade for one
-          step on the ladder, or open Plan for a specific tier. Promoting admins
-          is still done in Supabase (<code className="text-xs">role</code>).
+          Plan comes from each user&apos;s profile (same source as billing).
+          Monthly cap, leads used, and remaining match the billing page; “This
+          month” is calendar-month usage vs that cap. Use Up / Down for one tier
+          at a time, or Plan to set a tier. Admin role is still set in Supabase (
+          <code className="text-xs">role</code>).
         </p>
       </div>
 
@@ -193,8 +195,21 @@ export function AdminUsersClient({ initialUsers }: Props) {
             <TableRow>
               <TableHead>Email</TableHead>
               <TableHead>Plan</TableHead>
-              <TableHead className="tabular-nums">Credits</TableHead>
-              <TableHead className="tabular-nums">Leads used</TableHead>
+              <TableHead className="tabular-nums" title="Monthly enquiry allocation for this plan">
+                Monthly cap
+              </TableHead>
+              <TableHead
+                className="tabular-nums"
+                title="All-time enquiries on this user’s forms (same as billing)"
+              >
+                Leads used
+              </TableHead>
+              <TableHead
+                className="tabular-nums"
+                title="Capacity left vs plan cap — matches billing “credits remaining”"
+              >
+                Remaining
+              </TableHead>
               <TableHead className="tabular-nums">This month</TableHead>
               <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -204,7 +219,7 @@ export function AdminUsersClient({ initialUsers }: Props) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="py-10 text-center text-sm text-gray-500"
                 >
                   No users match your filters.
@@ -225,9 +240,14 @@ export function AdminUsersClient({ initialUsers }: Props) {
                         {planLabel(plan)}
                       </span>
                     </TableCell>
-                    <TableCell className="tabular-nums text-sm">{u.credits}</TableCell>
+                    <TableCell className="tabular-nums text-sm">
+                      {u.lead_cap.toLocaleString()}
+                    </TableCell>
                     <TableCell className="tabular-nums text-sm">
                       {u.leads_used.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-sm font-medium text-slate-800 dark:text-slate-200">
+                      {u.credits_remaining.toLocaleString()}
                     </TableCell>
                     <TableCell className="tabular-nums text-sm">
                       <span className="font-medium text-slate-800 dark:text-slate-200">

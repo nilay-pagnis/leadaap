@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnquiryTableSkeleton } from "@/components/leads/enquiry-table-skeleton";
-import { EnquiriesView } from "./enquiries-view";
+import { InboxView } from "./inbox-view";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
-function LeadsTableFallback() {
+function InboxFallback() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -24,7 +24,7 @@ function LeadsTableFallback() {
   );
 }
 
-export default async function LeadsPage() {
+export default async function InboxPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -55,8 +55,8 @@ export default async function LeadsPage() {
   }
 
   return (
-    <Suspense fallback={<LeadsTableFallback />}>
-      <EnquiriesView
+    <Suspense fallback={<InboxFallback />}>
+      <InboxView
         initialLeads={(leads ?? []) as LeadRow[]}
         formNames={formNames}
         fieldDefs={fieldDefs}

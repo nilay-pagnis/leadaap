@@ -10,6 +10,7 @@ import {
   Mail,
   MoreHorizontal,
   Pencil,
+  Sparkles,
   StickyNote,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -49,7 +50,27 @@ import { toast } from "sonner";
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
 const sectionTitle =
-  "text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400";
+  "text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500";
+
+function DetailSection({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className={sectionTitle}>{title}</p>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function formatLeadValue(v: string | boolean | string[] | undefined): string {
   if (v === undefined || v === null) return "—";
@@ -257,7 +278,7 @@ export function EnquiryDetailPanel({
   }, []);
 
   const enquiryUrl =
-    lead && origin ? `${origin}/leads?lead=${lead.id}` : "";
+    lead && origin ? `${origin}/inbox?lead=${lead.id}` : "";
 
   const addNote = useCallback(async () => {
     if (!lead) return;
@@ -326,10 +347,14 @@ export function EnquiryDetailPanel({
 
   const toolbar = lead ? (
     <div
-      className="flex flex-wrap items-center gap-2"
+      className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
       onClick={stopToolbarBubble}
       onPointerDown={stopToolbarBubble}
     >
+      <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+        Actions
+      </span>
+      <div className="flex flex-wrap items-center gap-2">
       {onStatusChange ? (
         <Select
           value={lead.status}
@@ -406,13 +431,14 @@ export function EnquiryDetailPanel({
           <DropdownMenuItem onClick={onClose}>Close panel</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </div>
   ) : null;
 
   const header = lead ? (
     <div className="flex gap-4">
       <div
-        className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-sm font-bold text-white shadow-md ring-4 ring-slate-100"
+        className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-sm font-bold text-white shadow-md ring-4 ring-slate-100 dark:ring-zinc-800"
         aria-hidden
       >
         {initials}
@@ -420,9 +446,9 @@ export function EnquiryDetailPanel({
       <div className="min-w-0 flex-1 space-y-1.5">
         <h2
           id="lead-drawer-title"
-          className="break-words text-lg font-bold tracking-tight text-slate-900"
+          className="break-words text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50"
         >
-          {name !== "—" ? name : "Enquiry"}
+          {name !== "—" ? name : "Lead"}
         </h2>
         <p className="text-[13px] text-slate-500">
           {email !== "—" ? (
@@ -477,8 +503,7 @@ export function EnquiryDetailPanel({
           className="space-y-6"
         >
           {textareas.length > 0 ? (
-            <section className="space-y-3">
-              <p className={sectionTitle}>Message</p>
+            <DetailSection title="Message">
               {textareas.map((f, i) => {
                 const fieldId = f.id;
                 const raw = lead.data?.[fieldId];
@@ -488,13 +513,15 @@ export function EnquiryDetailPanel({
                 return (
                   <div key={fieldId} className={cn(!isFirst && "pt-1")}>
                     {!isFirst ? (
-                      <p className="mb-2 text-xs font-medium text-slate-500">{f.label}</p>
+                      <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {f.label}
+                      </p>
                     ) : null}
                     <div
                       className={cn(
-                        "rounded-xl bg-slate-50 px-5 py-5 text-[15px] leading-relaxed text-slate-900",
-                        "shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]",
-                        "ring-1 ring-slate-900/[0.04] transition-shadow duration-200 hover:shadow-sm",
+                        "rounded-2xl bg-slate-50 px-5 py-5 text-[15px] leading-relaxed text-slate-900 dark:bg-zinc-900/60 dark:text-slate-100",
+                        "shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]",
+                        "ring-1 ring-slate-900/[0.04] transition-shadow duration-200 hover:shadow-sm dark:ring-white/[0.06]",
                         "whitespace-pre-wrap"
                       )}
                     >
@@ -506,51 +533,88 @@ export function EnquiryDetailPanel({
                   </div>
                 );
               })}
-            </section>
+            </DetailSection>
           ) : (
-            <section className="rounded-xl border border-dashed border-slate-200/90 bg-white px-4 py-6 text-center shadow-sm">
-              <p className="text-sm text-slate-500">No message fields in this form.</p>
-            </section>
+            <DetailSection title="Message">
+              <div className="rounded-2xl border border-dashed border-slate-200/90 bg-white/80 px-4 py-6 text-center shadow-sm dark:border-white/10 dark:bg-zinc-950/40">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No message fields in this form.
+                </p>
+              </div>
+            </DetailSection>
           )}
 
-          <Separator className="bg-slate-200/80" />
+          <Separator className="bg-slate-200/80 dark:bg-white/10" />
 
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className={sectionTitle}>Details</p>
+          <motion.section
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="ai-insight-shimmer rounded-2xl border border-indigo-200/45 bg-white/75 p-4 shadow-sm backdrop-blur-sm dark:border-indigo-500/30 dark:bg-zinc-950/55"
+            aria-label="Lead insight from submission signals"
+          >
+            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+              <Sparkles className="size-4 shrink-0" aria-hidden />
+              <span className={sectionTitle}>Insight</span>
+            </div>
+            <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+              Based on signals detected in this submission (not generative AI).
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+              {scoreResult.explanation}
+            </p>
+            {scoreResult.lines.length > 0 ? (
+              <ul className="mt-3 space-y-1.5 border-t border-indigo-200/30 pt-3 text-sm text-slate-600 dark:border-indigo-500/20 dark:text-slate-300">
+                {scoreResult.lines.slice(0, 4).map((line, idx) => (
+                  <li key={`${line.label}-${idx}`} className="flex gap-2">
+                    <span className="font-semibold tabular-nums text-indigo-600 dark:text-indigo-400">
+                      +{line.points}
+                    </span>
+                    <span>{line.label}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </motion.section>
+
+          <Separator className="bg-slate-200/80 dark:bg-white/10" />
+
+          <DetailSection
+            title="Details"
+            action={
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 rounded-lg border-slate-200/90 text-xs font-semibold shadow-sm transition-all hover:bg-white hover:shadow"
+                className="h-8 gap-1.5 rounded-lg border-slate-200/90 text-xs font-semibold shadow-sm transition-all hover:bg-white hover:shadow dark:border-white/10 dark:hover:bg-zinc-800"
                 onClick={() => setFormDetailsOpen(true)}
               >
                 <FileText className="size-3.5" aria-hidden />
                 View form
               </Button>
-            </div>
+            }
+          >
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {detailRows.map((r) => (
                 <DetailCell key={r.key} label={r.label} value={r.value} />
               ))}
             </div>
-          </section>
+          </DetailSection>
 
-          <Separator className="bg-slate-200/80" />
+          <Separator className="bg-slate-200/80 dark:bg-white/10" />
 
-          <section className="space-y-3">
-            <p className={sectionTitle}>Activity</p>
+          <DetailSection title="Activity">
             <ActivityFeed
               items={activityItems}
               loading={loading}
               timeTick={timeTick}
             />
-          </section>
+          </DetailSection>
 
-          <Separator className="bg-slate-200/80" />
+          <Separator className="bg-slate-200/80 dark:bg-white/10" />
 
-          <section ref={notesSectionRef} className="scroll-mt-4 space-y-4">
-            <p className={sectionTitle}>Notes</p>
+          <div ref={notesSectionRef} className="scroll-mt-4 space-y-4">
+            <DetailSection title="Notes">
             <div className="space-y-2 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm ring-1 ring-slate-900/[0.03] transition-shadow hover:shadow-md">
               <Textarea
                 id="enquiry-note-draft"
@@ -649,10 +713,11 @@ export function EnquiryDetailPanel({
                 );
               })}
               {noteItems.length === 0 && !loading ? (
-                <p className="text-sm text-slate-500">No notes yet.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">No notes yet.</p>
               ) : null}
             </ul>
-          </section>
+            </DetailSection>
+          </div>
         </motion.div>
       )}
     </LeadDetailDrawer>

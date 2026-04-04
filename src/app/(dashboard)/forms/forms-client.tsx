@@ -18,14 +18,6 @@ import type { FormRow } from "@/types";
 import { motion } from "framer-motion";
 import { FormEmptyIllustration } from "@/components/empty-state/form-empty-illustration";
 import { FormEmbedModal } from "@/components/forms/form-embed-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { FORM_TEMPLATES, type FormTemplateId } from "@/lib/form-templates";
 import { DashboardHeaderActions } from "@/components/dashboard/dashboard-header-actions";
 
@@ -234,7 +226,7 @@ export function FormsClient({
       <div className="space-y-2">
         <p className="text-sm font-medium text-slate-500">Library</p>
         <p className="max-w-xl text-pretty text-sm text-slate-600">
-          {formatFormsUsageLine(usage.formCount, usage.maxForms)}. Click a row to edit.
+          {formatFormsUsageLine(usage.formCount, usage.maxForms)}. Open a card to edit or share.
         </p>
       </div>
 
@@ -247,7 +239,10 @@ export function FormsClient({
           <FormEmptyIllustration className="mb-2 shrink-0" />
           <h2 className="mt-4 text-xl font-semibold text-slate-900">No enquiry forms yet</h2>
           <p className="mt-2 max-w-md text-pretty text-sm text-slate-600">
-            Create an enquiry form to get a shareable link — submissions show up in Enquiries
+            Create an enquiry form to get a shareable link — submissions show up in your{" "}
+            <Link href="/inbox" className="font-medium text-primary hover:underline">
+              Inbox
+            </Link>{" "}
             automatically.
           </p>
           <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center">
@@ -295,100 +290,96 @@ export function FormsClient({
           </div>
         </motion.div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white">
-          <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-slate-100 hover:bg-transparent">
-                  <TableHead className="text-slate-500">Name</TableHead>
-                  <TableHead className="text-right text-slate-500">Enquiries</TableHead>
-                  <TableHead className="text-right text-slate-500">Conversion</TableHead>
-                  <TableHead className="text-slate-500">Created</TableHead>
-                  <TableHead className="text-right text-slate-500">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {initialForms.map((form) => {
-                  const stats = formStats[form.id];
-                  const leads = stats?.leads ?? 0;
-                  const conv = stats?.conversionPct;
-                  return (
-                    <TableRow
-                      key={form.id}
-                      className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50/90"
-                      onClick={() => router.push(`/forms/${form.id}`)}
-                    >
-                      <TableCell className="max-w-[220px] font-medium text-slate-900">
-                        <span className="line-clamp-2 break-words">{form.form_name}</span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-slate-800">
-                        <span className="inline-flex items-center justify-end gap-1">
-                          <Users className="size-3.5 text-slate-400" aria-hidden />
-                          {leads}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-slate-700">
-                        <span className="inline-flex items-center justify-end gap-1">
-                          <BarChart3 className="size-3.5 text-slate-400" aria-hidden />
-                          {conv != null ? `${conv}%` : "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-500">
-                        {new Date(form.created_at).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-wrap items-center justify-end gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 rounded-lg px-2 text-xs"
-                            onClick={() => router.push(`/forms/${form.id}`)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 rounded-lg px-2 text-xs"
-                            onClick={() => copyPublicLink(form.id)}
-                          >
-                            <Copy className="size-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 rounded-lg px-2 text-xs"
-                            onClick={() => setEmbedTarget(form)}
-                          >
-                            <Code2 className="size-3.5" />
-                          </Button>
-                          <Link
-                            href={`/f/${form.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={cn(
-                              buttonVariants({ variant: "ghost", size: "sm" }),
-                              "h-8 rounded-lg px-2 text-xs"
-                            )}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="size-3.5" />
-                          </Link>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {initialForms.map((form, i) => {
+            const stats = formStats[form.id];
+            const leadCount = stats?.leads ?? 0;
+            const conv = stats?.conversionPct;
+            return (
+              <motion.div
+                key={form.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.24), duration: 0.3 }}
+                whileHover={{ y: -3 }}
+                className="group flex flex-col rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm backdrop-blur-sm transition-shadow duration-300 hover:border-indigo-200/60 hover:shadow-premium dark:border-white/10 dark:bg-zinc-950/50 dark:hover:border-indigo-500/35"
+              >
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 text-left"
+                  onClick={() => router.push(`/forms/${form.id}`)}
+                >
+                  <h3 className="line-clamp-2 break-words text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                    {form.form_name}
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Created{" "}
+                    {new Date(form.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </button>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 tabular-nums text-slate-700 dark:bg-zinc-800/80 dark:text-slate-200">
+                    <Users className="size-3.5 shrink-0 text-slate-400" aria-hidden />
+                    {leadCount} in inbox
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 tabular-nums text-slate-700 dark:bg-zinc-800/80 dark:text-slate-200">
+                    <BarChart3 className="size-3.5 shrink-0 text-slate-400" aria-hidden />
+                    {conv != null ? `${conv}% conv.` : "— conv."}
+                  </span>
+                </div>
+                <div
+                  className="mt-4 flex flex-wrap gap-1 border-t border-slate-100 pt-3 dark:border-white/10"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 rounded-lg px-3 text-xs font-semibold"
+                    onClick={() => router.push(`/forms/${form.id}`)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-lg px-2.5"
+                    title="Copy public link"
+                    onClick={() => copyPublicLink(form.id)}
+                  >
+                    <Copy className="size-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-lg px-2.5"
+                    title="Embed"
+                    onClick={() => setEmbedTarget(form)}
+                  >
+                    <Code2 className="size-3.5" />
+                  </Button>
+                  <Link
+                    href={`/f/${form.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                      "h-8 rounded-lg px-2.5"
+                    )}
+                    title="Open public form"
+                  >
+                    <ExternalLink className="size-3.5" />
+                  </Link>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

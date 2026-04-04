@@ -11,12 +11,12 @@ import {
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
+  CornerDownLeft,
   FilePlus,
   FileText,
+  Inbox,
   LayoutDashboard,
   Search,
-  Users,
-  CornerDownLeft,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useDashboardSearch } from "@/hooks/use-dashboard-search";
@@ -163,7 +163,7 @@ function CommandPaletteDialog({
 
             {leads.length > 0 ? (
               <Command.Group
-                heading="Enquiries"
+                heading="Inbox"
                 className="mb-2 overflow-hidden px-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-slate-500"
               >
                 {leads.map((l) => (
@@ -172,12 +172,12 @@ function CommandPaletteDialog({
                     value={`lead-${l.id}-${formatLeadPreview(l.data as Record<string, unknown>)}`}
                     onSelect={() =>
                       run(() => {
-                        router.push(`/leads?lead=${l.id}`);
+                        router.push(`/inbox?lead=${l.id}`);
                       })
                     }
                     className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-slate-900 aria-selected:bg-slate-100 dark:text-slate-100 dark:aria-selected:bg-slate-900"
                   >
-                    <Users className="size-4 shrink-0 text-slate-500" />
+                    <Inbox className="size-4 shrink-0 text-slate-500" />
                     <span className="truncate">
                       {formatLeadPreview(l.data as Record<string, unknown>)}
                     </span>
@@ -203,16 +203,16 @@ function CommandPaletteDialog({
                 Open Dashboard
               </Command.Item>
               <Command.Item
-                value="action-leads"
+                value="action-inbox"
                 onSelect={() =>
                   run(() => {
-                    router.push("/leads");
+                    router.push("/inbox");
                   })
                 }
                 className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-slate-900 aria-selected:bg-slate-100 dark:text-slate-100 dark:aria-selected:bg-slate-900"
               >
-                <Users className="size-4 text-slate-500" />
-                Go to Enquiries
+                <Inbox className="size-4 text-slate-500" />
+                Go to Inbox
               </Command.Item>
               <Command.Item
                 value="action-form-new"
