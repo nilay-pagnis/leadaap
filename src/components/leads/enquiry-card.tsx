@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
 import { calculateLeadScore } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
-import { formatRelativeTime } from "@/lib/format-relative";
+import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
 export type EnquiryCardProps = {
@@ -16,6 +17,7 @@ export type EnquiryCardProps = {
   fieldDefs: LeadFieldDef[];
   onOpen: () => void;
   isUpdating?: boolean;
+  timeTick: number;
 };
 
 export function EnquiryCard({
@@ -24,10 +26,9 @@ export function EnquiryCard({
   fieldDefs,
   onOpen,
   isUpdating,
+  timeTick,
 }: EnquiryCardProps) {
   const { name, email } = getLeadNameAndEmail(lead, fieldDefs);
-  const formName = formNames[lead.form_id] ?? "—";
-  const when = formatRelativeTime(lead.created_at);
   const scoreResult = calculateLeadScore({
     lead,
     formNames,
@@ -76,8 +77,17 @@ export function EnquiryCard({
           >
             <p className="line-clamp-2 text-sm font-semibold text-slate-900">{name}</p>
             <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
-            <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
-            <p className="mt-1.5 text-xs text-slate-400">{when}</p>
+            <EnquiryFormSourceLine
+              lead={lead}
+              formNames={formNames}
+              className="mt-2"
+              titleClassName="truncate text-xs"
+            />
+            <ClientRelativeTime
+              iso={lead.created_at}
+              className="mt-1.5 block text-xs text-slate-400"
+              tick={timeTick}
+            />
             <p className="mt-2 text-xs text-slate-400">Open for notes and activity</p>
           </button>
           <div className="mt-2">

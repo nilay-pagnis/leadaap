@@ -24,18 +24,35 @@ import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 import { Eye, LayoutGrid, LayoutList } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { EnquiryFilters } from "@/components/leads/enquiry-filters";
+import {
+  isManualEnquiryLead,
+  MANUAL_ENTRY_FORM_FILTER,
+} from "@/lib/leads/manual-enquiry-filter";
 import { leadMatchesNameOrEmail } from "@/lib/leads/search-leads";
 import { KanbanBoard } from "@/components/leads/kanban-board";
 import { EnquiryDetailPanel } from "@/components/leads/enquiry-detail-panel";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { calculateLeadScore } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
+import {
+  AddEnquiryModal,
+  AddEnquiryTriggerButton,
+} from "@/components/leads/add-enquiry-modal";
+import { ClientLocalDateTime } from "@/components/ui/client-local-datetime";
+import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
+import { parseTimestamptz } from "@/lib/timestamptz";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
 function stopRowActivate(e: React.SyntheticEvent) {
   e.stopPropagation();
+}
+
+function leadMatchesEnquiryFormFilter(lead: LeadRow, formFilter: string) {
+  if (formFilter === MANUAL_ENTRY_FORM_FILTER) return isManualEnquiryLead(lead);
+  return lead.form_id === formFilter;
 }
 
 function formatLeadValue(v: string | boolean | string[] | undefined): string {
@@ -67,6 +84,9 @@ export function EnquiriesView({
   const [detail, setDetail] = useState<LeadRow | null>(null);
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
+  const [addEnquiryOpen, setAddEnquiryOpen] = useState(false);
+
+  const timeTick = useRelativeTimeTicker(true);
 
   const isLg = useMediaQuery("(min-width: 1024px)");
   const showSplitDetail = !!detail && view === "list" && isLg;
@@ -103,7 +123,7 @@ export function EnquiriesView({
     let list =
       filter === "all" ? leads : leads.filter((l) => l.status === filter);
     if (formFilter !== "all") {
-      list = list.filter((l) => l.form_id === formFilter);
+      list = list.filter((l) => leadMatchesEnquiryFormFilter(l, formFilter));
     }
     return list;
   }, [leads, filter, formFilter]);
@@ -117,7 +137,7 @@ export function EnquiriesView({
   const pipelineFiltered = useMemo(() => {
     let list = leads;
     if (formFilter !== "all") {
-      list = list.filter((l) => l.form_id === formFilter);
+      list = list.filter((l) => leadMatchesEnquiryFormFilter(l, formFilter));
     }
     const q = search.trim();
     if (!q) return list;
@@ -137,7 +157,8 @@ export function EnquiriesView({
     for (const s of STATUSES) {
       g[s].sort(
         (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          parseTimestamptz(b.created_at).getTime() -
+          parseTimestamptz(a.created_at).getTime()
       );
     }
     return g;
@@ -171,6 +192,7 @@ export function EnquiriesView({
       lead_id: id,
       type: "status_change",
       payload: { from: prevStatus, to: status },
+      created_at: new Date().toISOString(),
     });
     if (activityError) {
       toast.message("Activity log update skipped", {
@@ -182,6 +204,11 @@ export function EnquiriesView({
 
     toast.success("Status updated");
   }, [leads]);
+
+  const onManualEnquiryAdded = useCallback((lead: LeadRow) => {
+    setLeads((prev) => [lead, ...prev]);
+    setActivityRefreshKey((k) => k + 1);
+  }, []);
 
   const listEmpty = searchFiltered.length === 0;
   const boardEmpty = pipelineFiltered.length === 0;
@@ -200,11 +227,21 @@ export function EnquiriesView({
               : "Drag cards between columns to update status. Use the grip handle to drag."}
           </p>
         </div>
-        <div
-          className="inline-flex shrink-0 rounded-xl border border-slate-200/90 bg-slate-50/90 p-1 shadow-sm"
-          role="tablist"
-          aria-label="View mode"
-        >
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <AddEnquiryTriggerButton
+            onClick={() => setAddEnquiryOpen(true)}
+            disabled={formsList.length === 0}
+            title={
+              formsList.length === 0
+                ? "Create a form first to attach manual enquiries."
+                : undefined
+            }
+          />
+          <div
+            className="inline-flex shrink-0 rounded-xl border border-slate-200/90 bg-slate-50/90 p-1 shadow-sm"
+            role="tablist"
+            aria-label="View mode"
+          >
           <button
             type="button"
             role="tab"
@@ -235,6 +272,7 @@ export function EnquiriesView({
             <LayoutGrid className="size-4" />
             Board
           </button>
+        </div>
         </div>
       </div>
 
@@ -311,10 +349,12 @@ export function EnquiriesView({
                         )}
                         onClick={() => setDetail(row)}
                       >
-                        <TableCell className="max-w-[min(200px,40vw)] font-medium text-slate-900">
-                          <span className="line-clamp-2 break-words">
-                            {formNames[row.form_id] ?? "—"}
-                          </span>
+                        <TableCell className="max-w-[min(200px,40vw)]">
+                          <EnquiryFormSourceLine
+                            lead={row}
+                            formNames={formNames}
+                            titleClassName="line-clamp-2 break-words"
+                          />
                         </TableCell>
                         <TableCell className="max-w-[min(240px,50vw)] truncate text-slate-500">
                           {preview || "—"}
@@ -365,7 +405,7 @@ export function EnquiriesView({
                           </Select>
                         </TableCell>
                         <TableCell className="text-sm text-slate-500">
-                          {new Date(row.created_at).toLocaleString()}
+                          <ClientLocalDateTime iso={row.created_at} />
                         </TableCell>
                         <TableCell
                           className="text-right"
@@ -401,6 +441,7 @@ export function EnquiriesView({
                   formNames={formNames}
                   fieldDefs={fieldDefs}
                   activityRefreshKey={activityRefreshKey}
+                  timeTick={timeTick}
                   onStatusChange={updateStatus}
                   updatingLeadId={updatingLeadId}
                 />
@@ -425,8 +466,16 @@ export function EnquiriesView({
           onCardClick={setDetail}
           onStatusChange={updateStatus}
           updatingLeadId={updatingLeadId}
+          timeTick={timeTick}
         />
       )}
+
+      <AddEnquiryModal
+        open={addEnquiryOpen}
+        onOpenChange={setAddEnquiryOpen}
+        forms={formsList}
+        onSuccess={onManualEnquiryAdded}
+      />
 
       {showOverlayDetail ? (
         <EnquiryDetailPanel
@@ -437,6 +486,7 @@ export function EnquiriesView({
           formNames={formNames}
           fieldDefs={fieldDefs}
           activityRefreshKey={activityRefreshKey}
+          timeTick={timeTick}
           onStatusChange={updateStatus}
           updatingLeadId={updatingLeadId}
         />

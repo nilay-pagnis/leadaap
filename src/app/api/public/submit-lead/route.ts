@@ -165,6 +165,7 @@ export async function POST(request: Request) {
       lead_id: leadRow.id,
       type: "created",
       payload: {},
+      created_at: new Date().toISOString(),
     });
     if (activityErr) {
       logError("lead_activities insert", activityErr);

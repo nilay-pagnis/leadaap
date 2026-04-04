@@ -15,11 +15,12 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { KanbanColumn } from "@/components/leads/kanban-column";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
 import { calculateLeadScore } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
-import { formatRelativeTime } from "@/lib/format-relative";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import { cn } from "@/lib/utils";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 
@@ -51,14 +52,14 @@ function KanbanDragPreview({
   lead,
   formNames,
   fieldDefs,
+  timeTick,
 }: {
   lead: LeadRow;
   formNames: Record<string, string>;
   fieldDefs: LeadFieldDef[];
+  timeTick: number;
 }) {
   const { name, email } = getLeadNameAndEmail(lead, fieldDefs);
-  const formName = formNames[lead.form_id] ?? "—";
-  const when = formatRelativeTime(lead.created_at);
   const scoreResult = calculateLeadScore({
     lead,
     formNames,
@@ -72,11 +73,20 @@ function KanbanDragPreview({
     >
       <p className="line-clamp-2 text-sm font-semibold text-slate-900">{name}</p>
       <p className="mt-1 truncate text-xs text-slate-500">{email}</p>
-      <p className="mt-2 truncate text-xs font-medium text-primary">{formName}</p>
+      <EnquiryFormSourceLine
+        lead={lead}
+        formNames={formNames}
+        className="mt-2"
+        titleClassName="truncate text-xs"
+      />
       <div className="mt-2">
         <ScoreBadge detail={scoreResult} size="sm" />
       </div>
-      <p className="mt-1.5 text-xs text-slate-400">{when}</p>
+      <ClientRelativeTime
+        iso={lead.created_at}
+        className="mt-1.5 block text-xs text-slate-400"
+        tick={timeTick}
+      />
     </div>
   );
 }
@@ -88,6 +98,7 @@ export type KanbanBoardProps = {
   onCardClick: (lead: LeadRow) => void;
   onStatusChange: (leadId: string, status: LeadStatus) => void | Promise<void>;
   updatingLeadId: string | null;
+  timeTick: number;
 };
 
 export function KanbanBoard({
@@ -97,6 +108,7 @@ export function KanbanBoard({
   onCardClick,
   onStatusChange,
   updatingLeadId,
+  timeTick,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -153,6 +165,7 @@ export function KanbanBoard({
             fieldDefs={fieldDefs}
             onCardClick={onCardClick}
             updatingLeadId={updatingLeadId}
+            timeTick={timeTick}
           />
         ))}
       </div>
@@ -162,6 +175,7 @@ export function KanbanBoard({
             lead={activeLead}
             formNames={formNames}
             fieldDefs={fieldDefs}
+            timeTick={timeTick}
           />
         ) : null}
       </DragOverlay>

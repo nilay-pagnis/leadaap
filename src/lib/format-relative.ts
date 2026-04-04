@@ -1,8 +1,11 @@
+import { parseTimestamptz } from "@/lib/timestamptz";
+
 /**
  * Short relative time for enquiry timestamps (e.g. "2h ago").
+ * Prefer `<ClientRelativeTime />` in React (SSR-safe).
  */
 export function formatRelativeTime(iso: string): string {
-  const then = new Date(iso).getTime();
+  const then = parseTimestamptz(iso).getTime();
   if (Number.isNaN(then)) return "—";
   const now = Date.now();
   const sec = Math.round((now - then) / 1000);

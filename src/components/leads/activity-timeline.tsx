@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
 import { ArrowRightLeft, Inbox, Loader2 } from "lucide-react";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import { cn } from "@/lib/utils";
-import { formatRelativeTime } from "@/lib/format-relative";
 import { formatActivityMessage } from "@/lib/leads/activity-messages";
 import type { LeadActivity, LeadActivityType } from "@/types";
 
@@ -24,6 +23,8 @@ export type ActivityFeedProps = {
   loading: boolean;
   emptyLabel?: string;
   className?: string;
+  /** From `useRelativeTimeTicker` so “time ago” updates while the panel is open. */
+  timeTick: number;
 };
 
 /** Activity stream (created + status_change only). Data from `useLeadActivities`.activityItems */
@@ -32,18 +33,8 @@ export function ActivityFeed({
   loading,
   emptyLabel = "No activity yet.",
   className,
+  timeTick,
 }: ActivityFeedProps) {
-  const absoluteTitle = useCallback((iso: string) => {
-    try {
-      return new Date(iso).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
-    } catch {
-      return iso;
-    }
-  }, []);
-
   return (
     <div className={cn(className)}>
       {loading ? (
@@ -85,13 +76,12 @@ export function ActivityFeed({
                       <p className="text-[13px] leading-relaxed text-slate-800">
                         {formatActivityMessage(activity)}
                       </p>
-                      <time
+                      <ClientRelativeTime
+                        iso={activity.created_at}
                         className="mt-1.5 block text-xs font-medium text-slate-500"
-                        dateTime={activity.created_at}
-                        title={absoluteTitle(activity.created_at)}
-                      >
-                        {formatRelativeTime(activity.created_at)}
-                      </time>
+                        tick={timeTick}
+                        absoluteTitle
+                      />
                     </div>
                   </div>
                 </div>

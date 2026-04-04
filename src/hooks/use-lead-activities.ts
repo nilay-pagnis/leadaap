@@ -14,6 +14,7 @@ function normalizeRow(row: {
 }): LeadActivity | null {
   const t = row.type;
   if (t !== "created" && t !== "status_change" && t !== "note") return null;
+  if (typeof row.created_at !== "string" || !row.created_at.trim()) return null;
   return {
     id: row.id,
     lead_id: row.lead_id,
@@ -25,6 +26,7 @@ function normalizeRow(row: {
   };
 }
 
+/** When the server never inserted a `created` row, show one timeline entry using the lead row time (same instant as submission). */
 export function mergeWithSyntheticCreated(
   rows: LeadActivity[],
   leadId: string,

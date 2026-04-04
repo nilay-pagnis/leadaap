@@ -28,6 +28,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { LeadsChart } from "@/components/dashboard/leads-chart";
 
@@ -304,8 +305,12 @@ export function DashboardExperience({
                       .join(" · ");
                     return (
                       <TableRow key={row.id} className="border-slate-100">
-                        <TableCell className="max-w-[140px] font-medium text-slate-900">
-                          <span className="line-clamp-2 break-words">{formNames[row.form_id] ?? "—"}</span>
+                        <TableCell className="max-w-[min(200px,40vw)]">
+                          <EnquiryFormSourceLine
+                            lead={row}
+                            formNames={formNames}
+                            titleClassName="line-clamp-2 break-words"
+                          />
                         </TableCell>
                         <TableCell className="max-w-[min(200px,40vw)] truncate text-slate-500">
                           {preview || "—"}

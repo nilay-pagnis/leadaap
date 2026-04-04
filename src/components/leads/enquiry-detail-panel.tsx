@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -16,7 +17,10 @@ import { FormDetailsDialog } from "@/components/leads/form-details-dialog";
 import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { ActivityFeed } from "@/components/leads/activity-timeline";
+import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { Button } from "@/components/ui/button";
+import { ClientLocalDateTime } from "@/components/ui/client-local-datetime";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +42,6 @@ import { useLeadActivities } from "@/hooks/use-lead-activities";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
 import { calculateLeadScore, type LeadScoreResult } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
-import { formatRelativeTime } from "@/lib/format-relative";
 import { getNoteBody, isNotePayload } from "@/lib/leads/activity-messages";
 import type { LeadActivity, LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 import { toast } from "sonner";
@@ -98,7 +101,7 @@ function statusLabel(s: LeadStatus): string {
   }
 }
 
-function DetailCell({ label, value }: { label: string; value: string }) {
+function DetailCell({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
       className={cn(
@@ -108,9 +111,9 @@ function DetailCell({ label, value }: { label: string; value: string }) {
       )}
     >
       <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1.5 break-words text-sm font-semibold leading-snug text-slate-900">
+      <div className="mt-1.5 break-words text-sm font-semibold leading-snug text-slate-900">
         {value}
-      </p>
+      </div>
     </div>
   );
 }
@@ -131,6 +134,8 @@ export type EnquiryDetailPanelProps = {
   formNames: Record<string, string>;
   fieldDefs: LeadFieldDef[];
   activityRefreshKey: number;
+  /** From parent `useRelativeTimeTicker(true)` for client-local relative timestamps. */
+  timeTick: number;
   variant?: "overlay" | "embedded";
   onStatusChange?: (id: string, status: LeadStatus) => void;
   updatingLeadId?: string | null;
@@ -143,6 +148,7 @@ export function EnquiryDetailPanel({
   formNames,
   fieldDefs,
   activityRefreshKey,
+  timeTick,
   variant = "overlay",
   onStatusChange,
   updatingLeadId,
@@ -199,20 +205,6 @@ export function EnquiryDetailPanel({
   const phone = lead ? getLeadPhone(lead, fieldDefs) : "—";
   const initials = lead ? getInitials(name, email) : "?";
 
-  const submittedLabel = lead
-    ? new Date(lead.created_at).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "—";
-
-  const absoluteCreated = lead
-    ? new Date(lead.created_at).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "";
-
   const formName = lead ? formNames[lead.form_id] ?? lead.form_id : "—";
 
   const scoreResult: LeadScoreResult = useMemo(
@@ -229,14 +221,33 @@ export function EnquiryDetailPanel({
     [lead, formNames, fieldDefs]
   );
 
-  const detailRows = useMemo(
-    () => [
-      { key: "form", label: "Form", value: formName },
-      { key: "submitted", label: "Submitted", value: submittedLabel },
+  const detailRows = useMemo(() => {
+    if (!lead) return [];
+    return [
+      {
+        key: "form",
+        label: "Form",
+        value: (
+          <EnquiryFormSourceLine
+            lead={lead}
+            formNames={formNames}
+            titleClassName="break-words leading-snug"
+          />
+        ),
+      },
+      {
+        key: "submitted",
+        label: "Submitted",
+        value: (
+          <ClientLocalDateTime
+            iso={lead.created_at}
+            className="font-semibold text-slate-900"
+          />
+        ),
+      },
       ...quickFieldRows.map((r) => ({ key: r.key, label: r.label, value: r.value })),
-    ],
-    [formName, submittedLabel, quickFieldRows]
-  );
+    ];
+  }, [lead, formNames, quickFieldRows]);
 
   const scrollToNotes = useCallback(() => {
     notesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -254,10 +265,12 @@ export function EnquiryDetailPanel({
     if (!body || noteSubmitting) return;
     setNoteSubmitting(true);
     const supabase = createClient();
+    const createdAt = new Date().toISOString();
     const { error } = await supabase.from("lead_activities").insert({
       lead_id: lead.id,
       type: "note",
       payload: { body },
+      created_at: createdAt,
     });
     setNoteSubmitting(false);
     if (error) {
@@ -435,13 +448,12 @@ export function EnquiryDetailPanel({
           <span className="text-slate-300" aria-hidden>
             ·
           </span>
-          <time
+          <ClientRelativeTime
+            iso={lead.created_at}
             className="text-sm font-medium text-slate-500"
-            dateTime={lead.created_at}
-            title={absoluteCreated}
-          >
-            {formatRelativeTime(lead.created_at)}
-          </time>
+            tick={timeTick}
+            absoluteTitle
+          />
         </div>
       </div>
     </div>
@@ -528,7 +540,11 @@ export function EnquiryDetailPanel({
 
           <section className="space-y-3">
             <p className={sectionTitle}>Activity</p>
-            <ActivityFeed items={activityItems} loading={loading} />
+            <ActivityFeed
+              items={activityItems}
+              loading={loading}
+              timeTick={timeTick}
+            />
           </section>
 
           <Separator className="bg-slate-200/80" />
@@ -622,12 +638,12 @@ export function EnquiryDetailPanel({
                       </div>
                     )}
                     {!isEditing ? (
-                      <time
+                      <ClientRelativeTime
+                        iso={n.created_at}
                         className="mt-2 block text-xs font-medium text-slate-500"
-                        dateTime={n.created_at}
-                      >
-                        {formatRelativeTime(n.created_at)}
-                      </time>
+                        tick={timeTick}
+                        absoluteTitle
+                      />
                     ) : null}
                   </li>
                 );

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { MANUAL_ENTRY_FORM_FILTER } from "@/lib/leads/manual-enquiry-filter";
 import type { LeadStatus } from "@/types";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
@@ -65,7 +66,9 @@ export function EnquiryFilters({
   const formDisplayLabel =
     formId === "all"
       ? "All forms"
-      : forms.find((f) => f.id === formId)?.name ?? "All forms";
+      : formId === MANUAL_ENTRY_FORM_FILTER
+        ? "Manual Entry"
+        : (forms.find((f) => f.id === formId)?.name ?? "All forms");
 
   return (
     <div
@@ -135,6 +138,9 @@ export function EnquiryFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All forms</SelectItem>
+              <SelectItem value={MANUAL_ENTRY_FORM_FILTER}>
+                Manual Entry
+              </SelectItem>
               {forms.map((f) => (
                 <SelectItem key={f.id} value={f.id}>
                   {f.name}

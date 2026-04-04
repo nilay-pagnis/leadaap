@@ -27,6 +27,7 @@ export type KanbanColumnProps = {
   fieldDefs: LeadFieldDef[];
   onCardClick: (lead: LeadRow) => void;
   updatingLeadId: string | null;
+  timeTick: number;
 };
 
 export function KanbanColumn({
@@ -36,6 +37,7 @@ export function KanbanColumn({
   fieldDefs,
   onCardClick,
   updatingLeadId,
+  timeTick,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -66,6 +68,7 @@ export function KanbanColumn({
             fieldDefs={fieldDefs}
             onOpen={() => onCardClick(lead)}
             isUpdating={updatingLeadId === lead.id}
+            timeTick={timeTick}
           />
         ))}
       </div>
