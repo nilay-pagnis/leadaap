@@ -13,24 +13,12 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { MANUAL_ENTRY_FORM_FILTER } from "@/lib/leads/manual-enquiry-filter";
+import { leadStatusLabel } from "@/lib/leads/lead-status-label";
 import type { LeadStatus } from "@/types";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
-export function enquiryStatusLabel(s: LeadStatus): string {
-  switch (s) {
-    case "new":
-      return "New";
-    case "contacted":
-      return "Contacted";
-    case "qualified":
-      return "Qualified";
-    case "closed":
-      return "Closed";
-    default:
-      return s;
-  }
-}
+export const enquiryStatusLabel = leadStatusLabel;
 
 export type EnquiryFiltersProps = {
   /** `pipeline` hides status (Kanban); columns represent status. */

@@ -4,7 +4,14 @@ import { useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, FileText, Inbox, UserPlus } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Bell,
+  BellRing,
+  FileText,
+  Inbox,
+  UserPlus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +21,13 @@ import { DashboardTooltip } from "@/components/layout/dashboard-tooltip";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
-import { formatTimeAgo } from "@/lib/time-ago";
+import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
+import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 
 function iconForType(type: string) {
-  if (type === "lead_received" || type.includes("lead")) return UserPlus;
+  if (type === "lead_received") return UserPlus;
+  if (type === "follow_up") return BellRing;
+  if (type === "lead_status_changed") return ArrowRightLeft;
   if (type.includes("form")) return FileText;
   return Bell;
 }
@@ -33,26 +43,28 @@ export function NotificationDropdown({
   const router = useRouter();
   const { items, loading, error, unreadCount, markRead, markAllRead } =
     useNotifications(userId);
+  const timeTick = useRelativeTimeTicker(true);
+  const badgeText =
+    unreadCount > 9 ? "9+" : unreadCount > 0 ? String(unreadCount) : null;
 
   return (
     <DropdownMenu>
       <DashboardTooltip label="Notifications">
         <DropdownMenuTrigger
           className={cn(
-            "relative inline-flex size-9 shrink-0 items-center justify-center rounded-full text-slate-600 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-400/50 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:focus-visible:ring-slate-600",
+            "relative inline-flex size-9 shrink-0 items-center justify-center rounded-full text-slate-600 outline-none transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-slate-400/50 active:scale-[0.97] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:focus-visible:ring-slate-600 data-[state=open]:bg-slate-100 data-[state=open]:shadow-sm dark:data-[state=open]:bg-slate-800",
             className
           )}
           aria-label="Notifications"
           aria-describedby={titleId}
         >
           <Bell className="size-[18px]" aria-hidden />
-          {unreadCount > 0 ? (
+          {badgeText ? (
             <span
-              className="absolute right-1.5 top-1.5 flex size-2 items-center justify-center"
+              className="absolute -right-0.5 -top-0.5 flex min-w-[1.125rem] items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold leading-none text-white shadow-sm ring-2 ring-white dark:bg-indigo-500 dark:ring-slate-950"
               aria-hidden
             >
-              <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-indigo-400 opacity-40" />
-              <span className="relative size-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-slate-950" />
+              {badgeText}
             </span>
           ) : null}
           <span className="sr-only">
@@ -64,7 +76,7 @@ export function NotificationDropdown({
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-[min(100vw-2rem,22rem)] rounded-2xl p-0 shadow-md ring-1 ring-slate-200/80 dark:ring-slate-800"
+        className="w-[min(100vw-2rem,22rem)] rounded-2xl p-0 shadow-lg shadow-slate-900/8 ring-1 ring-slate-200/80 dark:shadow-none dark:ring-slate-800"
       >
         <div
           className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800"
@@ -130,7 +142,7 @@ export function NotificationDropdown({
                     <button
                       type="button"
                       className={cn(
-                        "flex w-full gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/80",
+                        "group flex w-full gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all duration-200 hover:bg-slate-50 active:scale-[0.99] dark:hover:bg-slate-900/80",
                         unread && "bg-indigo-50/50 dark:bg-indigo-950/20"
                       )}
                       onClick={() => {
@@ -138,7 +150,7 @@ export function NotificationDropdown({
                         if (n.link) router.push(n.link);
                       }}
                     >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 transition-colors group-hover:bg-slate-200/80 dark:bg-slate-800 dark:group-hover:bg-slate-700/80">
                         <Icon className="size-4 text-slate-600 dark:text-slate-300" aria-hidden />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -146,9 +158,12 @@ export function NotificationDropdown({
                         {n.body ? (
                           <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.body}</p>
                         ) : null}
-                        <p className="mt-1 text-[11px] tabular-nums text-slate-400">
-                          {formatTimeAgo(n.created_at)}
-                        </p>
+                        <ClientRelativeTime
+                          iso={n.created_at}
+                          className="mt-1 block text-[11px] tabular-nums text-slate-400"
+                          tick={timeTick}
+                          variant="relative"
+                        />
                       </div>
                       {unread ? (
                         <span className="mt-1 size-2 shrink-0 rounded-full bg-indigo-500" aria-hidden />

@@ -401,6 +401,16 @@ export function InboxView({
       setActivityRefreshKey((k) => k + 1);
     }
 
+    void fetch("/api/dashboard/notifications/lead-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        leadId: id,
+        fromStatus: prevStatus,
+        toStatus: status,
+      }),
+    }).catch(() => {});
+
     toast.success("Status updated", {
       description: `${enquiryStatusLabel(prevStatus)} → ${enquiryStatusLabel(status)}`,
     });

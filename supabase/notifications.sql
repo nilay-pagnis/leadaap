@@ -1,4 +1,9 @@
 -- Notifications + Realtime. Run in Supabase SQL Editor after leads/forms exist.
+--
+-- Common `type` values (app-defined, text column for flexibility):
+--   lead_received        — public form submission (see submit-lead API)
+--   follow_up            — reminder fired (see cron/follow-ups)
+--   lead_status_changed  — pipeline status update (see /api/dashboard/notifications/lead-status)
 
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),

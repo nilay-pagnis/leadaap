@@ -71,10 +71,13 @@ export function useNotifications(userId: string | null) {
             if (prev.some((p) => p.id === row.id)) return prev;
             return [row, ...prev].slice(0, 50);
           });
-          toast.info(row.title, {
-            description: row.body ?? undefined,
-            duration: 5000,
-          });
+          // Status updates already surface an immediate success toast in the inbox.
+          if (row.type !== "lead_status_changed") {
+            toast.info(row.title, {
+              description: row.body ?? undefined,
+              duration: 5000,
+            });
+          }
         }
       )
       .on(
