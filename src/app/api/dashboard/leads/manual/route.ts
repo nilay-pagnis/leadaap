@@ -13,7 +13,8 @@ import {
   PLAN_LIMITS,
 } from "@/lib/monetization/plans";
 import type { FieldRowForManual } from "@/lib/leads/build-manual-lead-data";
-import type { LeadRow, LeadStatus } from "@/types";
+import { maybeSendLeadWhatsAppAlert } from "@/lib/notifications/whatsapp-lead-alert";
+import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -195,6 +196,13 @@ export async function POST(request: Request) {
       console.error("[manual lead] activity insert:", actErr);
     }
 
+    void maybeSendLeadWhatsAppAlert({
+      lead: inserted as LeadRow,
+      ownerUserId: user.id,
+      formNames: {},
+      fieldDefs: [],
+    });
+
     return NextResponse.json(
       { lead: inserted as LeadRow },
       { status: 201, headers: NO_STORE }
@@ -293,6 +301,30 @@ export async function POST(request: Request) {
   if (actErr) {
     console.error("[manual lead] activity insert:", actErr);
   }
+
+  const { data: formMeta } = await supabase
+    .from("forms")
+    .select("form_name")
+    .eq("id", formId)
+    .maybeSingle();
+  const formNames = {
+    [formId]:
+      (formMeta as { form_name?: string } | null)?.form_name?.trim() || "Form",
+  };
+  const fieldDefs: LeadFieldDef[] = (
+    fieldRows as { id: string; form_id: string; label: string; type: string }[]
+  ).map((r) => ({
+    id: r.id,
+    form_id: r.form_id,
+    label: r.label,
+    type: r.type as LeadFieldDef["type"],
+  }));
+  void maybeSendLeadWhatsAppAlert({
+    lead: inserted as LeadRow,
+    ownerUserId: user.id,
+    formNames,
+    fieldDefs,
+  });
 
   return NextResponse.json(
     { lead: inserted as LeadRow },

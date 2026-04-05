@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnquiryTableSkeleton } from "@/components/leads/enquiry-table-skeleton";
 import { InboxView } from "./inbox-view";
+import type { FollowUpDueInfo } from "@/types/follow-ups";
 import type { LeadFieldDef, LeadRow } from "@/types";
 
 function InboxFallback() {
@@ -54,12 +55,32 @@ export default async function InboxPage() {
     fieldDefs = (fields ?? []) as LeadFieldDef[];
   }
 
+  const { data: pendingFollowUps } = await supabase
+    .from("follow_ups")
+    .select("lead_id, remind_at")
+    .eq("user_id", user.id)
+    .eq("status", "pending");
+
+  const followUpDueByLeadId: Record<string, FollowUpDueInfo> = {};
+  for (const row of pendingFollowUps ?? []) {
+    const leadId = row.lead_id as string;
+    const remindAt = row.remind_at as string;
+    const prev = followUpDueByLeadId[leadId];
+    if (
+      !prev ||
+      new Date(prev.remindAt).getTime() > new Date(remindAt).getTime()
+    ) {
+      followUpDueByLeadId[leadId] = { remindAt };
+    }
+  }
+
   return (
     <Suspense fallback={<InboxFallback />}>
       <InboxView
         initialLeads={(leads ?? []) as LeadRow[]}
         formNames={formNames}
         fieldDefs={fieldDefs}
+        followUpDueByLeadId={followUpDueByLeadId}
       />
     </Suspense>
   );

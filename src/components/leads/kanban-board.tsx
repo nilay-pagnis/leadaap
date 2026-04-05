@@ -22,6 +22,7 @@ import { calculateLeadScore } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
 import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import { cn } from "@/lib/utils";
+import type { FollowUpDueInfo } from "@/types/follow-ups";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
@@ -99,6 +100,7 @@ export type KanbanBoardProps = {
   onStatusChange: (leadId: string, status: LeadStatus) => void | Promise<void>;
   updatingLeadId: string | null;
   timeTick: number;
+  followUpDueByLeadId: Record<string, FollowUpDueInfo>;
 };
 
 export function KanbanBoard({
@@ -109,6 +111,7 @@ export function KanbanBoard({
   onStatusChange,
   updatingLeadId,
   timeTick,
+  followUpDueByLeadId,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -166,6 +169,7 @@ export function KanbanBoard({
             onCardClick={onCardClick}
             updatingLeadId={updatingLeadId}
             timeTick={timeTick}
+            followUpDueByLeadId={followUpDueByLeadId}
           />
         ))}
       </div>

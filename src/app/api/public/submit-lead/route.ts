@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitizePublicLeadData } from "@/lib/leads/sanitize-public-submission";
+import { maybeSendLeadWhatsAppAlert } from "@/lib/notifications/whatsapp-lead-alert";
+import type { LeadFieldDef, LeadRow } from "@/types";
 import {
   isUnlimitedCredits,
   normalizePlanId,
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
 
     const { data: fields, error: fieldsError } = await admin
       .from("fields")
-      .select("id, label, type, required, options")
+      .select("id, form_id, label, type, required, options")
       .eq("form_id", formId)
       .order("sort_order", { ascending: true });
 
@@ -157,7 +159,7 @@ export async function POST(request: Request) {
         data: validated.sanitized,
         status: "new",
       })
-      .select("id")
+      .select("id, created_at")
       .single();
 
     if (insertError || !leadRow) {
@@ -190,6 +192,27 @@ export async function POST(request: Request) {
     if (notifErr) {
       logError("notifications insert", notifErr);
     }
+
+    const fieldDefs: LeadFieldDef[] = fieldList.map((f) => ({
+      id: f.id as string,
+      form_id: (f as { form_id: string }).form_id,
+      label: f.label as string,
+      type: f.type as LeadFieldDef["type"],
+    }));
+    const leadForAlert: LeadRow = {
+      id: leadRow.id as string,
+      form_id: form.id as string,
+      user_id: form.user_id as string,
+      data: validated.sanitized as LeadRow["data"],
+      status: "new",
+      created_at: (leadRow as { created_at: string }).created_at,
+    };
+    void maybeSendLeadWhatsAppAlert({
+      lead: leadForAlert,
+      ownerUserId: form.user_id as string,
+      formNames: { [form.id as string]: formName },
+      fieldDefs,
+    });
 
     return NextResponse.json({ ok: true }, { headers: NO_STORE_HEADERS });
   } catch (e) {

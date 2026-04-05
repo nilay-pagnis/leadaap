@@ -2,6 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
+import type { FollowUpDueInfo } from "@/types/follow-ups";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
 import { EnquiryCard } from "@/components/leads/enquiry-card";
 
@@ -28,6 +29,7 @@ export type KanbanColumnProps = {
   onCardClick: (lead: LeadRow) => void;
   updatingLeadId: string | null;
   timeTick: number;
+  followUpDueByLeadId: Record<string, FollowUpDueInfo>;
 };
 
 export function KanbanColumn({
@@ -38,6 +40,7 @@ export function KanbanColumn({
   onCardClick,
   updatingLeadId,
   timeTick,
+  followUpDueByLeadId,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -69,6 +72,7 @@ export function KanbanColumn({
             onOpen={() => onCardClick(lead)}
             isUpdating={updatingLeadId === lead.id}
             timeTick={timeTick}
+            followUp={followUpDueByLeadId[lead.id] ?? null}
           />
         ))}
       </div>

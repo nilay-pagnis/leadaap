@@ -76,3 +76,43 @@ export function getLeadNameAndEmail(
 
   return { name, email };
 }
+
+/** Raw phone string for links / alerts, or empty if none. */
+export function getLeadPhoneNumber(
+  lead: LeadRow,
+  fieldDefs: LeadFieldDef[]
+): string {
+  if (lead.form_id == null || lead.form_id === "") {
+    const v = lead.data?.phone;
+    return typeof v === "string" && v.trim() ? v.trim() : "";
+  }
+  const defs = fieldDefs.filter(
+    (f) => f.form_id === lead.form_id && f.type === "phone"
+  );
+  for (const f of defs) {
+    const v = lead.data?.[f.id];
+    if (typeof v === "string" && v.trim()) return v.trim();
+  }
+  return "";
+}
+
+/**
+ * Best-effort display name when only `leads.data` is available (e.g. cron without field defs).
+ */
+export function getLeadShortLabelFromData(
+  data: Record<string, unknown> | null | undefined
+): string {
+  if (!data) return "Lead";
+  const n = data.name;
+  if (typeof n === "string") {
+    const t = n.trim();
+    if (t) return t.slice(0, 80);
+  }
+  for (const v of Object.values(data)) {
+    if (typeof v === "string") {
+      const t = v.trim();
+      if (t && !t.includes("@") && t.length < 120) return t.slice(0, 80);
+    }
+  }
+  return "Lead";
+}

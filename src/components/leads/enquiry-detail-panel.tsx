@@ -4,14 +4,18 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Bell,
+  Check,
   FileText,
   Link2,
   Loader2,
   Mail,
+  MessageCircle,
   MoreHorizontal,
   Pencil,
   Sparkles,
   StickyNote,
+  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FormDetailsDialog } from "@/components/leads/form-details-dialog";
@@ -20,6 +24,14 @@ import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { ActivityFeed } from "@/components/leads/activity-timeline";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ClientLocalDateTime } from "@/components/ui/client-local-datetime";
 import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import {
@@ -40,11 +52,19 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useLeadActivities } from "@/hooks/use-lead-activities";
+import { dayjs } from "@/lib/dayjs-config";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
+import { buildWhatsAppUrl } from "@/lib/leads/whatsapp-url";
+import {
+  getLeadMessageSnippet,
+  WHATSAPP_TEMPLATES,
+} from "@/lib/leads/whatsapp-templates";
 import { calculateLeadScore, type LeadScoreResult } from "@/lib/leads/lead-score";
 import { ScoreBadge } from "@/components/leads/score-badge";
 import { getNoteBody, isNotePayload } from "@/lib/leads/activity-messages";
+import type { FollowUpRow } from "@/types/follow-ups";
 import type { LeadActivity, LeadFieldDef, LeadRow, LeadStatus } from "@/types";
+import { parseTimestamptz } from "@/lib/timestamptz";
 import { toast } from "sonner";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
@@ -198,6 +218,12 @@ export function EnquiryDetailPanel({
   const [editDraft, setEditDraft] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
+  const [nextFollowUp, setNextFollowUp] = useState<FollowUpRow | null>(null);
+  const [followUpRefreshKey, setFollowUpRefreshKey] = useState(0);
+  const [customReminderOpen, setCustomReminderOpen] = useState(false);
+  const [customReminderLocal, setCustomReminderLocal] = useState("");
+  const [followUpSaving, setFollowUpSaving] = useState(false);
+
   const defsForForm = useMemo(() => {
     if (!lead?.form_id) return [];
     return fieldDefs
@@ -304,6 +330,121 @@ export function EnquiryDetailPanel({
   const enquiryUrl =
     lead && origin ? `${origin}/inbox?lead=${lead.id}` : "";
 
+  useEffect(() => {
+    if (!open || !lead) {
+      setNextFollowUp(null);
+      return;
+    }
+    const leadId = lead.id;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .select("*")
+        .eq("lead_id", leadId)
+        .eq("status", "pending")
+        .order("remind_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        setNextFollowUp(null);
+        return;
+      }
+      setNextFollowUp(data as FollowUpRow | null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by lead id only; full `lead` updates from parent are frequent
+  }, [open, lead?.id, followUpRefreshKey]);
+
+  const bumpFollowUpRefresh = useCallback(() => {
+    setFollowUpRefreshKey((k) => k + 1);
+  }, []);
+
+  const scheduleReminderAt = useCallback(
+    async (remindAtIso: string) => {
+      if (!lead) return;
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Sign in required");
+        return;
+      }
+      setFollowUpSaving(true);
+      const { error } = await supabase.from("follow_ups").insert({
+        user_id: user.id,
+        lead_id: lead.id,
+        remind_at: remindAtIso,
+        status: "pending",
+      });
+      setFollowUpSaving(false);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Reminder scheduled");
+      bumpFollowUpRefresh();
+    },
+    [lead, bumpFollowUpRefresh]
+  );
+
+  const setFollowUpStatus = useCallback(
+    async (id: string, status: "dismissed" | "completed") => {
+      if (!lead) return;
+      const supabase = createClient();
+      setFollowUpSaving(true);
+      const { error } = await supabase
+        .from("follow_ups")
+        .update({ status })
+        .eq("id", id)
+        .eq("lead_id", lead.id);
+      setFollowUpSaving(false);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success(status === "completed" ? "Marked done" : "Reminder dismissed");
+      bumpFollowUpRefresh();
+    },
+    [lead, bumpFollowUpRefresh]
+  );
+
+  const waCtx = useMemo(
+    () => ({
+      contactName: name,
+      formName,
+      messageSnippet: lead ? getLeadMessageSnippet(lead, fieldDefs) : "",
+    }),
+    [name, formName, lead, fieldDefs]
+  );
+
+  const openWhatsApp = useCallback(
+    (templateId?: string) => {
+      if (!lead || phone === "—") return;
+      const tpl = templateId
+        ? WHATSAPP_TEMPLATES.find((t) => t.id === templateId)
+        : WHATSAPP_TEMPLATES[0];
+      const text = tpl
+        ? tpl.build(waCtx)
+        : WHATSAPP_TEMPLATES[0].build(waCtx);
+      const url = buildWhatsAppUrl(phone, text);
+      if (!url) return;
+      window.open(url, "_blank", "noopener,noreferrer");
+    },
+    [lead, phone, waCtx]
+  );
+
+  const followUpDue = useMemo(() => {
+    if (nextFollowUp == null) return false;
+    void timeTick;
+    return parseTimestamptz(nextFollowUp.remind_at).getTime() <= Date.now();
+  }, [nextFollowUp, timeTick]);
+
   const addNote = useCallback(async () => {
     if (!lead) return;
     const body = noteDraft.trim();
@@ -371,93 +512,245 @@ export function EnquiryDetailPanel({
 
   const toolbar = lead ? (
     <div
-      className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
+      className="flex w-full flex-col gap-2"
       onClick={stopToolbarBubble}
       onPointerDown={stopToolbarBubble}
     >
-      <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
-        Actions
-      </span>
-      <div className="flex flex-wrap items-center gap-2">
-      {onStatusChange ? (
-        <Select
-          value={lead.status}
-          disabled={statusBusy}
-          onValueChange={(v) => onStatusChange(lead.id, v as LeadStatus)}
-        >
-          <SelectTrigger
-            className={cn(
-              "h-9 min-w-[148px] rounded-lg border px-3 text-xs font-semibold shadow-sm transition-shadow hover:shadow",
-              lead.status === "new" &&
-                "border-slate-200/90 bg-white text-slate-800",
-              lead.status === "contacted" &&
-                "border-amber-200/90 bg-amber-50/90 text-amber-950",
-              lead.status === "qualified" &&
-                "border-violet-200/90 bg-violet-50/90 text-violet-900",
-              lead.status === "closed" &&
-                "border-emerald-200/90 bg-emerald-50/90 text-emerald-900"
-            )}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {statusLabel(s)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : null}
-
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        className="h-9 gap-1.5 rounded-lg px-3 font-medium shadow-sm transition-all hover:bg-slate-100"
-        onClick={scrollToNotes}
-      >
-        <StickyNote className="size-3.5 opacity-70" />
-        Add note
-      </Button>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className={cn(
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-700 shadow-sm outline-none transition-all hover:bg-slate-50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-slate-400/40"
-          )}
-          aria-label="More actions"
-        >
-          <MoreHorizontal className="size-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[11rem]">
-          <DropdownMenuItem
-            onClick={() => {
-              if (enquiryUrl) void copyToClipboard(enquiryUrl, "Link copied");
-            }}
-          >
-            <Link2 className="size-4 opacity-70" />
-            Copy link
-          </DropdownMenuItem>
-          {email !== "—" ? (
-            <DropdownMenuItem
-              onClick={() => void copyToClipboard(email, "Email copied")}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+          Actions
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {onStatusChange ? (
+            <Select
+              value={lead.status}
+              disabled={statusBusy}
+              onValueChange={(v) => onStatusChange(lead.id, v as LeadStatus)}
             >
-              <Mail className="size-4 opacity-70" />
-              Copy email
-            </DropdownMenuItem>
+              <SelectTrigger
+                className={cn(
+                  "h-9 min-w-[148px] rounded-lg border px-3 text-xs font-semibold shadow-sm transition-shadow hover:shadow",
+                  lead.status === "new" &&
+                    "border-slate-200/90 bg-white text-slate-800",
+                  lead.status === "contacted" &&
+                    "border-amber-200/90 bg-amber-50/90 text-amber-950",
+                  lead.status === "qualified" &&
+                    "border-violet-200/90 bg-violet-50/90 text-violet-900",
+                  lead.status === "closed" &&
+                    "border-emerald-200/90 bg-emerald-50/90 text-emerald-900"
+                )}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {statusLabel(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : null}
-          {lead.form_id ? (
-            <DropdownMenuItem onClick={() => setFormDetailsOpen(true)}>
-              <FileText className="size-4 opacity-70" />
-              Form structure
-            </DropdownMenuItem>
-          ) : null}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onClose}>Close panel</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="h-9 gap-1.5 rounded-lg px-3 font-medium shadow-sm transition-all hover:bg-slate-100"
+            onClick={scrollToNotes}
+          >
+            <StickyNote className="size-3.5 opacity-70" />
+            Add note
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              disabled={followUpSaving}
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm outline-none transition-all hover:bg-slate-50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-slate-400/40 disabled:opacity-60"
+              )}
+            >
+              <Bell className="size-3.5 opacity-70" />
+              Set reminder
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[12rem]">
+              <DropdownMenuItem
+                disabled={followUpSaving}
+                onClick={() =>
+                  void scheduleReminderAt(
+                    new Date(Date.now() + 10 * 60 * 1000).toISOString()
+                  )
+                }
+              >
+                In 10 minutes
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={followUpSaving}
+                onClick={() =>
+                  void scheduleReminderAt(
+                    new Date(Date.now() + 60 * 60 * 1000).toISOString()
+                  )
+                }
+              >
+                In 1 hour
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={followUpSaving}
+                onClick={() =>
+                  void scheduleReminderAt(
+                    dayjs()
+                      .add(1, "day")
+                      .hour(9)
+                      .minute(0)
+                      .second(0)
+                      .millisecond(0)
+                      .toISOString()
+                  )
+                }
+              >
+                Tomorrow 9:00 (local)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={followUpSaving}
+                onClick={() => {
+                  setCustomReminderLocal(
+                    dayjs().add(1, "hour").format("YYYY-MM-DDTHH:mm")
+                  );
+                  setCustomReminderOpen(true);
+                }}
+              >
+                Custom…
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {phone === "—" ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled
+              className="h-9 gap-1.5 rounded-lg px-3 font-medium shadow-sm"
+              title="No phone on this enquiry"
+            >
+              <MessageCircle className="size-3.5 opacity-70" />
+              WhatsApp
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-200/90 bg-emerald-50/90 px-3 text-xs font-semibold text-emerald-950 shadow-sm outline-none transition-all hover:bg-emerald-100/90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-emerald-400/40 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-100"
+                )}
+              >
+                <MessageCircle className="size-3.5 opacity-80" />
+                WhatsApp
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-[14rem]">
+                {WHATSAPP_TEMPLATES.map((t) => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    onClick={() => openWhatsApp(t.id)}
+                  >
+                    {t.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-700 shadow-sm outline-none transition-all hover:bg-slate-50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-slate-400/40"
+              )}
+              aria-label="More actions"
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[11rem]">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (enquiryUrl) void copyToClipboard(enquiryUrl, "Link copied");
+                }}
+              >
+                <Link2 className="size-4 opacity-70" />
+                Copy link
+              </DropdownMenuItem>
+              {email !== "—" ? (
+                <DropdownMenuItem
+                  onClick={() => void copyToClipboard(email, "Email copied")}
+                >
+                  <Mail className="size-4 opacity-70" />
+                  Copy email
+                </DropdownMenuItem>
+              ) : null}
+              {lead.form_id ? (
+                <DropdownMenuItem onClick={() => setFormDetailsOpen(true)}>
+                  <FileText className="size-4 opacity-70" />
+                  Form structure
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onClose}>Close panel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      {nextFollowUp ? (
+        <div
+          className={cn(
+            "flex flex-col gap-2 rounded-xl border px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between",
+            followUpDue
+              ? "border-amber-300/90 bg-amber-50/95 dark:border-amber-700/50 dark:bg-amber-950/35"
+              : "border-amber-200/70 bg-amber-50/50 dark:border-amber-800/40 dark:bg-amber-950/25"
+          )}
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-800/90 dark:text-amber-200/90">
+              Follow-up
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">
+              <ClientRelativeTime
+                iso={nextFollowUp.remind_at}
+                className="font-medium text-slate-900 dark:text-slate-100"
+                tick={timeTick}
+                absoluteTitle
+              />
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="h-8 gap-1 rounded-lg px-2.5 text-xs"
+              disabled={followUpSaving}
+              onClick={() =>
+                void setFollowUpStatus(nextFollowUp.id, "completed")
+              }
+            >
+              <Check className="size-3.5" />
+              Done
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 rounded-lg px-2.5 text-xs"
+              disabled={followUpSaving}
+              onClick={() =>
+                void setFollowUpStatus(nextFollowUp.id, "dismissed")
+              }
+            >
+              <X className="size-3.5" />
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   ) : null;
 
@@ -769,6 +1062,53 @@ export function EnquiryDetailPanel({
         fields={defsForForm}
       />
     ) : null}
+
+    <Dialog open={customReminderOpen} onOpenChange={setCustomReminderOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Custom reminder</DialogTitle>
+          <DialogDescription>
+            Pick a local date and time. It is stored as an exact instant.
+          </DialogDescription>
+        </DialogHeader>
+        <Input
+          type="datetime-local"
+          value={customReminderLocal}
+          onChange={(e) => setCustomReminderLocal(e.target.value)}
+          className="rounded-lg font-mono text-sm"
+        />
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-lg"
+            onClick={() => setCustomReminderOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            className="rounded-lg font-semibold"
+            disabled={followUpSaving}
+            onClick={() => {
+              const d = new Date(customReminderLocal);
+              if (Number.isNaN(d.getTime())) {
+                toast.error("Invalid date");
+                return;
+              }
+              if (d.getTime() < Date.now()) {
+                toast.error("Choose a time in the future");
+                return;
+              }
+              void scheduleReminderAt(d.toISOString());
+              setCustomReminderOpen(false);
+            }}
+          >
+            Schedule
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }

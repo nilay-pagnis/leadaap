@@ -13,8 +13,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import type { FollowUpDueInfo } from "@/types/follow-ups";
 import type { LeadFieldDef, LeadRow, LeadStatus } from "@/types";
-import { FilterX, Inbox, LayoutGrid, LayoutList, Sparkles } from "lucide-react";
+import {
+  Bell,
+  FilterX,
+  Inbox,
+  LayoutGrid,
+  LayoutList,
+  Sparkles,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
@@ -192,16 +200,21 @@ export function InboxView({
   initialLeads,
   formNames,
   fieldDefs,
+  followUpDueByLeadId: initialFollowUpDueByLeadId,
 }: {
   initialLeads: LeadRow[];
   formNames: Record<string, string>;
   fieldDefs: LeadFieldDef[];
+  followUpDueByLeadId: Record<string, FollowUpDueInfo>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const leadFromQuery = searchParams.get("lead");
 
   const [leads, setLeads] = useState(initialLeads);
+  const [followUpDueByLeadId, setFollowUpDueByLeadId] = useState(
+    initialFollowUpDueByLeadId
+  );
   const [view, setView] = useState<"list" | "board">("list");
   const [filter, setFilter] = useState<LeadStatus | "all">("all");
   const [formFilter, setFormFilter] = useState<"all" | string>("all");
@@ -230,6 +243,10 @@ export function InboxView({
     const row = leads.find((l) => l.id === leadFromQuery);
     if (row) setDetail(row);
   }, [leadFromQuery, leads]);
+
+  useEffect(() => {
+    setFollowUpDueByLeadId(initialFollowUpDueByLeadId);
+  }, [initialFollowUpDueByLeadId]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -539,6 +556,12 @@ export function InboxView({
                           );
                           const initials = getInitials(name, email);
                           const selected = detail?.id === row.id;
+                          const fu = followUpDueByLeadId[row.id];
+                          void timeTick;
+                          const fuOverdue =
+                            fu != null &&
+                            parseTimestamptz(fu.remindAt).getTime() <=
+                              Date.now();
                           return (
                             <motion.li
                               key={row.id}
@@ -558,7 +581,13 @@ export function InboxView({
                                   "border-l-[3px] border-l-red-400/85 pl-2 dark:border-l-red-500/70",
                                 scoreResult.label === "Warm" &&
                                   !selected &&
-                                  "border-l-[3px] border-l-amber-400/70 pl-2 dark:border-l-amber-500/55"
+                                  "border-l-[3px] border-l-amber-400/70 pl-2 dark:border-l-amber-500/55",
+                                fu &&
+                                  fuOverdue &&
+                                  "ring-2 ring-amber-500/35 dark:ring-amber-500/45",
+                                fu &&
+                                  !fuOverdue &&
+                                  "ring-1 ring-amber-400/25 dark:ring-amber-500/30"
                               )}
                               onClick={() => setDetail(row)}
                               onKeyDown={(e) => {
@@ -594,6 +623,23 @@ export function InboxView({
                                       formNames={formNames}
                                       titleClassName="max-w-[140px] truncate text-[11px]"
                                     />
+                                    {fu ? (
+                                      <span
+                                        className={cn(
+                                          "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                                          fuOverdue
+                                            ? "bg-amber-200/90 text-amber-950 dark:bg-amber-500/25 dark:text-amber-100"
+                                            : "bg-amber-100/80 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200"
+                                        )}
+                                        title={`Follow-up ${fuOverdue ? "due" : "scheduled"}: ${fu.remindAt}`}
+                                      >
+                                        <Bell
+                                          className="size-2.5 shrink-0 opacity-80"
+                                          aria-hidden
+                                        />
+                                        {fuOverdue ? "Due" : "Reminder"}
+                                      </span>
+                                    ) : null}
                                     <LeadStatusBadge
                                       status={row.status}
                                       size="sm"
@@ -691,6 +737,7 @@ export function InboxView({
           onStatusChange={updateStatus}
           updatingLeadId={updatingLeadId}
           timeTick={timeTick}
+          followUpDueByLeadId={followUpDueByLeadId}
         />
       )}
 
