@@ -3,9 +3,9 @@ import { headers } from "next/headers";
 import { DocsPageClient } from "@/components/docs/docs-page-client";
 
 export const metadata: Metadata = {
-  title: "Embed & developer docs — Enquireo",
+  title: "Developer documentation — Enquireo",
   description:
-    "Embed Enquireo enquiry forms on any website with a small script and responsive iframe.",
+    "Form ID, JavaScript embed, and public API reference for integrating Enquireo enquiry forms.",
 };
 
 function fallbackOrigin(): string {

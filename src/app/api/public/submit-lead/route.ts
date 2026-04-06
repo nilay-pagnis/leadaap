@@ -32,7 +32,20 @@ function monthStartUtcIso(): string {
  * Public lead submission — no auth, no profiles, no plan/credit checks.
  * Inserts a row for the form owner (user_id from forms table).
  */
+const MAX_BODY_BYTES = 512 * 1024;
+
 export async function POST(request: Request) {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      {
+        error: "Request body too large.",
+        code: "PAYLOAD_TOO_LARGE",
+      },
+      { status: 413, headers: NO_STORE_HEADERS }
+    );
+  }
+
   let body: {
     form_id?: string;
     data?: Record<string, unknown>;

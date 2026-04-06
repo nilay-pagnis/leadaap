@@ -69,8 +69,14 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
+    console.error("[api/payments/submit] insert", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  console.info("[api/payments/submit] pending row created", {
+    userId: user.id,
+    plan,
+  });
 
   return NextResponse.json({ ok: true });
 }

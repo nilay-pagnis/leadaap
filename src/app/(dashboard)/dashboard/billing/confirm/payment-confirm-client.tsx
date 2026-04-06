@@ -97,6 +97,10 @@ export function PaymentConfirmClient() {
           </code>
           ) from the success screen, your email receipt, or the Razorpay dashboard.
         </p>
+        <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-zinc-900/50 dark:text-slate-400">
+          Your workspace upgrades only after our team approves this Payment ID in the admin
+          console. You&apos;ll see a &quot;Pending verification&quot; notice on Billing until then.
+        </p>
       </div>
 
       <Card className="border-gray-200 shadow-sm dark:border-gray-800">

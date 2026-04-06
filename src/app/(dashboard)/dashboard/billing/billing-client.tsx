@@ -146,8 +146,13 @@ export function BillingClient({
           Plans &amp; usage
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Transparent limits, no surprises. Pay via Razorpay link, submit your Payment ID, and we
-          align your workspace — free stays on until you choose to grow.
+          Transparent limits, no surprises. Pay through our Razorpay link, then paste your
+          Payment ID on the confirm page. An admin verifies each payment before your plan and
+          credits update — there is no automatic subscription webhook yet.
+        </p>
+        <p className="max-w-xl text-xs leading-relaxed text-muted-foreground/90">
+          To change or downgrade a paid plan, contact support; self-serve cancellation is not
+          available in-app today.
         </p>
       </div>
 
@@ -356,11 +361,57 @@ export function BillingClient({
           </p>
         </div>
         {payments.length === 0 ? (
-          <div className="px-6 py-14 text-center text-sm text-slate-500 dark:text-slate-400">
-            No payment records yet. When you pay via a plan link, entries appear here.
+          <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
+            <p className="max-w-sm text-sm text-slate-600 dark:text-slate-400">
+              No payment records yet. After you pay through Razorpay, confirm your Payment ID — entries
+              show up here with status (pending, approved, or rejected).
+            </p>
+            <Link
+              href="/dashboard/billing/confirm"
+              className={cn(
+                buttonVariants({ variant: "default", size: "sm" }),
+                "rounded-xl font-semibold"
+              )}
+            >
+              Confirm a payment
+            </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="divide-y divide-slate-100 p-4 md:hidden dark:divide-white/10">
+            {payments.map((p) => (
+              <li key={p.id} className="flex flex-col gap-1 py-4 first:pt-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium capitalize text-slate-900 dark:text-slate-100">
+                    {p.plan}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+                      p.status === "approved" && "bg-emerald-50 text-emerald-800",
+                      p.status === "pending" && "bg-amber-50 text-amber-900",
+                      p.status === "rejected" && "bg-red-50 text-red-800"
+                    )}
+                  >
+                    {p.status}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {new Date(p.created_at).toLocaleString(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </p>
+                <p className="tabular-nums text-sm text-slate-800 dark:text-slate-200">
+                  ₹{p.amount_inr.toLocaleString("en-IN")}
+                </p>
+                <p className="truncate font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                  {p.payment_id}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto md:block">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
@@ -404,6 +455,7 @@ export function BillingClient({
               </TableBody>
             </Table>
           </div>
+          </>
         )}
       </div>
 

@@ -44,18 +44,24 @@ export async function approvePaymentAction(
 
   const credits = PLAN_LIMITS[plan].creditAllocation;
 
-  const { error: payErr } = await admin
-    .from("payments")
-    .update({
-      status: "approved",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", paymentRowId)
-    .eq("status", "pending");
+  const { data: profileBefore, error: profFetchErr } = await admin
+    .from("profiles")
+    .select("plan, credits")
+    .eq("id", row.user_id)
+    .maybeSingle();
 
-  if (payErr) {
-    return { ok: false, error: payErr.message };
+  if (profFetchErr) {
+    return { ok: false, error: profFetchErr.message };
   }
+
+  const prevPlan =
+    typeof (profileBefore as { plan?: string } | null)?.plan === "string"
+      ? (profileBefore as { plan: string }).plan
+      : "free";
+  const prevCredits =
+    typeof (profileBefore as { credits?: number } | null)?.credits === "number"
+      ? (profileBefore as { credits: number }).credits
+      : 0;
 
   const { error: profErr } = await admin
     .from("profiles")
@@ -67,8 +73,52 @@ export async function approvePaymentAction(
     .eq("id", row.user_id);
 
   if (profErr) {
+    console.error("[approvePaymentAction] profile update failed", profErr);
     return { ok: false, error: profErr.message };
   }
+
+  const { error: payErr } = await admin
+    .from("payments")
+    .update({
+      status: "approved",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", paymentRowId)
+    .eq("status", "pending");
+
+  if (payErr) {
+    const { error: revertErr } = await admin
+      .from("profiles")
+      .update({
+        plan: prevPlan,
+        credits: prevCredits,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", row.user_id);
+    if (revertErr) {
+      console.error(
+        "[approvePaymentAction] CRITICAL: payment update failed and profile revert failed",
+        payErr,
+        revertErr
+      );
+      return {
+        ok: false,
+        error:
+          "Could not finalize payment record; workspace plan may need manual review.",
+      };
+    }
+    console.error(
+      "[approvePaymentAction] payment row update failed; profile reverted",
+      payErr
+    );
+    return { ok: false, error: payErr.message };
+  }
+
+  console.info("[approvePaymentAction] approved", {
+    paymentRowId,
+    userId: row.user_id,
+    plan,
+  });
 
   revalidatePath("/", "layout");
   return { ok: true };
@@ -107,6 +157,7 @@ export async function rejectPaymentAction(
     .eq("status", "pending");
 
   if (error) {
+    console.error("[rejectPaymentAction] update failed", error);
     return { ok: false, error: error.message };
   }
 

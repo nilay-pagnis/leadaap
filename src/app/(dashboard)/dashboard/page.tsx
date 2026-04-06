@@ -19,45 +19,72 @@ export default async function DashboardPage() {
   weekAgo.setHours(0, 0, 0, 0);
 
   const chartFromIso = chartCreatedAtGteIso(14);
+  const uid = user.id;
+  const startDayIso = startOfDay.toISOString();
+  const weekAgoIso = weekAgo.toISOString();
 
-  const { count: totalLeads } = await supabase
-    .from("leads")
-    .select("*", { count: "exact", head: true });
+  const [
+    totalRes,
+    newRes,
+    workedRes,
+    todayRes,
+    weekRes,
+    chartRes,
+    formsRes,
+    recentRes,
+  ] = await Promise.all([
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid)
+      .eq("status", "new"),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid)
+      .neq("status", "new"),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid)
+      .gte("created_at", startDayIso),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid)
+      .gte("created_at", weekAgoIso),
+    supabase
+      .from("leads")
+      .select("created_at")
+      .eq("user_id", uid)
+      .gte("created_at", chartFromIso),
+    supabase
+      .from("forms")
+      .select("id, form_name")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("leads")
+      .select("id, form_id, data, status, created_at")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
 
-  const { count: newLeads } = await supabase
-    .from("leads")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new");
+  const totalLeads = totalRes.count ?? 0;
+  const newLeads = newRes.count ?? 0;
+  const workedLeads = workedRes.count ?? 0;
+  const leadsToday = todayRes.count ?? 0;
+  const leadsWeek = weekRes.count ?? 0;
+  const chartRows = chartRes.data ?? [];
 
-  const { count: workedLeads } = await supabase
-    .from("leads")
-    .select("*", { count: "exact", head: true })
-    .neq("status", "new");
+  const chartSeries = buildDailyLeadSeries(chartRows, 14);
 
-  const { count: leadsToday } = await supabase
-    .from("leads")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", startOfDay.toISOString());
-
-  const { count: leadsWeek } = await supabase
-    .from("leads")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", weekAgo.toISOString());
-
-  const { data: chartRows } = await supabase
-    .from("leads")
-    .select("created_at")
-    .eq("user_id", user.id)
-    .gte("created_at", chartFromIso);
-
-  const chartSeries = buildDailyLeadSeries(chartRows ?? [], 14);
-
-  const { data: forms } = await supabase
-    .from("forms")
-    .select("id, form_name")
-    .order("created_at", { ascending: true });
-
-  const formList = forms ?? [];
+  const formList = formsRes.data ?? [];
   const formCount = formList.length;
   const firstFormId = formList[0]?.id ?? null;
 
@@ -67,27 +94,21 @@ export default async function DashboardPage() {
   }
 
   const conversionRatePct =
-    (totalLeads ?? 0) > 0
-      ? Math.round(((workedLeads ?? 0) / (totalLeads ?? 1)) * 100)
+    totalLeads > 0
+      ? Math.round((workedLeads / totalLeads) * 100)
       : null;
-
-  const { data: recent } = await supabase
-    .from("leads")
-    .select("id, form_id, data, status, created_at")
-    .order("created_at", { ascending: false })
-    .limit(8);
 
   return (
     <DashboardExperience
       userId={user.id}
-      totalLeads={totalLeads ?? 0}
-      newLeads={newLeads ?? 0}
-      leadsToday={leadsToday ?? 0}
-      leadsWeek={leadsWeek ?? 0}
+      totalLeads={totalLeads}
+      newLeads={newLeads}
+      leadsToday={leadsToday}
+      leadsWeek={leadsWeek}
       conversionRatePct={conversionRatePct}
       formCount={formCount}
       firstFormId={firstFormId}
-      recent={(recent ?? []) as LeadRow[]}
+      recent={(recentRes.data ?? []) as LeadRow[]}
       formNames={formNames}
       chartSeries={chartSeries}
     />

@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { memo, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -32,9 +33,24 @@ import {
 import { SiteLogo } from "@/components/brand/site-logo";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
-import { DashboardInboxVolume } from "@/components/dashboard/dashboard-inbox-volume";
 import { ClientRelativeTime } from "@/components/ui/client-relative-time";
 import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
+
+const DashboardInboxVolume = dynamic(
+  () =>
+    import("@/components/dashboard/dashboard-inbox-volume").then((m) => ({
+      default: m.DashboardInboxVolume,
+    })),
+  {
+    ssr: true,
+    loading: () => (
+      <div
+        className="h-[240px] w-full animate-pulse rounded-2xl bg-slate-100/80 dark:bg-zinc-900/60"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 type Props = {
   userId: string;

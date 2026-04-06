@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
+  BookOpen,
   Copy,
   Eye,
   GripVertical,
@@ -415,6 +416,11 @@ export function FormBuilder({ form, initialFields }: { form: FormRow; initialFie
     toast.success("Link copied to clipboard");
   }
 
+  function copyFormId() {
+    void navigator.clipboard.writeText(form.id);
+    toast.success("Form ID copied to clipboard");
+  }
+
   function publish() {
     const url = `${window.location.origin}/f/${form.id}`;
     void navigator.clipboard.writeText(url);
@@ -497,6 +503,56 @@ export function FormBuilder({ form, initialFields }: { form: FormRow; initialFie
           </div>
         </div>
       </header>
+
+      <section
+        aria-labelledby="form-id-heading"
+        className="rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40 sm:p-5"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1 space-y-2">
+            <h2
+              id="form-id-heading"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-500"
+            >
+              Form ID
+            </h2>
+            <p className="font-mono text-sm leading-relaxed text-zinc-900 break-all dark:text-zinc-100">
+              {form.id}
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Use this UUID in embeds, public URLs, and API calls.{" "}
+              <Link
+                href="/docs"
+                className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              >
+                Developer docs
+              </Link>
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-zinc-200"
+              onClick={copyFormId}
+            >
+              <Copy className="mr-1.5 size-4" aria-hidden />
+              Copy ID
+            </Button>
+            <Link
+              href="/docs#form-id"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "rounded-lg border-zinc-200"
+              )}
+            >
+              <BookOpen className="mr-1.5 size-4" aria-hidden />
+              Docs
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="grid flex-1 gap-8 xl:grid-cols-2 xl:gap-10">
         {/* Left: field list */}

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { rateLimitApiPost } from "@/lib/security/rate-limit";
 
 async function profileIsAdmin(
   supabase: SupabaseClient,
@@ -31,6 +32,30 @@ function adminRedirectTarget(pathname: string): string {
 }
 
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  if (request.method === "POST") {
+    if (
+      path === "/api/public/submit-lead" ||
+      path === "/api/contact" ||
+      path === "/api/payments/submit"
+    ) {
+      const rl = rateLimitApiPost(request, path);
+      if (!rl.ok) {
+        return NextResponse.json(
+          {
+            error: "Too many requests. Please wait a moment and try again.",
+            code: "RATE_LIMIT",
+          },
+          {
+            status: 429,
+            headers: { "Retry-After": String(rl.retryAfterSec) },
+          }
+        );
+      }
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -70,8 +95,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
 
   const isProtected =
     path.startsWith("/dashboard") ||
