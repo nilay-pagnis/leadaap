@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   FileText,
   Inbox,
-  LogOut,
   Menu,
   CreditCard,
   BookOpen,
@@ -17,8 +16,6 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layout/page-container";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { useUiStore } from "@/stores/ui-store";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { SidebarToggleButton } from "@/components/layout/sidebar-toggle-button";
@@ -64,20 +61,12 @@ export function DashboardShell({
   user?: DashboardUser | null;
 }) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
   const mobileOpen = useUiStore((s) => s.mobileNavOpen);
   const setMobileOpen = useUiStore((s) => s.setMobileNavOpen);
   const sidebarCollapsedDesktop = useUiStore((s) => s.sidebarCollapsedDesktop);
   const isLg = useMediaQuery("(min-width: 1024px)");
   const sidebarInert = Boolean(isLg && sidebarCollapsedDesktop);
   const headerActions = useUiStore((s) => s.dashboardHeaderActions);
-
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
-  }
 
   const title = pageTitle(pathname);
 
@@ -147,16 +136,6 @@ export function DashboardShell({
             <BookOpen className="size-4 shrink-0" aria-hidden />
             Developer docs
           </Link>
-        </div>
-        <div className="shrink-0 border-t border-slate-100 p-4">
-          <Button
-            variant="ghost"
-            className="w-full min-w-0 justify-start gap-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-            onClick={() => void signOut()}
-          >
-            <LogOut className="size-4 shrink-0" />
-            <span className="truncate">Sign out</span>
-          </Button>
         </div>
       </aside>
 

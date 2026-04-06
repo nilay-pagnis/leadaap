@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import { ProfileMenu } from "@/components/layout/profile-menu";
 import { DashboardTooltip } from "@/components/layout/dashboard-tooltip";
@@ -16,7 +15,7 @@ export type DashboardUser = {
 };
 
 /**
- * Right-side dashboard utilities: optional page actions, theme, notifications, profile.
+ * Right-side dashboard utilities: optional page actions, notifications, profile.
  */
 export function TopNavbar({
   headerActions,
@@ -54,7 +53,6 @@ export function TopNavbar({
             <Search className="size-[18px]" aria-hidden />
           </button>
         </DashboardTooltip>
-        <ThemeToggle />
         <NotificationDropdown userId={user?.id ?? null} />
         <ProfileMenu
           email={user?.email ?? ""}

@@ -55,7 +55,7 @@ export function ProfileMenu({
           )}
           aria-label="Open profile menu"
         >
-          <span aria-hidden>{initials}</span>
+          <span aria-hidden>{initials || "?"}</span>
         </DropdownMenuTrigger>
       </DashboardTooltip>
       <DropdownMenuContent

@@ -20,14 +20,6 @@ export default async function DashboardLayout({
     await ensureProfile(supabase, user.id);
   }
 
-  const isAdmin = await getCurrentUserIsAdmin();
-
-  if (isAdmin) {
-    return <AdminShell>{children}</AdminShell>;
-  }
-
-  const usage = user ? await getUsageForUser(user.id) : null;
-
   let dashboardUser: {
     id: string;
     email: string;
@@ -45,6 +37,14 @@ export default async function DashboardLayout({
       fullName: profile?.full_name?.trim() ?? null,
     };
   }
+
+  const isAdmin = await getCurrentUserIsAdmin();
+
+  if (isAdmin) {
+    return <AdminShell user={dashboardUser}>{children}</AdminShell>;
+  }
+
+  const usage = user ? await getUsageForUser(user.id) : null;
 
   return (
     <DashboardShell showAdminNav={false} user={dashboardUser}>

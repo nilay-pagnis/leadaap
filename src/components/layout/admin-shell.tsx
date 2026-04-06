@@ -8,21 +8,20 @@ import {
   CreditCard,
   Layers,
   Settings,
-  LogOut,
   Menu,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layout/page-container";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { useUiStore } from "@/stores/ui-store";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { SidebarToggleButton } from "@/components/layout/sidebar-toggle-button";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { LightCanvas } from "@/components/layout/light-canvas";
 import { DashboardPageMotion } from "@/components/layout/dashboard-page-motion";
+import { TopNavbar, type DashboardUser } from "@/components/layout/top-navbar";
+import { CommandPaletteProvider } from "@/components/command-palette/command-palette";
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -39,26 +38,26 @@ function navActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  user = null,
+}: {
+  children: React.ReactNode;
+  user?: DashboardUser | null;
+}) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
   const mobileOpen = useUiStore((s) => s.mobileNavOpen);
   const setMobileOpen = useUiStore((s) => s.setMobileNavOpen);
   const sidebarCollapsedDesktop = useUiStore((s) => s.sidebarCollapsedDesktop);
+  const headerActions = useUiStore((s) => s.dashboardHeaderActions);
   const isLg = useMediaQuery("(min-width: 1024px)");
   const sidebarInert = Boolean(isLg && sidebarCollapsedDesktop);
-
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
-  }
 
   const sectionLabel =
     nav.find((n) => navActive(pathname, n.href))?.label ?? "Admin";
 
   return (
+    <CommandPaletteProvider userId={user?.id ?? null}>
     <div className="relative min-h-dvh overflow-x-hidden bg-[#F8FAFC] text-foreground">
       <LightCanvas />
       <aside
@@ -107,16 +106,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="shrink-0 border-t border-slate-100 p-4">
-          <Button
-            variant="ghost"
-            className="w-full min-w-0 justify-start gap-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-            onClick={() => void signOut()}
-          >
-            <LogOut className="size-4 shrink-0" />
-            <span className="truncate">Sign out</span>
-          </Button>
-        </div>
       </aside>
 
       {mobileOpen && (
@@ -136,8 +125,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       >
         <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/75 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
           <div className="pt-[env(safe-area-inset-top,0px)]">
-            <div className="flex h-14 min-w-0 items-center justify-between px-4 lg:h-16 lg:px-6">
-              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-4 lg:h-16 lg:gap-3 lg:px-6">
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -150,6 +139,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <SidebarToggleButton className="text-slate-700 hover:bg-slate-100" />
                 <p className="truncate text-sm font-medium text-slate-500">{sectionLabel}</p>
               </div>
+              <TopNavbar headerActions={headerActions} user={user} />
             </div>
           </div>
         </header>
@@ -160,5 +150,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+    </CommandPaletteProvider>
   );
 }
