@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 export type UpgradeModalReason =
   | "form_limit"
   | "lead_limit"
+  | "inbox_features"
   | "manual"
   | "session_nudge";
 

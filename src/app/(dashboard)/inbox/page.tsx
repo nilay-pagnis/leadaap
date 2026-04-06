@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnquiryTableSkeleton } from "@/components/leads/enquiry-table-skeleton";
+import { getUsageForUser } from "@/lib/monetization/get-usage";
+import { hasPaidInboxFeatures } from "@/lib/monetization/plan-features";
 import { InboxView } from "./inbox-view";
 import type { FollowUpDueInfo } from "@/types/follow-ups";
 import type { LeadFieldDef, LeadRow } from "@/types";
@@ -31,6 +33,9 @@ export default async function InboxPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const usage = await getUsageForUser(user.id);
+  const paidInboxFeatures = hasPaidInboxFeatures(usage.plan);
 
   const { data: leads } = await supabase
     .from("leads")
@@ -81,6 +86,9 @@ export default async function InboxPage() {
         formNames={formNames}
         fieldDefs={fieldDefs}
         followUpDueByLeadId={followUpDueByLeadId}
+        paidInboxFeatures={paidInboxFeatures}
+        atLeadLimit={usage.atLeadLimit}
+        nearLeadLimit={usage.nearLeadLimit}
       />
     </Suspense>
   );

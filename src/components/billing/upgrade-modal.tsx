@@ -51,6 +51,12 @@ function headline(reason: UpgradeModalReason | null | undefined): {
         description:
           "You’ve reached your enquiry allocation for this plan. Move up a tier to keep every submission flowing into Enquireo.",
       };
+    case "inbox_features":
+      return {
+        title: "Unlock the full inbox",
+        description:
+          "Paid plans include drag-and-drop on the pipeline board, custom column order, numeric lead scores with full breakdowns — plus higher monthly enquiry limits and more forms.",
+      };
     case "session_nudge":
       return {
         title: "You’re at capacity",

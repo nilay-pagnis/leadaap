@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -23,7 +24,7 @@ import { LeadDetailDrawer } from "@/components/leads/lead-detail-drawer";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
 import { ActivityFeed } from "@/components/leads/activity-timeline";
 import { EnquiryFormSourceLine } from "@/components/leads/enquiry-form-source-line";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -184,6 +185,8 @@ export type EnquiryDetailPanelProps = {
   variant?: "overlay" | "embedded";
   onStatusChange?: (id: string, status: LeadStatus) => void;
   updatingLeadId?: string | null;
+  /** Paid plans: numeric score, breakdown dialog, full insight copy. */
+  paidInboxFeatures?: boolean;
 };
 
 export function EnquiryDetailPanel({
@@ -197,6 +200,7 @@ export function EnquiryDetailPanel({
   variant = "overlay",
   onStatusChange,
   updatingLeadId,
+  paidInboxFeatures = true,
 }: EnquiryDetailPanelProps) {
   const notesSectionRef = useRef<HTMLDivElement>(null);
   const [formDetailsOpen, setFormDetailsOpen] = useState(false);
@@ -785,7 +789,11 @@ export function EnquiryDetailPanel({
           <p className="text-sm text-slate-500">{phone}</p>
         ) : null}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <ScoreBadge detail={scoreResult} size="md" />
+          <ScoreBadge
+            detail={scoreResult}
+            size="md"
+            mode={paidInboxFeatures ? "full" : "label-only"}
+          />
           <span className="text-slate-300" aria-hidden>
             ·
           </span>
@@ -892,21 +900,43 @@ export function EnquiryDetailPanel({
             <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               Based on signals detected in this submission (not generative AI).
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-slate-800 dark:text-slate-200">
-              {scoreResult.explanation}
-            </p>
-            {scoreResult.lines.length > 0 ? (
-              <ul className="mt-3 space-y-1.5 border-t border-indigo-200/30 pt-3 text-sm text-slate-600 dark:border-indigo-500/20 dark:text-slate-300">
-                {scoreResult.lines.slice(0, 4).map((line, idx) => (
-                  <li key={`${line.label}-${idx}`} className="flex gap-2">
-                    <span className="font-semibold tabular-nums text-indigo-600 dark:text-indigo-400">
-                      +{line.points}
-                    </span>
-                    <span>{line.label}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            {paidInboxFeatures ? (
+              <>
+                <p className="mt-2 text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                  {scoreResult.explanation}
+                </p>
+                {scoreResult.lines.length > 0 ? (
+                  <ul className="mt-3 space-y-1.5 border-t border-indigo-200/30 pt-3 text-sm text-slate-600 dark:border-indigo-500/20 dark:text-slate-300">
+                    {scoreResult.lines.slice(0, 4).map((line, idx) => (
+                      <li key={`${line.label}-${idx}`} className="flex gap-2">
+                        <span className="font-semibold tabular-nums text-indigo-600 dark:text-indigo-400">
+                          +{line.points}
+                        </span>
+                        <span>{line.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </>
+            ) : (
+              <div className="relative mt-3 space-y-3 rounded-xl border border-dashed border-indigo-200/60 bg-indigo-50/40 p-4 dark:border-indigo-500/35 dark:bg-indigo-950/25">
+                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                  This lead is marked{" "}
+                  <span className="font-semibold">{scoreResult.label}</span> from
+                  submission signals. Upgrade to see the numeric score, every scoring
+                  factor, and tailored next-step guidance.
+                </p>
+                <Link
+                  href="/dashboard/billing"
+                  className={cn(
+                    buttonVariants({ size: "sm" }),
+                    "inline-flex rounded-lg font-semibold"
+                  )}
+                >
+                  View plans
+                </Link>
+              </div>
+            )}
           </motion.section>
 
           <Separator className="bg-slate-200/80 dark:bg-white/10" />

@@ -49,6 +49,7 @@ import { useRelativeTimeTicker } from "@/hooks/use-relative-time-ticker";
 import { parseTimestamptz } from "@/lib/timestamptz";
 import { getLeadNameAndEmail } from "@/lib/leads/lead-display";
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge";
+import { useUiStore } from "@/stores/ui-store";
 
 const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed"];
 
@@ -109,6 +110,7 @@ function InboxEmptyState({
   onClearFilters,
   onAddEnquiry,
   canAddManual,
+  paidInboxFeatures,
 }: {
   mode: "list" | "board";
   hasWorkspaceLeads: boolean;
@@ -116,6 +118,7 @@ function InboxEmptyState({
   onClearFilters: () => void;
   onAddEnquiry: () => void;
   canAddManual: boolean;
+  paidInboxFeatures: boolean;
 }) {
   return (
     <motion.div
@@ -141,7 +144,9 @@ function InboxEmptyState({
             : filtersActive
               ? "Adjust or clear filters and search to see more."
               : mode === "board"
-                ? "Drag cards between columns to change status."
+                ? paidInboxFeatures
+                  ? "Drag cards between columns to change status."
+                  : "Open a lead to change pipeline stage, or upgrade to drag cards on the board."
                 : "Try another view or check back soon."}
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
@@ -201,13 +206,20 @@ export function InboxView({
   formNames,
   fieldDefs,
   followUpDueByLeadId: initialFollowUpDueByLeadId,
+  paidInboxFeatures,
+  atLeadLimit,
+  nearLeadLimit,
 }: {
   initialLeads: LeadRow[];
   formNames: Record<string, string>;
   fieldDefs: LeadFieldDef[];
   followUpDueByLeadId: Record<string, FollowUpDueInfo>;
+  paidInboxFeatures: boolean;
+  atLeadLimit: boolean;
+  nearLeadLimit: boolean;
 }) {
   const router = useRouter();
+  const openUpgradeModal = useUiStore((s) => s.openUpgradeModal);
   const searchParams = useSearchParams();
   const leadFromQuery = searchParams.get("lead");
 
@@ -430,8 +442,78 @@ export function InboxView({
     cold: groupedByTemperature.cold,
   };
 
+  const scoreMode = paidInboxFeatures ? "full" : "label-only";
+
   return (
     <div className="space-y-6">
+      {!paidInboxFeatures ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-indigo-200/70 bg-gradient-to-r from-indigo-50/95 to-white px-4 py-3.5 shadow-sm dark:border-indigo-500/30 dark:from-indigo-950/40 dark:to-zinc-950/50 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+            <span className="font-semibold text-slate-900 dark:text-slate-100">
+              Free plan —
+            </span>{" "}
+            You have list + board views and Hot/Warm/Cold grouping. Upgrade for drag-and-drop
+            pipeline, custom column order, and full lead scoring with breakdowns.
+          </p>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="rounded-xl font-semibold"
+              onClick={() => openUpgradeModal("inbox_features")}
+            >
+              Compare plans
+            </Button>
+            <Link
+              href="/dashboard/billing"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "rounded-xl border-slate-200 font-medium"
+              )}
+            >
+              Billing
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      {atLeadLimit || nearLeadLimit ? (
+        <div
+          className={cn(
+            "rounded-xl border px-4 py-3 text-sm",
+            atLeadLimit
+              ? "border-amber-300/90 bg-amber-50 text-amber-950 dark:border-amber-500/40 dark:bg-amber-950/35 dark:text-amber-100"
+              : "border-slate-200/90 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-zinc-900/50 dark:text-slate-200"
+          )}
+        >
+          {atLeadLimit ? (
+            <>
+              You&apos;ve reached your monthly enquiry limit on this plan.{" "}
+              <button
+                type="button"
+                className="font-semibold text-amber-900 underline decoration-amber-700/50 underline-offset-2 hover:no-underline dark:text-amber-50"
+                onClick={() => openUpgradeModal("lead_limit")}
+              >
+                Upgrade
+              </button>{" "}
+              to keep capturing leads.
+            </>
+          ) : (
+            <>
+              You&apos;re close to your monthly enquiry limit.{" "}
+              <button
+                type="button"
+                className="font-semibold text-slate-900 underline underline-offset-2 hover:no-underline dark:text-slate-100"
+                onClick={() => openUpgradeModal("lead_limit")}
+              >
+                Upgrade
+              </button>{" "}
+              for more capacity.
+            </>
+          )}
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <p className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
@@ -443,8 +525,12 @@ export function InboxView({
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">
             {view === "list"
-              ? "Hot, warm, and cold groups keep priority obvious. Open a thread on the right on large screens."
-              : "Pipeline board — drag cards to update status. High-signal leads float to the top of each column."}
+              ? paidInboxFeatures
+                ? "Hot, warm, and cold groups keep priority obvious. Open a thread on the right on large screens."
+                : "Hot, warm, and cold groups use simple priority labels. Upgrade for numeric scores and full breakdowns in each lead."
+              : paidInboxFeatures
+                ? "Pipeline board — drag cards to update status. Reorder columns from Column order. High-signal leads float to the top of each column."
+                : "Pipeline board shows every stage — open a lead to change status, or upgrade to drag cards and customize column order."}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -511,6 +597,7 @@ export function InboxView({
             onClearFilters={clearAllFilters}
             onAddEnquiry={() => setAddEnquiryOpen(true)}
             canAddManual
+            paidInboxFeatures={paidInboxFeatures}
           />
         ) : (
           <div
@@ -663,6 +750,7 @@ export function InboxView({
                                     <ScoreBadge
                                       detail={scoreResult}
                                       size="sm"
+                                      mode={scoreMode}
                                     />
                                   </div>
                                   <div
@@ -724,6 +812,7 @@ export function InboxView({
                   timeTick={timeTick}
                   onStatusChange={updateStatus}
                   updatingLeadId={updatingLeadId}
+                  paidInboxFeatures={paidInboxFeatures}
                 />
               </div>
             ) : null}
@@ -737,6 +826,7 @@ export function InboxView({
           onClearFilters={clearAllFilters}
           onAddEnquiry={() => setAddEnquiryOpen(true)}
           canAddManual
+          paidInboxFeatures={paidInboxFeatures}
         />
       ) : (
         <KanbanBoard
@@ -748,6 +838,9 @@ export function InboxView({
           updatingLeadId={updatingLeadId}
           timeTick={timeTick}
           followUpDueByLeadId={followUpDueByLeadId}
+          dragEnabled={paidInboxFeatures}
+          allowColumnReorder={paidInboxFeatures}
+          scoreMode={scoreMode}
         />
       )}
 
@@ -770,6 +863,7 @@ export function InboxView({
           timeTick={timeTick}
           onStatusChange={updateStatus}
           updatingLeadId={updatingLeadId}
+          paidInboxFeatures={paidInboxFeatures}
         />
       ) : null}
     </div>

@@ -22,6 +22,8 @@ export type EnquiryCardProps = {
   isUpdating?: boolean;
   timeTick: number;
   followUp?: FollowUpDueInfo | null;
+  dragEnabled?: boolean;
+  scoreMode?: "full" | "label-only";
 };
 
 export function EnquiryCard({
@@ -32,6 +34,8 @@ export function EnquiryCard({
   isUpdating,
   timeTick,
   followUp,
+  dragEnabled = true,
+  scoreMode = "full",
 }: EnquiryCardProps) {
   const { name, email } = getLeadNameAndEmail(lead, fieldDefs);
   const scoreResult = calculateLeadScore({
@@ -50,7 +54,7 @@ export function EnquiryCard({
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
-    disabled: isUpdating,
+    disabled: !dragEnabled || isUpdating,
   });
 
   const style = transform
@@ -78,18 +82,22 @@ export function EnquiryCard({
       {...attributes}
     >
       <div className="flex gap-2">
-        <button
-          type="button"
-          className={cn(
-            "mt-0.5 shrink-0 touch-none rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600",
-            isUpdating && "pointer-events-none"
-          )}
-          aria-label="Drag to move"
-          disabled={isUpdating}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
+        {dragEnabled ? (
+          <button
+            type="button"
+            className={cn(
+              "mt-0.5 shrink-0 touch-none rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600",
+              isUpdating && "pointer-events-none"
+            )}
+            aria-label="Drag to move"
+            disabled={isUpdating}
+            {...listeners}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        ) : (
+          <span className="mt-0.5 w-1 shrink-0" aria-hidden />
+        )}
         <div className="min-w-0 flex-1">
           <button
             type="button"
@@ -126,7 +134,12 @@ export function EnquiryCard({
             <p className="mt-2 text-xs text-slate-400">Open for notes and activity</p>
           </button>
           <div className="mt-2">
-            <ScoreBadge detail={scoreResult} size="sm" className="max-w-full" />
+            <ScoreBadge
+              detail={scoreResult}
+              size="sm"
+              className="max-w-full"
+              mode={scoreMode}
+            />
           </div>
         </div>
       </div>

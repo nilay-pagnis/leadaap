@@ -13,7 +13,14 @@ const LABEL_EMOJI: Record<LeadScoreLabel, string> = {
   Cold: "❄️",
 };
 
-function scoreTooltipLabel(detail: LeadScoreResult, interactive: boolean): string {
+function scoreTooltipLabel(
+  detail: LeadScoreResult,
+  interactive: boolean,
+  mode: "full" | "label-only"
+): string {
+  if (mode === "label-only") {
+    return `${detail.label} priority (Free). Upgrade for numeric score, signal breakdown, and coaching tips.`;
+  }
   const { score, label, lines, explanation } = detail;
   const top = lines.slice(0, 4).map((l) => `${l.label} +${l.points}`);
   const more =
@@ -129,6 +136,8 @@ export type ScoreBadgeProps = {
   className?: string;
   /** When false, only shows tooltip (no breakdown dialog). */
   interactive?: boolean;
+  /** Free plan: temperature label only (no numeric score or bars). */
+  mode?: "full" | "label-only";
 };
 
 /**
@@ -139,13 +148,16 @@ export function ScoreBadge({
   size = "md",
   className,
   interactive = true,
+  mode = "full",
 }: ScoreBadgeProps) {
   const [open, setOpen] = useState(false);
   const { label, score } = detail;
   const emoji = LABEL_EMOJI[label];
   const tone = toneClass[label];
+  const labelOnly = mode === "label-only";
+  const effectiveInteractive = interactive && !labelOnly;
 
-  const tooltip = scoreTooltipLabel(detail, interactive);
+  const tooltip = scoreTooltipLabel(detail, effectiveInteractive, mode);
 
   const stopActivate = useCallback((e: React.SyntheticEvent) => {
     e.stopPropagation();
@@ -153,23 +165,28 @@ export function ScoreBadge({
 
   const onClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!interactive) return;
+      if (!effectiveInteractive) return;
       e.stopPropagation();
       setOpen(true);
     },
-    [interactive]
+    [effectiveInteractive]
   );
 
   const sharedClass = cn(
     "inline-flex max-w-full items-center gap-1 rounded-full border font-semibold tabular-nums shadow-sm ring-1 transition-colors",
     tone.wrap,
     size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs",
-    interactive &&
+    effectiveInteractive &&
       "cursor-pointer outline-none hover:brightness-[0.98] focus-visible:ring-2 focus-visible:ring-slate-400/50 dark:hover:brightness-110",
     className
   );
 
-  const labelPart = (
+  const labelPart = labelOnly ? (
+    <>
+      <span aria-hidden>{emoji}</span>
+      <span className={cn("font-medium", tone.text)}>{label}</span>
+    </>
+  ) : (
     <>
       <span aria-hidden>{emoji}</span>
       <span className={cn("min-w-0 truncate", tone.text)}>{score}</span>
@@ -178,7 +195,7 @@ export function ScoreBadge({
   );
 
   const inner =
-    interactive ? (
+    effectiveInteractive ? (
       <motion.button
         type="button"
         whileTap={{ scale: 0.97 }}
@@ -205,14 +222,15 @@ export function ScoreBadge({
       >
         <span className="inline-flex flex-col items-stretch">
           {inner}
-          {size === "md" ? (
+          {!labelOnly && size === "md" ? (
             <ScoreIntensityMeter score={score} label={label} />
-          ) : (
+          ) : null}
+          {!labelOnly && size === "sm" ? (
             <ScoreMiniBar score={score} label={label} />
-          )}
+          ) : null}
         </span>
       </DashboardTooltip>
-      {interactive ? (
+      {effectiveInteractive ? (
         <ScoreBreakdown open={open} onOpenChange={setOpen} detail={detail} />
       ) : null}
     </>

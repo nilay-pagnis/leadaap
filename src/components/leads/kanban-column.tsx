@@ -30,6 +30,8 @@ export type KanbanColumnProps = {
   updatingLeadId: string | null;
   timeTick: number;
   followUpDueByLeadId: Record<string, FollowUpDueInfo>;
+  dragEnabled?: boolean;
+  scoreMode?: "full" | "label-only";
 };
 
 export function KanbanColumn({
@@ -41,6 +43,8 @@ export function KanbanColumn({
   updatingLeadId,
   timeTick,
   followUpDueByLeadId,
+  dragEnabled = true,
+  scoreMode = "full",
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -73,6 +77,8 @@ export function KanbanColumn({
             isUpdating={updatingLeadId === lead.id}
             timeTick={timeTick}
             followUp={followUpDueByLeadId[lead.id] ?? null}
+            dragEnabled={dragEnabled}
+            scoreMode={scoreMode}
           />
         ))}
       </div>
