@@ -4,7 +4,7 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Sign in — Enquireo",
-  description: "Sign in to your Enquireo workspace. Secure login with email or Google.",
+  description: "Sign in to your Enquireo workspace with your work email and password.",
 };
 
 export default function LoginPage() {

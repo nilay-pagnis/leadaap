@@ -17,30 +17,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button-variants";
-
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      />
-    </svg>
-  );
-}
 
 type FloatFieldProps = {
   id: string;
@@ -123,7 +99,6 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   function clearError() {
@@ -145,26 +120,7 @@ export function LoginForm() {
     router.refresh();
   }
 
-  async function onGoogleSignIn() {
-    setFormError(null);
-    setOauthLoading(true);
-    const supabase = createClient();
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const next = encodeURIComponent(redirect.startsWith("/") ? redirect : `/${redirect}`);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${origin}/auth/callback?next=${next}`,
-      },
-    });
-    setOauthLoading(false);
-    if (error) {
-      setFormError(error.message);
-    }
-  }
-
   const hasError = Boolean(formError);
-  const busy = loading || oauthLoading;
 
   return (
     <div className="flex min-h-dvh flex-col bg-[#F8FAFC] lg:flex-row">
@@ -296,7 +252,7 @@ export function LoginForm() {
               <Button
                 type="submit"
                 className="group h-12 w-full rounded-2xl text-base font-semibold shadow-md shadow-indigo-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0"
-                disabled={busy}
+                disabled={loading}
               >
                 {loading ? (
                   <>
@@ -308,34 +264,6 @@ export function LoginForm() {
                 )}
               </Button>
             </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-wider">
-                <span className="bg-white px-3 text-slate-400">Or continue with</span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void onGoogleSignIn()}
-              disabled={busy}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "inline-flex h-12 w-full items-center justify-center gap-0 rounded-2xl border-slate-200 bg-white text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:translate-y-0"
-              )}
-            >
-              {oauthLoading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <>
-                  <GoogleIcon className="mr-3 size-5 shrink-0" />
-                  Continue with Google
-                </>
-              )}
-            </button>
 
             <p className="mt-8 text-center text-sm text-slate-600">
               No account?{" "}

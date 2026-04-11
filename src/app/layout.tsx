@@ -22,7 +22,10 @@ export const metadata: Metadata = {
   ),
   manifest: "/site.webmanifest",
   icons: {
-    icon: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
   },
 };
 
